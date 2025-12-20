@@ -2,9 +2,10 @@ import { Component, OnInit, signal, ChangeDetectionStrategy, inject, computed } 
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+// @ts-ignore: ignore missing types for ngx-markdown
 import { MarkdownComponent } from 'ngx-markdown';
 import { JulesService } from '../../services/jules.service';
-import { Session, SessionState, Activity } from '../../models/jules.model';
+import { Session, SessionState } from '../../models/jules.model';
 import { ActivityTimelineComponent } from '../activity-timeline/activity-timeline.component';
 
 interface PRInfo {
@@ -172,11 +173,7 @@ export class SessionDetailComponent implements OnInit {
 
   getStateLabel(state: SessionState): string {
     const labels: Record<SessionState, string> = {
-<<<<<<< Current (Your changes)
-      'STATE_UNSPECIFIED': 'Unspecified',
-=======
       'STATE_UNSPECIFIED': 'Pending',
->>>>>>> Incoming (Background Agent changes)
       'ACTIVE': 'Active',
       'COMPLETED': 'Completed',
       'FAILED': 'Failed'

@@ -39,9 +39,12 @@
     >
       @if (approving()) {
         <mat-icon class="mr-2">hourglass_empty</mat-icon>
-        Approving...
       } @else {
         <mat-icon class="mr-2">check_circle</mat-icon>
+      }
+      @if (approving()) {
+        Approving...
+      } @else {
         Approve Plan
       }
     </button>
