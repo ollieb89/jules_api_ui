@@ -1,0 +1,47 @@
+[workspace]
+authors = ["Ollie <buitelaarolivier@gmail.com>"]
+channels = ["conda-forge"]
+name = "jules_backend"
+platforms = ["linux-64"]
+version = "0.1.0"
+
+[tasks]
+runserver = "python manage.py runserver 0.0.0.0:8444"
+migrate = "python manage.py migrate"
+makemigrations = "python manage.py makemigrations"
+shell = "python manage.py shell"
+collectstatic = "python manage.py collectstatic --noinput"
+test = "pytest"
+format = "black . && ruff check ."
+typecheck = "mypy ."
+
+[dependencies]
+python = "3.11.*"
+pre-commit = ">=4.5.1,<5"
+
+[pypi-dependencies]
+# Django and related
+django = ">=5.0,<6"
+djangorestframework = ">=3.15,<4"
+django-cors-headers = ">=4.3,<5"
+# Database
+psycopg = { version = ">=3.3.2, <4", extras = ["binary"] }
+# FastAPI (to be removed after migration)
+fastapi = ">=0.125.0, <0.126"
+uvicorn = ">=0.38.0, <0.39"
+python-multipart = ">=0.0.21, <0.0.22"
+sqlalchemy = ">=2.0.45, <3"
+alembic = ">=1.17.2, <2"
+pydantic-settings = ">=2.12.0, <3"
+# Utilities
+python-dotenv = ">=1.2.1, <2"
+# Testing
+pytest = ">=9.0.2, <10"
+pytest-asyncio = ">=1.3.0, <2"
+pytest-django = ">=4.8.0,<5"
+aiosqlite = ">=0.20.0, <1"
+httpx = ">=0.28.1, <0.29"
+# Code quality
+black = ">=25.12.0, <26"
+ruff = ">=0.14.10, <0.15"
+mypy = ">=1.19.1, <2"

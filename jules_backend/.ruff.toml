@@ -1,0 +1,16 @@
+# Ruff configuration for jules_backend
+
+# Exclude legacy FastAPI code from linting
+exclude = [
+    "app/",
+    "migrations/",
+    "__pycache__/",
+    "*.pyc",
+]
+
+# Line length
+line-length = 100
+
+# Target Python version
+target-version = "py311"
+

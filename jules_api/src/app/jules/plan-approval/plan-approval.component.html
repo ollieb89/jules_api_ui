@@ -1,0 +1,57 @@
+<div class="mt-4 border-t border-gray-200 pt-4">
+  <div class="mb-4">
+    <div class="flex justify-between items-center mb-2">
+      <h4 class="font-semibold text-gray-900">Plan Steps</h4>
+      <span 
+        [class]="'px-2 py-1 rounded-full text-xs font-medium ' + getPlanStateClass(plan.state)"
+      >
+        {{ plan.state }}
+      </span>
+    </div>
+    
+    @if (error()) {
+      <div 
+        class="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded text-sm mt-2"
+        role="alert"
+      >
+        {{ error() }}
+      </div>
+    }
+  </div>
+
+  <ol class="list-decimal list-inside space-y-3 mb-4">
+    @for (step of plan.steps; track $index) {
+      <li class="text-sm text-gray-700">
+        <div class="flex items-center gap-2">
+          <span>{{ step.description }}</span>
+          <span 
+            [class]="'px-2 py-1 rounded-full text-xs font-medium ' + getStepStateClass(step.state)"
+          >
+            {{ getStepStateLabel(step.state) }}
+          </span>
+        </div>
+      </li>
+    }
+  </ol>
+
+  @if (canApprove()) {
+    <button
+      (click)="approvePlan()"
+      type="button"
+      [disabled]="approving()"
+      aria-label="Approve plan"
+      class="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+    >
+      @if (approving()) {
+        Approving...
+      } @else {
+        Approve Plan
+      }
+    </button>
+  } @else if (plan.state === 'APPROVED') {
+    <div class="text-sm text-green-600 font-medium text-center">
+      Plan has been approved
+    </div>
+  }
+</div>
+

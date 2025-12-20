@@ -1,0 +1,80 @@
+{
+  "projectName": "jules",
+  "monorepoRoot": ".",
+  "protocols": {
+    "a2a": {
+      "enabled": true,
+      "messageTimeout": 5000,
+      "retryAttempts": 3,
+      "encryption": "AES-256-GCM",
+      "healthChecks": true
+    },
+    "mcp": {
+      "enabled": true,
+      "contextSyncInterval": 100,
+      "modelCoordination": "intelligent",
+      "fallbackStrategy": "round-robin",
+      "filesystem": {
+        "enabled": true,
+        "rootPath": "."
+      },
+      "git": {
+        "enabled": true
+      },
+      "github": {
+        "enabled": true,
+        "requireAuth": true
+      }
+    }
+  },
+  "swarm": {
+    "maxAgents": 10,
+    "topology": "hierarchical",
+    "consensus": "byzantine-fault-tolerant",
+    "coordinationProtocol": "a2a",
+    "specializations": [
+      "frontend-architect",
+      "backend-architect",
+      "fullstack-developer",
+      "test-engineer",
+      "devops-specialist"
+    ]
+  },
+  "workspaces": {
+    "jules_api": {
+      "root": "jules_api",
+      "type": "angular",
+      "port": 4700,
+      "commands": {
+        "start": "ng serve --port 4700",
+        "build": "ng build",
+        "test": "ng test"
+      }
+    },
+    "jules_backend": {
+      "root": "jules_backend",
+      "type": "python",
+      "port": 8444,
+      "commands": {
+        "dev": "pixi run uvicorn app.main:app --reload",
+        "migrations": "pixi run alembic upgrade head",
+        "test": "pixi run pytest"
+      }
+    }
+  },
+  "performance": {
+    "sqliteOps": 396610,
+    "routingLatency": 75,
+    "a2aLatency": 25,
+    "parallelTasks": 1000
+  },
+  "monitoring": {
+    "enabled": true,
+    "alerting": "comprehensive",
+    "dashboards": [
+      "performance",
+      "agents",
+      "costs"
+    ]
+  }
+}

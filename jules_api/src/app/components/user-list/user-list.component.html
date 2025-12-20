@@ -1,0 +1,101 @@
+<div class="container mx-auto px-4 py-8">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold text-gray-900">Users</h1>
+    <button
+      (click)="createUser()"
+      type="button"
+      aria-label="Add new user"
+      class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+    >
+      Add User
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="flex justify-center items-center py-12" aria-busy="true" aria-live="polite">
+      <div class="text-gray-600">Loading users...</div>
+    </div>
+  } @else if (error()) {
+    <div 
+      class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4"
+      role="alert"
+      aria-live="assertive"
+    >
+      {{ error() }}
+    </div>
+    <button
+      (click)="loadUsers()"
+      type="button"
+      aria-label="Retry loading users"
+      class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+    >
+      Retry
+    </button>
+  } @else if (users().length === 0) {
+    <div class="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+      <p class="text-gray-600 mb-4">No users found.</p>
+      <button
+        (click)="createUser()"
+        type="button"
+        aria-label="Add first user"
+        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+      >
+        Add First User
+      </button>
+    </div>
+  } @else {
+    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+      <table class="min-w-full divide-y divide-gray-200" role="table" aria-label="Users list">
+        <thead class="bg-gray-50">
+          <tr>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Name
+            </th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Email
+            </th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Created At
+            </th>
+            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          @for (user of formattedUsers(); track user.id) {
+            <tr class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                {{ user.name }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {{ user.email }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {{ user.formattedDate }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <button
+                  (click)="editUser(user.id)"
+                  type="button"
+                  [aria-label]="'Edit user ' + user.name"
+                  class="text-blue-600 hover:text-blue-900 mr-4"
+                >
+                  Edit
+                </button>
+                <button
+                  (click)="deleteUser(user.id)"
+                  type="button"
+                  [aria-label]="'Delete user ' + user.name"
+                  class="text-red-600 hover:text-red-900"
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
