@@ -40,7 +40,10 @@ export interface Artifact {
 }
 
 export interface Step {
-  description: string;
+  id?: string;
+  index?: number | null;
+  title?: string;
+  description?: string;
   state: StepState;
   artifacts?: Artifact[] | null;
 }
@@ -60,8 +63,8 @@ export interface PlanApprovedActivity {
 }
 
 export interface ProgressUpdatedActivity {
-  step_index: number;
-  step_state: StepState;
+  title?: string;
+  description?: string;
   artifacts?: Artifact[] | null;
 }
 

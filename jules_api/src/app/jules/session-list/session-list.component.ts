@@ -1,8 +1,9 @@
-import { Component, OnInit, signal, ChangeDetectionStrategy, inject, computed, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectionStrategy, inject, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { MatPaginatorModule, MatPaginator, PageEvent } from '@angular/material/paginator';
-import { JulesService } from '../../services/jules.service';
+import { FormsModule } from '@angular/forms';
+import { SessionCacheService, SortField } from '../../services/session-cache.service';
+import { ThemeService } from '../../services/theme.service';
 import { Session, SessionState } from '../../models/jules.model';
 
 interface FormattedSession extends Session {
@@ -13,42 +14,294 @@ interface FormattedSession extends Session {
 
 @Component({
   selector: 'app-session-list',
-  imports: [CommonModule, RouterModule, MatPaginatorModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './session-list.component.html',
-  styleUrl: './session-list.component.css'
-})
-export class SessionListComponent implements OnInit, AfterViewInit {
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  template: `
+    <div class="container mx-auto px-4 py-8">
+      <!-- Header -->
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Jules Sessions</h1>
+        <div class="flex gap-3">
+          <a
+            routerLink="/jules/settings"
+            class="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-semibold rounded-lg transition-colors"
+          >
+            ⚙️ Settings
+          </a>
+          <button
+            (click)="themeService.toggle()"
+            type="button"
+            aria-label="Toggle theme"
+            class="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+          >
+            @if (themeService.getTheme() === 'dark') {
+              ☀️
+            } @else {
+              🌙
+            }
+          </button>
+          <button
+            (click)="createSession()"
+            type="button"
+            aria-label="Create new session"
+            class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+          >
+            New Session
+          </button>
+        </div>
+      </div>
 
-  private julesService = inject(JulesService);
+      <!-- Filter Bar -->
+      <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Search -->
+          <div>
+            <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Search
+            </label>
+            <input
+              id="search"
+              type="text"
+              [(ngModel)]="searchInput"
+              (ngModelChange)="onSearchChange($event)"
+              placeholder="Search by title or prompt..."
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+
+          <!-- Status Filter -->
+          <div>
+            <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Status
+            </label>
+            <select
+              id="status"
+              [(ngModel)]="selectedStatus"
+              (ngModelChange)="onStatusChange($event)"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option [value]="null">All Statuses</option>
+              <option value="ACTIVE">Active</option>
+              <option value="COMPLETED">Completed</option>
+              <option value="FAILED">Failed</option>
+            </select>
+          </div>
+
+          <!-- Source Filter -->
+          <div>
+            <label for="source" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Source
+            </label>
+            <select
+              id="source"
+              [(ngModel)]="selectedSource"
+              (ngModelChange)="onSourceChange($event)"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option [value]="null">All Sources</option>
+              @for (source of cacheService.uniqueSources(); track source) {
+                <option [value]="source">{{ source }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Sort -->
+          <div>
+            <label for="sort" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Sort By
+            </label>
+            <div class="flex gap-2">
+              <select
+                id="sort"
+                [(ngModel)]="sortField"
+                (ngModelChange)="onSortFieldChange($event)"
+                class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="created_at">Created Date</option>
+                <option value="title">Title</option>
+                <option value="updated_at">Updated Date</option>
+              </select>
+              <button
+                (click)="toggleSortDirection()"
+                type="button"
+                aria-label="Toggle sort direction"
+                class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+              >
+                @if (cacheService.sortDirection() === 'asc') {
+                  ↑
+                } @else {
+                  ↓
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Clear Filters -->
+        @if (hasActiveFilters()) {
+          <div class="mt-4">
+            <button
+              (click)="clearFilters()"
+              type="button"
+              class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+            >
+              Clear all filters
+            </button>
+          </div>
+        }
+      </div>
+
+      <!-- Results Count -->
+      <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
+        Showing {{ cacheService.filteredCount() }} of {{ cacheService.totalCount() }} sessions
+      </div>
+
+      <!-- Loading State -->
+      @if (cacheService.loading() && cacheService.totalCount() === 0) {
+        <div class="flex justify-center items-center py-12" aria-busy="true" aria-live="polite">
+          <div class="text-gray-600 dark:text-gray-400">Loading sessions...</div>
+        </div>
+      }
+
+      <!-- Error State -->
+      @if (cacheService.error()) {
+        <div 
+          class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded mb-4"
+          role="alert"
+          aria-live="assertive"
+        >
+          {{ cacheService.error() }}
+        </div>
+        <button
+          (click)="cacheService.refresh()"
+          type="button"
+          aria-label="Retry loading sessions"
+          class="bg-gray-600 hover:bg-gray-700 dark:bg-gray-500 dark:hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+        >
+          Retry
+        </button>
+      }
+
+      <!-- Empty State -->
+      @if (!cacheService.loading() && cacheService.filteredCount() === 0 && cacheService.totalCount() === 0) {
+        <div class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-8 text-center">
+          <p class="text-gray-600 dark:text-gray-400 mb-4">No sessions found.</p>
+          <button
+            (click)="createSession()"
+            type="button"
+            aria-label="Create first session"
+            class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+          >
+            Create First Session
+          </button>
+        </div>
+      }
+
+      <!-- No Results After Filtering -->
+      @if (!cacheService.loading() && cacheService.filteredCount() === 0 && cacheService.totalCount() > 0) {
+        <div class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-8 text-center">
+          <p class="text-gray-600 dark:text-gray-400 mb-4">No sessions match your filters.</p>
+          <button
+            (click)="clearFilters()"
+            type="button"
+            class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+          >
+            Clear filters
+          </button>
+        </div>
+      }
+
+      <!-- Session Grid -->
+      @if (cacheService.filteredCount() > 0) {
+        <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden">
+          <div 
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 max-h-[600px] overflow-y-auto"
+          >
+            @for (session of formattedSessions(); track session.name) {
+              <div class="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:shadow-lg transition-shadow">
+                <div class="flex justify-between items-start mb-2">
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 flex-1">
+                    {{ session.display_name }}
+                  </h3>
+                  <span 
+                    [class]="'px-2 py-1 rounded-full text-xs font-medium ' + session.stateBadgeClass"
+                  >
+                    {{ getStateLabel(session.state) }}
+                  </span>
+                </div>
+                
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
+                  {{ session.prompt }}
+                </p>
+                
+                <div class="flex flex-wrap gap-2 text-xs text-gray-500 dark:text-gray-500 mb-3">
+                  <span>Source: {{ session.source }}</span>
+                  <span>Created: {{ session.formattedCreateTime }}</span>
+                </div>
+                
+                <div class="flex gap-2">
+                  <button
+                    (click)="viewSession(session.name)"
+                    type="button"
+                    [aria-label]="'View session ' + session.display_name"
+                    class="flex-1 text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 font-medium text-sm py-1 px-2 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                  >
+                    View
+                  </button>
+                  @if (session.state === 'ACTIVE') {
+                    <button
+                      (click)="sendMessage(session.name)"
+                      type="button"
+                      [aria-label]="'Send message to session ' + session.display_name"
+                      class="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 font-medium text-sm py-1 px-2 rounded hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
+                    >
+                      Message
+                    </button>
+                  }
+                  <button
+                    (click)="deleteSession(session.name)"
+                    type="button"
+                    [aria-label]="'Delete session ' + session.display_name"
+                    class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 font-medium text-sm py-1 px-2 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  `
+})
+export class SessionListComponent implements OnInit {
+  readonly cacheService = inject(SessionCacheService);
+  readonly themeService = inject(ThemeService);
   private router = inject(Router);
 
-  sessions = signal<Session[]>([]);
-  loading = signal<boolean>(false);
-  error = signal<string | null>(null);
-  nextPageToken = signal<string | null>(null);
-  
-  // Pagination state
-  pageSize = signal<number>(10);
-  currentPageIndex = signal<number>(0);
-  // Store tokens: tokens[i] = token used to get page i, nextTokens[i] = next_page_token from page i
-  pageTokens = signal<(string | null)[]>([]);
-  nextTokens = signal<(string | null)[]>([]);
-  currentPageSessions = signal<Session[]>([]); // Sessions for current page only
+  // Search input with debounce
+  searchInput = signal<string>('');
+  private searchDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
+  // Filter state
+  selectedStatus = signal<SessionState | null>(null);
+  selectedSource = signal<string | null>(null);
+  sortField = signal<SortField>('created_at');
+
+  // Formatted sessions for display
   formattedSessions = computed<FormattedSession[]>(() => {
-    return this.currentPageSessions().map(session => {
+    return this.cacheService.filteredSessions().map(session => {
       const createTime = new Date(session.create_time);
       const updateTime = new Date(session.update_time);
       
-      let stateBadgeClass = 'bg-gray-100 text-gray-800';
+      let stateBadgeClass = 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
       if (session.state === 'ACTIVE') {
-        stateBadgeClass = 'bg-blue-100 text-blue-800';
+        stateBadgeClass = 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200';
       } else if (session.state === 'COMPLETED') {
-        stateBadgeClass = 'bg-green-100 text-green-800';
+        stateBadgeClass = 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200';
       } else if (session.state === 'FAILED') {
-        stateBadgeClass = 'bg-red-100 text-red-800';
+        stateBadgeClass = 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200';
       }
 
       return {
@@ -60,147 +313,62 @@ export class SessionListComponent implements OnInit, AfterViewInit {
     });
   });
 
-  ngOnInit(): void {
-    this.loadSessions();
-  }
-
-  ngAfterViewInit(): void {
-    // Set initial paginator configuration
-    if (this.paginator) {
-      this.paginator.length = 10000; // Large number to enable next button
-      this.paginator.pageSizeOptions = [5, 10, 25, 50, 100];
-      this.paginator.pageIndex = 0;
-      this.paginator.pageSize = this.pageSize();
-    }
-  }
-
-  loadSessions(pageToken?: string | null): void {
-    this.loading.set(true);
-    this.error.set(null);
-
-    this.julesService.getSessions(this.pageSize(), pageToken || null).subscribe({
-      next: (response) => {
-        this.sessions.set(response.sessions);
-        this.currentPageSessions.set(response.sessions);
-        const nextToken = response.next_page_token || null;
-        this.nextPageToken.set(nextToken);
-        
-        const currentIndex = this.currentPageIndex();
-        const tokens = this.pageTokens();
-        const nexts = this.nextTokens();
-        
-        // Store the token used for this page and the next token from this page
-        if (tokens.length <= currentIndex) {
-          const newTokens = [...tokens];
-          const newNexts = [...nexts];
-          while (newTokens.length <= currentIndex) {
-            newTokens.push(null);
-            newNexts.push(null);
-          }
-          newTokens[currentIndex] = pageToken || null;
-          newNexts[currentIndex] = nextToken;
-          this.pageTokens.set(newTokens);
-          this.nextTokens.set(newNexts);
-        } else {
-          // Update next token for this page
-          const newNexts = [...nexts];
-          newNexts[currentIndex] = nextToken;
-          this.nextTokens.set(newNexts);
-        }
-        
-        // Update paginator length based on whether there are more pages
-        if (this.paginator) {
-          if (nextToken) {
-            // If there's a next page, keep length high to show next button
-            this.paginator.length = 10000;
-          } else {
-            // If no next page, set length to current position + page size
-            this.paginator.length = (currentIndex + 1) * this.pageSize();
-          }
-          // Update page index to match current state
-          this.paginator.pageIndex = currentIndex;
-        }
-        
-        this.loading.set(false);
-      },
-      error: (err) => {
-        this.error.set(err.message || 'Failed to load sessions');
-        this.loading.set(false);
+  constructor() {
+    // Initialize search input from filter
+    effect(() => {
+      const filter = this.cacheService.filter();
+      if (filter.search !== this.searchInput()) {
+        this.searchInput.set(filter.search || '');
       }
     });
   }
 
-  onPageChange(event: PageEvent): void {
-    const newPageIndex = event.pageIndex;
-    const currentPageIndex = this.currentPageIndex();
-    const pageSizeChanged = event.pageSize !== this.pageSize();
-
-    if (pageSizeChanged) {
-      // Reset to first page when page size changes
-      this.pageSize.set(event.pageSize);
-      this.currentPageIndex.set(0);
-      this.pageTokens.set([]);
-      this.nextTokens.set([]);
-      this.nextPageToken.set(null);
-      this.loadSessions(null);
-      return;
-    }
-
-    if (newPageIndex > currentPageIndex) {
-      // Going forward - navigate to next page
-      const nexts = this.nextTokens();
-      if (currentPageIndex < nexts.length && nexts[currentPageIndex]) {
-        // Use the stored next token from current page
-        this.currentPageIndex.set(newPageIndex);
-        this.loadSessions(nexts[currentPageIndex]);
-      } else if (this.nextPageToken()) {
-        // Fallback to current nextPageToken if not in array yet
-        this.currentPageIndex.set(newPageIndex);
-        this.loadSessions(this.nextPageToken());
-      }
-    } else if (newPageIndex < currentPageIndex) {
-      // Going backward - use stored token
-      const tokens = this.pageTokens();
-      const nexts = this.nextTokens();
-      if (newPageIndex < tokens.length) {
-        // Get the token for the target page
-        const tokenForPage = tokens[newPageIndex] || null;
-        this.currentPageIndex.set(newPageIndex);
-        // Restore the next token for this page if we have it stored
-        if (newPageIndex < nexts.length) {
-          this.nextPageToken.set(nexts[newPageIndex]);
-        } else {
-          this.nextPageToken.set(null);
-        }
-        this.loadSessions(tokenForPage);
-      } else if (newPageIndex === 0) {
-        // Going back to first page
-        this.currentPageIndex.set(0);
-        if (nexts.length > 0) {
-          this.nextPageToken.set(nexts[0]);
-        } else {
-          this.nextPageToken.set(null);
-        }
-        this.loadSessions(null);
-      }
-    }
+  ngOnInit(): void {
+    this.cacheService.loadAllSessions();
   }
 
-  deleteSession(sessionId: string): void {
-    if (confirm('Are you sure you want to delete this session?')) {
-      this.julesService.deleteSession(sessionId).subscribe({
-        next: () => {
-          // Reload current page to refresh data
-          const tokens = this.pageTokens();
-          const currentIndex = this.currentPageIndex();
-          const currentToken = currentIndex < tokens.length ? tokens[currentIndex] : null;
-          this.loadSessions(currentToken);
-        },
-        error: (err) => {
-          this.error.set(err.message || 'Failed to delete session');
-        }
-      });
+  onSearchChange(value: string): void {
+    this.searchInput.set(value);
+    
+    // Debounce search (300ms)
+    if (this.searchDebounceTimer) {
+      clearTimeout(this.searchDebounceTimer);
     }
+    
+    this.searchDebounceTimer = setTimeout(() => {
+      this.cacheService.setFilter({ search: value || undefined });
+    }, 300);
+  }
+
+  onStatusChange(status: SessionState | null): void {
+    this.selectedStatus.set(status);
+    this.cacheService.setFilter({ status: status || undefined });
+  }
+
+  onSourceChange(source: string | null): void {
+    this.selectedSource.set(source);
+    this.cacheService.setFilter({ source: source || undefined });
+  }
+
+  onSortFieldChange(field: SortField): void {
+    this.sortField.set(field);
+    this.cacheService.setSort(field, this.cacheService.sortDirection());
+  }
+
+  toggleSortDirection(): void {
+    this.cacheService.toggleSort(this.cacheService.sortField());
+  }
+
+  clearFilters(): void {
+    this.searchInput.set('');
+    this.selectedStatus.set(null);
+    this.selectedSource.set(null);
+    this.cacheService.clearFilter();
+  }
+
+  hasActiveFilters(): boolean {
+    const filter = this.cacheService.filter();
+    return !!(filter.search || filter.status || filter.source || filter.dateFrom || filter.dateTo);
   }
 
   createSession(): void {
@@ -208,14 +376,26 @@ export class SessionListComponent implements OnInit, AfterViewInit {
   }
 
   viewSession(sessionName: string): void {
-    // Extract ID from full name (format: sessions/{id})
     const id = sessionName.split('/').pop() || sessionName;
     this.router.navigate(['/jules', id]);
   }
 
+  sendMessage(sessionName: string): void {
+    const id = sessionName.split('/').pop() || sessionName;
+    this.router.navigate(['/jules', id], { queryParams: { action: 'message' } });
+  }
+
+  deleteSession(sessionId: string): void {
+    if (confirm('Are you sure you want to delete this session?')) {
+      // TODO: Implement delete via service
+      // After delete, refresh cache
+      this.cacheService.refresh();
+    }
+  }
+
   getStateLabel(state: SessionState): string {
     const labels: Record<SessionState, string> = {
-      'STATE_UNSPECIFIED': 'Unknown',
+      'STATE_UNSPECIFIED': 'Pending',
       'ACTIVE': 'Active',
       'COMPLETED': 'Completed',
       'FAILED': 'Failed'
@@ -223,4 +403,3 @@ export class SessionListComponent implements OnInit, AfterViewInit {
     return labels[state] || state;
   }
 }
-

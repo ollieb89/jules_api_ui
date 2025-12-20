@@ -12,7 +12,17 @@ class JulesApiClient:
     API_VERSION = "v1alpha"
 
     def __init__(self):
-        self.api_key = getattr(settings, "JULES_API_KEY", os.getenv("JULES_API_KEY"))
+        # Try to get API key from database settings first, then environment
+        try:
+            from .models import JulesSettings
+            settings_obj = JulesSettings.get_settings()
+            self.api_key = settings_obj.get_api_key()
+        except Exception:
+            self.api_key = None
+        
+        if not self.api_key:
+            self.api_key = getattr(settings, "JULES_API_KEY", os.getenv("JULES_API_KEY"))
+        
         if not self.api_key:
             raise ValueError("JULES_API_KEY must be set in settings or environment")
         self.headers = {

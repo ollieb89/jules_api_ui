@@ -132,5 +132,24 @@ export class JulesService {
     }
     return null;
   }
+
+  // Settings
+  getSettings(): Observable<{ api_key_configured: boolean; masked_api_key?: string | null; created_at: string; updated_at: string }> {
+    return this.http.get<{ api_key_configured: boolean; masked_api_key?: string | null; created_at: string; updated_at: string }>(`${this.apiUrl}/settings/`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  updateApiKey(apiKey: string): Observable<{ status: string; message: string; masked_api_key?: string }> {
+    return this.http.post<{ status: string; message: string; masked_api_key?: string }>(`${this.apiUrl}/settings/api-key/`, { api_key: apiKey }).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  testConnection(): Observable<{ status: string; message: string; api_key_configured: boolean; api_connectivity?: string; sources_count?: number; error?: string }> {
+    return this.http.post<{ status: string; message: string; api_key_configured: boolean; api_connectivity?: string; sources_count?: number; error?: string }>(`${this.apiUrl}/settings/test/`, {}).pipe(
+      catchError(this.handleError)
+    );
+  }
 }
 

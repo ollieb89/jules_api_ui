@@ -1,17 +1,15 @@
-<div class="mt-4 border-t border-gray-200 pt-4">
+<div class="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
   <div class="mb-4">
-    <div class="flex justify-between items-center mb-2">
-      <h4 class="font-semibold text-gray-900">Plan Steps</h4>
-      <span 
-        [class]="'px-2 py-1 rounded-full text-xs font-medium ' + getPlanStateClass(plan.state)"
-      >
-        {{ plan.state }}
-      </span>
+    <div class="flex justify-between items-center mb-3">
+      <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 m-0">Plan Steps</h4>
+      <mat-chip [color]="getPlanStateColor(plan.state)">
+        {{ getPlanStateLabel(plan.state) }}
+      </mat-chip>
     </div>
     
     @if (error()) {
       <div 
-        class="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded text-sm mt-2"
+        class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-3 py-2 rounded text-sm mt-2"
         role="alert"
       >
         {{ error() }}
@@ -19,38 +17,40 @@
     }
   </div>
 
-  <ol class="list-decimal list-inside space-y-3 mb-4">
+  <ol class="list-decimal list-inside space-y-2 mb-4 pl-2">
     @for (step of plan.steps; track $index) {
-      <li class="text-sm text-gray-700">
-        <div class="flex items-center gap-2">
-          <span>{{ step.description }}</span>
-          <span 
-            [class]="'px-2 py-1 rounded-full text-xs font-medium ' + getStepStateClass(step.state)"
-          >
-            {{ getStepStateLabel(step.state) }}
-          </span>
-        </div>
+      <li class="text-base text-gray-900 dark:text-gray-100 leading-relaxed">
+        <span class="inline-block mr-2">{{ step.title || step.description || 'Step ' + ($index + 1) }}</span>
+        <mat-chip [color]="getStepStateColor(step.state)" class="!ml-2">
+          {{ getStepStateLabel(step.state) }}
+        </mat-chip>
       </li>
     }
   </ol>
 
   @if (canApprove()) {
     <button
+      mat-raised-button
+      color="primary"
       (click)="approvePlan()"
-      type="button"
       [disabled]="approving()"
       aria-label="Approve plan"
-      class="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+      class="w-full"
     >
       @if (approving()) {
+        <mat-icon class="mr-2">hourglass_empty</mat-icon>
         Approving...
       } @else {
+        <mat-icon class="mr-2">check_circle</mat-icon>
         Approve Plan
       }
     </button>
   } @else if (plan.state === 'APPROVED') {
-    <div class="text-sm text-green-600 font-medium text-center">
-      Plan has been approved
+    <div class="text-center py-3">
+      <mat-icon class="text-green-600 dark:text-green-400 mr-2 align-middle">check_circle</mat-icon>
+      <span class="text-base text-green-600 dark:text-green-400 font-medium">
+        Plan has been approved
+      </span>
     </div>
   }
 </div>

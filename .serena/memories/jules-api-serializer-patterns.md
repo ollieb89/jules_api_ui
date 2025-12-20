@@ -1,47 +1,58 @@
-# Jules API Serializer Patterns - CamelCase Handling
+# Jules API Serializer Patterns
 
-## Pattern: DRF Serializer with CamelCase API
+## Core Principles
+1. **API Structure Alignment**: Serializers must match Jules API structure exactly
+2. **CamelCase Normalization**: Handle both camelCase (from API) and snake_case (internal)
+3. **State Validation**: Always validate and default states to prevent invalid values
+4. **Title/Description Fallback**: Use title as primary, fallback to description
 
-When integrating APIs that return camelCase (like Google Jules API) with Django REST Framework that uses snake_case:
-
-### 1. Use `source` Parameter
+## Step Structure (Jules API)
 ```python
-display_name = serializers.CharField(source="displayName")
-create_time = serializers.CharField(source="createTime")
+{
+  "id": "string",
+  "index": integer,
+  "title": "string",  # Primary display text
+  "description": "string",  # Detailed description
+  "state": "STATE_UNSPECIFIED" | "PENDING" | "IN_PROGRESS" | "COMPLETED" | "FAILED",
+  "artifacts": [...]
+}
 ```
 
-### 2. Override `to_internal_value()`
-```python
-def to_internal_value(self, data):
-    """Handle camelCase from API response."""
-    if isinstance(data, dict):
-        normalized = {
-            "name": data.get("name", ""),
-            "displayName": data.get("displayName", data.get("display_name", "")),
-            "createTime": data.get("createTime", data.get("create_time", "")),
-        }
-        return normalized
-    return super().to_internal_value(data)
-```
+## Serializer Implementation Pattern
 
-### 3. Always Use `data=` Parameter in Views
-```python
-# ✅ CORRECT
-serializer = SessionSerializer(data=sessions, many=True)
-serializer.is_valid(raise_exception=True)
+### StepSerializer
+- Fields: `id`, `index`, `title`, `description`, `state`, `artifacts`
+- `to_internal_value`: Normalize camelCase, provide defaults
+- `to_representation`: Validate states, use title with description fallback
+- State validation: Always ensure valid enum values, default to "STATE_UNSPECIFIED"
 
-# ❌ WRONG - doesn't trigger to_internal_value
-serializer = SessionSerializer(sessions, many=True)
-```
+### ProgressUpdatedActivitySerializer
+- Fields: `title`, `description`, `artifacts` (NOT `step_index`/`step_state`)
+- Matches API structure exactly
 
-### 4. Handle Both Formats
-The `to_internal_value` should handle both camelCase (from API) and snake_case (fallback) to be robust.
+### PlanSerializer
+- Fields: `steps` (array of StepSerializer), `state`
+- Validates both plan state and all step states
+- Filters invalid step entries
 
-## Key Files
-- `jules_backend/jules/serializers.py` - All serializers with camelCase handling
-- `jules_backend/jules/views.py` - Views using `data=` parameter
+## Frontend Display Patterns
 
-## Common Issues
-- **KeyError**: Forgot to use `data=` parameter → serializer doesn't normalize
-- **Empty fields**: `to_internal_value` not called → fields remain empty
-- **Type errors**: Missing `is_valid()` call → validation not performed
+### State Labels
+- `STATE_UNSPECIFIED` → Display as "Unspecified" (NOT "Unknown")
+- Consistent across all components
+
+### Step Display
+- Primary: `step.title`
+- Fallback: `step.description`
+- Final fallback: `'Step ' + (index + 1)`
+
+### UI Format
+- Clean numbered lists: `<ol class="list-decimal list-inside">`
+- Material chips for state indicators
+- Inline state chips after step text
+
+## Common Issues Fixed
+1. KeyError on missing fields → Added proper defaults in `to_internal_value`
+2. "Unknown" states → Changed to "Unspecified" with proper validation
+3. Missing title field → Added to models and serializers
+4. Inconsistent formatting → Added `to_representation` methods

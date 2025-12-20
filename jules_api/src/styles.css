@@ -2,3 +2,59 @@
 
 @import "tailwindcss";
 @import '@angular/material/prebuilt-themes/indigo-pink.css';
+
+/* Dark mode CSS variables */
+:root {
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f9fafb;
+  --color-bg-tertiary: #f3f4f6;
+  --color-text-primary: #111827;
+  --color-text-secondary: #6b7280;
+  --color-text-tertiary: #9ca3af;
+  --color-border: #e5e7eb;
+  --color-border-hover: #d1d5db;
+}
+
+.dark {
+  --color-bg-primary: #111827;
+  --color-bg-secondary: #1f2937;
+  --color-bg-tertiary: #374151;
+  --color-text-primary: #f9fafb;
+  --color-text-secondary: #d1d5db;
+  --color-text-tertiary: #9ca3af;
+  --color-border: #374151;
+  --color-border-hover: #4b5563;
+}
+
+/* Apply theme colors to body */
+body {
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Diff highlighting styles */
+.diff-container {
+  @apply rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600;
+}
+
+.diff-line {
+  @apply px-4 py-1 font-mono text-sm;
+  display: block;
+}
+
+.diff-line-add {
+  @apply bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200;
+}
+
+.diff-line-remove {
+  @apply bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200;
+}
+
+.diff-line-context {
+  @apply bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300;
+}
+
+.diff-line-header {
+  @apply bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 font-semibold;
+}

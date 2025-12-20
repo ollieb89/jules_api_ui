@@ -4,6 +4,7 @@ import { UserFormComponent } from './components/user-form/user-form.component';
 import { SessionListComponent } from './jules/session-list/session-list.component';
 import { SessionCreateComponent } from './jules/session-create/session-create.component';
 import { SessionDetailComponent } from './jules/session-detail/session-detail.component';
+import { SettingsComponent } from './jules/settings/settings.component';
 
 export const routes: Routes = [
   {
@@ -34,5 +35,9 @@ export const routes: Routes = [
   {
     path: 'jules/:id',
     component: SessionDetailComponent
+  },
+  {
+    path: 'jules/settings',
+    component: SettingsComponent
   }
 ];

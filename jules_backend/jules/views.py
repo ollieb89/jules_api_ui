@@ -4,12 +4,15 @@ from rest_framework.response import Response
 
 from .serializers import (
     ActivitySerializer,
+    ApiKeyUpdateSerializer,
     ApprovePlanSerializer,
+    JulesSettingsSerializer,
     SendMessageSerializer,
     SessionCreateSerializer,
     SessionSerializer,
     SourceSerializer,
 )
+from .models import JulesSettings
 from .services import JulesApiClient
 
 
@@ -187,6 +190,97 @@ class JulesHealthViewSet(viewsets.ViewSet):
             return Response(
                 {
                     "status": "error",
+                    "api_key_configured": True,
+                    "api_connectivity": "failed",
+                    "error": str(e),
+                },
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
+
+class SettingsViewSet(viewsets.ViewSet):
+    """ViewSet for managing Jules settings (API key configuration)."""
+
+    def list(self, request):  # noqa: ARG002
+        """Get current settings (masked API key)."""
+        settings = JulesSettings.get_settings()
+        serializer = JulesSettingsSerializer({
+            "api_key_configured": bool(settings.get_api_key()),
+            "masked_api_key": settings.get_masked_api_key(),
+            "created_at": settings.created_at,
+            "updated_at": settings.updated_at,
+        })
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["post"], url_path="api-key")
+    def update_api_key(self, request):
+        """Update the API key."""
+        serializer = ApiKeyUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        settings = JulesSettings.get_settings()
+        try:
+            settings.set_api_key(serializer.validated_data["api_key"])
+            settings.save()
+            
+            return Response(
+                {
+                    "status": "success",
+                    "message": "API key updated successfully",
+                    "masked_api_key": settings.get_masked_api_key(),
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    @action(detail=False, methods=["post"], url_path="test")
+    def test_connection(self, request):  # noqa: ARG002
+        """Test API connection with current settings."""
+        settings = JulesSettings.get_settings()
+        api_key = settings.get_api_key()
+        
+        if not api_key:
+            return Response(
+                {
+                    "status": "error",
+                    "message": "API key not configured",
+                    "api_key_configured": False,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        try:
+            client = JulesApiClient()
+            # Test by listing sources (lightweight call)
+            data = client.list_sources()
+            return Response(
+                {
+                    "status": "success",
+                    "message": "Connection successful",
+                    "api_key_configured": True,
+                    "api_connectivity": "ok",
+                    "sources_count": len(data.get("sources", [])),
+                },
+                status=status.HTTP_200_OK,
+            )
+        except ValueError as e:
+            return Response(
+                {
+                    "status": "error",
+                    "message": "API key is invalid or not configured",
+                    "api_key_configured": False,
+                    "error": str(e),
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except Exception as e:
+            return Response(
+                {
+                    "status": "error",
+                    "message": "Connection failed",
                     "api_key_configured": True,
                     "api_connectivity": "failed",
                     "error": str(e),

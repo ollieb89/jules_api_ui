@@ -1,19 +1,23 @@
 import { Component, Input, signal, ChangeDetectionStrategy, inject, computed, OnInit, ViewChild, AfterViewInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { MatPaginatorModule, MatPaginator, PageEvent } from '@angular/material/paginator';
 import { JulesService } from '../../services/jules.service';
 import { Activity } from '../../models/jules.model';
 import { PlanApprovalComponent } from '../plan-approval/plan-approval.component';
 
+type ActivityOriginator = 'all' | 'agent' | 'user';
+
 interface FormattedActivity extends Activity {
   formattedTime: string;
   activityType: string;
   description: string;
+  originator: 'agent' | 'user';
 }
 
 @Component({
   selector: 'app-activity-timeline',
-  imports: [CommonModule, PlanApprovalComponent, MatPaginatorModule],
+  imports: [CommonModule, FormsModule, PlanApprovalComponent, MatPaginatorModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './activity-timeline.component.html',
   styleUrl: './activity-timeline.component.css'
@@ -36,35 +40,51 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
   pageTokens = signal<(string | null)[]>([]);
   nextTokens = signal<(string | null)[]>([]);
   currentPageActivities = signal<Activity[]>([]);
+  
+  // Originator filter
+  originatorFilter = signal<ActivityOriginator>('all');
 
   formattedActivities = computed<FormattedActivity[]>(() => {
-    return this.currentPageActivities().map(activity => {
+    const activities = this.currentPageActivities().map(activity => {
       const time = new Date(activity.create_time);
-      let activityType = 'Unknown';
+      let activityType = this.parseActivityType(activity);
       let description = '';
+      let originator: 'agent' | 'user' = 'agent';
 
       if (activity.plan_generated) {
         activityType = 'Plan Generated';
         description = `Plan with ${activity.plan_generated.plan.steps.length} steps`;
+        originator = 'agent';
       } else if (activity.plan_approved) {
         activityType = 'Plan Approved';
         description = 'Plan has been approved';
+        originator = 'user';
       } else if (activity.progress_updated) {
         activityType = 'Progress Updated';
         const step = activity.progress_updated;
-        description = `Step ${step.step_index + 1}: ${step.step_state}`;
+        description = step.title || step.description || 'Progress updated';
+        originator = 'agent';
       } else if (activity.session_completed) {
         activityType = 'Session Completed';
         description = 'Session has been completed';
+        originator = 'agent';
       }
 
       return {
         ...activity,
         formattedTime: time.toLocaleString(),
         activityType,
-        description
+        description,
+        originator
       };
     });
+    
+    // Apply originator filter
+    const filter = this.originatorFilter();
+    if (filter === 'all') {
+      return activities;
+    }
+    return activities.filter(activity => activity.originator === filter);
   });
 
   ngOnInit(): void {
@@ -200,15 +220,37 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
 
   getActivityIconClass(activity: FormattedActivity): string {
     if (activity.plan_generated) {
-      return 'bg-blue-100 text-blue-600';
+      return 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400';
     } else if (activity.plan_approved) {
-      return 'bg-green-100 text-green-600';
+      return 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400';
     } else if (activity.progress_updated) {
-      return 'bg-yellow-100 text-yellow-600';
+      return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400';
     } else if (activity.session_completed) {
-      return 'bg-purple-100 text-purple-600';
+      return 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400';
     }
-    return 'bg-gray-100 text-gray-600';
+    return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400';
+  }
+  
+  getOriginatorBadgeClass(originator: 'agent' | 'user'): string {
+    if (originator === 'agent') {
+      return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200';
+    }
+    return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200';
+  }
+
+  private parseActivityType(activity: Activity): string {
+    if (activity.plan_generated) return 'Plan Generated';
+    if (activity.plan_approved) return 'Plan Approved';
+    if (activity.progress_updated) return 'Progress Updated';
+    if (activity.session_completed) return 'Session Completed';
+    
+    // Parse from activity.name as fallback
+    const name = activity.name || '';
+    const parts = name.split('/');
+    const activityId = parts[parts.length - 1] || '';
+    
+    // Return capitalized activity ID or generic label
+    return activityId ? `Activity ${activityId.substring(0, 8)}` : 'Activity';
   }
 }
 
