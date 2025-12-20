@@ -17,16 +17,16 @@
     }
   </div>
 
-  <ol class="list-decimal list-inside space-y-2 mb-4 pl-2">
+  <ul class="list-disc space-y-2 mb-4 pl-5">
     @for (step of plan.steps; track $index) {
-      <li class="text-base text-gray-900 dark:text-gray-100 leading-relaxed">
-        <span class="inline-block mr-2">{{ step.title || step.description || 'Step ' + ($index + 1) }}</span>
-        <mat-chip [color]="getStepStateColor(step.state)" class="!ml-2">
+      <li class="text-base text-gray-900 dark:text-gray-100 leading-relaxed flex justify-between items-start gap-2">
+        <span class="flex-1">{{ step.title || step.description || 'Step ' + ($index + 1) }}</span>
+        <mat-chip [color]="getStepStateColor(step.state)" class="flex-shrink-0 align-top">
           {{ getStepStateLabel(step.state) }}
         </mat-chip>
       </li>
     }
-  </ol>
+  </ul>
 
   @if (canApprove()) {
     <button

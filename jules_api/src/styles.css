@@ -58,3 +58,105 @@ body {
 .diff-line-header {
   @apply bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 font-semibold;
 }
+
+/* GitHub-style code blocks */
+/* Inline code - keep inline styling */
+code:not(pre code):not([class*="language-"]) {
+  @apply bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-1.5 py-0.5 rounded text-sm font-mono;
+  display: inline;
+}
+
+/* Code blocks (fenced code blocks) - GitHub style */
+pre,
+.prose pre,
+markdown pre {
+  @apply bg-gray-50 dark:bg-gray-900 rounded-lg;
+  display: block !important;
+  text-align: left !important;
+  margin: 1em 0;
+  border: 1px solid rgba(0, 0, 0, 1) !important;
+  padding: 10px !important;
+  overflow-x: auto;
+  overflow-y: visible;
+  white-space: pre;
+}
+
+.dark pre,
+.dark .prose pre,
+.dark markdown pre {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Standalone code elements with language classes (should be wrapped in pre, but handle if not) */
+code[class*="language-"]:not(pre code) {
+  @apply bg-gray-50 dark:bg-gray-900 rounded-lg;
+  display: block !important;
+  text-align: left !important;
+  margin: 1em 0;
+  border: 1px solid rgba(0, 0, 0, 1) !important;
+  padding: 10px !important;
+  overflow-x: auto;
+  white-space: pre;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+.dark code[class*="language-"]:not(pre code) {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Code inside pre blocks - should NOT have border, padding, margin, or display: grid */
+pre code,
+.prose pre code,
+markdown pre code,
+pre code[class*="language-"],
+.prose pre code[class*="language-"],
+markdown pre code[class*="language-"] {
+  @apply bg-transparent text-gray-900 dark:text-gray-100;
+  display: block !important;
+  text-align: left !important;
+  border: none !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  border-color: transparent !important;
+  padding: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  /* Override flex/grid properties that might be applied by syntax highlighters */
+  flex-direction: row !important;
+  flex-flow: row nowrap !important;
+  grid-template-columns: none !important;
+  grid-template-rows: none !important;
+  grid-auto-flow: row !important;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  white-space: pre;
+  overflow: visible;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Markdown heading styles */
+markdown h2,
+.prose h2,
+markdown h2[data-cursor-element-id] {
+  font-size: 17px !important;
+  font-weight: 900 !important;
+  color: rgba(205, 35, 103, 1) !important;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+}
+
+/* Ensure "Task:" text is bold in markdown */
+markdown h2 strong,
+markdown h2 **,
+.prose h2 strong {
+  font-weight: 900 !important;
+}

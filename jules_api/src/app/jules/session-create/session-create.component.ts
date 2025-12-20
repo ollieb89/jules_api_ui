@@ -65,7 +65,7 @@ type WizardStep = 1 | 2 | 3;
 
       <!-- Step 1: Select Source -->
       @if (currentStep() === 1) {
-        <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
+        <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6" [formGroup]="form">
           <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Select GitHub Repository</h2>
           
           @if (loadingSources()) {
@@ -78,11 +78,13 @@ type WizardStep = 1 | 2 | 3;
             <div class="mb-6">
               <label for="source" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Repository <span class="text-red-500">*</span>
+                <span class="text-xs text-gray-500 dark:text-gray-400 ml-2">({{ sources().length }} available)</span>
               </label>
               <select
                 id="source"
                 formControlName="source"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                style="color-scheme: light dark;"
                 [class.border-red-500]="source?.invalid && source?.touched"
               >
                 <option value="">Select a repository</option>
@@ -134,7 +136,7 @@ type WizardStep = 1 | 2 | 3;
 
       <!-- Step 2: Configure -->
       @if (currentStep() === 2) {
-        <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
+        <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6" [formGroup]="form">
           <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Configure Session</h2>
           
           <div class="mb-6">
@@ -279,10 +281,12 @@ export class SessionCreateComponent {
     this.loadingSources.set(true);
     this.julesService.getSources().subscribe({
       next: (response) => {
+        console.log('Sources loaded:', response.sources);
         this.sources.set(response.sources);
         this.loadingSources.set(false);
       },
       error: (err) => {
+        console.error('Error loading sources:', err);
         this.error.set(err.message || 'Failed to load sources');
         this.loadingSources.set(false);
       }

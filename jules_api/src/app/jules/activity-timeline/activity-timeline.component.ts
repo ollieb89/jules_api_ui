@@ -24,6 +24,7 @@ interface FormattedActivity extends Activity {
 })
 export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewInit {
   @Input({ required: true }) sessionId!: string;
+  @Input() showPagination: boolean = true;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   
   private julesService = inject(JulesService);

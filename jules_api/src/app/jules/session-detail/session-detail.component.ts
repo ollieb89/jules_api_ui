@@ -7,6 +7,7 @@ import { MarkdownComponent } from 'ngx-markdown';
 import { JulesService } from '../../services/jules.service';
 import { Session, SessionState } from '../../models/jules.model';
 import { ActivityTimelineComponent } from '../activity-timeline/activity-timeline.component';
+import { CodeBlockStyleDirective } from '../../directives/code-block-style.directive';
 
 interface PRInfo {
   url?: string;
@@ -16,7 +17,7 @@ interface PRInfo {
 
 @Component({
   selector: 'app-session-detail',
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, ActivityTimelineComponent, MarkdownComponent],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, ActivityTimelineComponent, MarkdownComponent, CodeBlockStyleDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './session-detail.component.html',
   styleUrl: './session-detail.component.css'
@@ -207,6 +208,35 @@ export class SessionDetailComponent implements OnInit {
 
   formatDate(dateString: string): string {
     return new Date(dateString).toLocaleString();
+  }
+
+  formatPrompt(prompt: string): string {
+    if (!prompt) return prompt;
+    
+    let formatted = prompt;
+    
+    // Make "Task:" bold at the start of lines (handle both "Task:" and "**Task:**")
+    formatted = formatted.replace(/^(\*\*)?Task:(\*\*)?/gm, '**Task:**');
+    
+    // Add newline after "Details:" if it exists
+    formatted = formatted.replace(/Details:\s*/g, 'Details:\n\n');
+    
+    // Make "File:", "Description:", and "Language:" bold in list items
+    // Match patterns like "- File: ..." or "* File: ..." or just "File: ..." in list items
+    formatted = formatted.replace(/^(\s*[-*]\s*)(File:)/gm, '$1**$2**');
+    formatted = formatted.replace(/^(\s*[-*]\s*)(Description:)/gm, '$1**$2**');
+    formatted = formatted.replace(/^(\s*[-*]\s*)(Language:)/gm, '$1**$2**');
+    
+    // Clean up orphaned ** markers (standalone ** on their own line or in empty paragraphs)
+    // Remove lines that are just ** or whitespace + **
+    formatted = formatted.replace(/^\s*\*\*\s*$/gm, '');
+    // Remove ** that appear alone between newlines
+    formatted = formatted.replace(/\n\s*\*\*\s*\n/g, '\n');
+    // Remove ** at the start or end of lines with nothing else
+    formatted = formatted.replace(/^\*\*\s+/gm, '');
+    formatted = formatted.replace(/\s+\*\*$/gm, '');
+    
+    return formatted;
   }
 
   get message() {

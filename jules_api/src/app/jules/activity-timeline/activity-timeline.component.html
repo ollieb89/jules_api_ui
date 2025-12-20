@@ -1,6 +1,5 @@
 <div class="mb-6">
   <div class="flex justify-between items-center mb-4">
-    <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Activity Timeline</h2>
     <div class="flex items-center gap-2">
       <label for="originator-filter" class="text-sm font-medium text-gray-700 dark:text-gray-300">
         Filter:
@@ -90,19 +89,21 @@
         }
       </div>
       
-      <div class="mt-6">
-        <mat-paginator
-          [pageSize]="pageSize()"
-          [pageIndex]="currentPageIndex()"
-          [length]="10000"
-          [pageSizeOptions]="[5, 10, 25, 50, 100]"
-          [hidePageSize]="false"
-          [showFirstLastButtons]="true"
-          (page)="onPageChange($event)"
-          [disabled]="loading()"
-          aria-label="Activities pagination"
-        ></mat-paginator>
-      </div>
+      @if (showPagination) {
+        <div class="mt-6">
+          <mat-paginator
+            [pageSize]="pageSize()"
+            [pageIndex]="currentPageIndex()"
+            [length]="10000"
+            [pageSizeOptions]="[5, 10, 25, 50, 100]"
+            [hidePageSize]="false"
+            [showFirstLastButtons]="true"
+            (page)="onPageChange($event)"
+            [disabled]="loading()"
+            aria-label="Activities pagination"
+          ></mat-paginator>
+        </div>
+      }
     </div>
   }
 </div>
