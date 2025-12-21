@@ -385,11 +385,14 @@ export class SessionListComponent implements OnInit {
     this.router.navigate(['/jules', id], { queryParams: { action: 'message' } });
   }
 
-  deleteSession(sessionId: string): void {
+  deleteSession(sessionName: string): void {
     if (confirm('Are you sure you want to delete this session?')) {
-      // TODO: Implement delete via service
-      // After delete, refresh cache
-      this.cacheService.refresh();
+      const id = sessionName.split('/').pop() || sessionName;
+      this.cacheService.deleteSession(id).subscribe({
+        error: (err) => {
+          alert('Failed to delete session: ' + (err.message || 'Unknown error'));
+        }
+      });
     }
   }
 

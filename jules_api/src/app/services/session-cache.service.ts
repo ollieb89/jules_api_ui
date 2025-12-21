@@ -1,4 +1,6 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
+import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { JulesService } from './jules.service';
 import { Session, SessionState } from '../models/jules.model';
 
@@ -159,6 +161,22 @@ export class SessionCacheService {
    */
   refresh(): void {
     this.loadAllSessions();
+  }
+
+  /**
+   * Delete a session and update the cache
+   */
+  deleteSession(sessionId: string): Observable<void> {
+    return this.julesService.deleteSession(sessionId).pipe(
+      tap(() => {
+        this.sessions.update(current =>
+          current.filter(s => {
+            const id = s.name.split('/').pop() || s.name;
+            return id !== sessionId;
+          })
+        );
+      })
+    );
   }
   
   /**
