@@ -13,6 +13,8 @@ interface FormattedActivity extends Activity {
   activityType: string;
   description: string;
   originator: 'agent' | 'user';
+  iconClass: string;
+  originatorBadgeClass: string;
 }
 
 @Component({
@@ -51,32 +53,43 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
       let activityType = this.parseActivityType(activity);
       let description = '';
       let originator: 'agent' | 'user' = 'agent';
+      let iconClass = 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400';
 
       if (activity.plan_generated) {
         activityType = 'Plan Generated';
         description = `Plan with ${activity.plan_generated.plan.steps.length} steps`;
         originator = 'agent';
+        iconClass = 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400';
       } else if (activity.plan_approved) {
         activityType = 'Plan Approved';
         description = 'Plan has been approved';
         originator = 'user';
+        iconClass = 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400';
       } else if (activity.progress_updated) {
         activityType = 'Progress Updated';
         const step = activity.progress_updated;
         description = step.title || step.description || 'Progress updated';
         originator = 'agent';
+        iconClass = 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400';
       } else if (activity.session_completed) {
         activityType = 'Session Completed';
         description = 'Session has been completed';
         originator = 'agent';
+        iconClass = 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400';
       }
+
+      const originatorBadgeClass = originator === 'agent'
+        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200'
+        : 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200';
 
       return {
         ...activity,
         formattedTime: time.toLocaleString(),
         activityType,
         description,
-        originator
+        originator,
+        iconClass,
+        originatorBadgeClass
       };
     });
     
@@ -219,26 +232,6 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
     }
   }
 
-  getActivityIconClass(activity: FormattedActivity): string {
-    if (activity.plan_generated) {
-      return 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400';
-    } else if (activity.plan_approved) {
-      return 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400';
-    } else if (activity.progress_updated) {
-      return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400';
-    } else if (activity.session_completed) {
-      return 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400';
-    }
-    return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400';
-  }
-  
-  getOriginatorBadgeClass(originator: 'agent' | 'user'): string {
-    if (originator === 'agent') {
-      return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200';
-    }
-    return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200';
-  }
-
   private parseActivityType(activity: Activity): string {
     if (activity.plan_generated) return 'Plan Generated';
     if (activity.plan_approved) return 'Plan Approved';
@@ -254,4 +247,3 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
     return activityId ? `Activity ${activityId.substring(0, 8)}` : 'Activity';
   }
 }
-

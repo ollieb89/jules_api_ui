@@ -53,7 +53,7 @@
         @for (activity of formattedActivities(); track activity.name) {
           <div class="relative flex gap-4">
             <div 
-              [class]="'flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ' + getActivityIconClass(activity)"
+              [class]="'flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ' + activity.iconClass"
             >
               @if (activity.plan_generated) {
                 📋
@@ -72,7 +72,7 @@
                 <div class="flex items-center gap-2">
                   <h3 class="font-semibold text-gray-900 dark:text-gray-100">{{ activity.activityType }}</h3>
                   <span 
-                    [class]="'px-2 py-0.5 rounded-full text-xs font-medium ' + getOriginatorBadgeClass(activity.originator)"
+                    [class]="'px-2 py-0.5 rounded-full text-xs font-medium ' + activity.originatorBadgeClass"
                   >
                     {{ activity.originator === 'agent' ? 'Agent' : 'User' }}
                   </span>
@@ -107,4 +107,3 @@
     </div>
   }
 </div>
-
