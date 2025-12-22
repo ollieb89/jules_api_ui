@@ -13,7 +13,7 @@ def api_client():
 @pytest.fixture
 def mock_jules_client():
     """Mock JulesApiClient for testing."""
-    with patch("jules.services.JulesApiClient") as mock_client_class:
+    with patch("jules.views.JulesApiClient") as mock_client_class:
         mock_client = Mock()
         mock_client_class.return_value = mock_client
         yield mock_client
@@ -179,4 +179,3 @@ class TestSessionViewSet:
         assert response.status_code == status.HTTP_200_OK
         assert "activities" in response.data
         assert len(response.data["activities"]) == 1
-
