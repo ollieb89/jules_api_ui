@@ -60,14 +60,26 @@ interface FormattedSession extends Session {
             <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Search
             </label>
-            <input
-              id="search"
-              type="text"
-              [(ngModel)]="searchInput"
-              (ngModelChange)="onSearchChange($event)"
-              placeholder="Search by title or prompt..."
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
+            <div class="relative">
+              <input
+                id="search"
+                type="text"
+                [(ngModel)]="searchInput"
+                (ngModelChange)="onSearchChange($event)"
+                placeholder="Search by title or prompt..."
+                class="w-full pl-3 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+              @if (searchInput()) {
+                <button
+                  (click)="onSearchChange('')"
+                  type="button"
+                  aria-label="Clear search"
+                  class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                >
+                  <span aria-hidden="true">✕</span>
+                </button>
+              }
+            </div>
           </div>
 
           <!-- Status Filter -->
