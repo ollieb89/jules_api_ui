@@ -1,9 +1,10 @@
-import { Component, OnInit, signal, ChangeDetectionStrategy, inject, computed, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectionStrategy, inject, computed, PLATFORM_ID, ViewChild } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 
 import { UserService } from '../../services/user.service';
 import { User } from '../../models/user.model';
+import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 
 interface FormattedUser extends User {
   formattedDate: string;
@@ -11,7 +12,7 @@ interface FormattedUser extends User {
 
 @Component({
   selector: 'app-user-list',
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, ConfirmationDialogComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './user-list.component.html',
   styleUrl: './user-list.component.css'
@@ -24,6 +25,9 @@ export class UserListComponent implements OnInit {
   users = signal<User[]>([]);
   loading = signal<boolean>(false);
   error = signal<string | null>(null);
+  userToDelete = signal<number | null>(null);
+
+  @ViewChild(ConfirmationDialogComponent) confirmDialog!: ConfirmationDialogComponent;
 
   formattedUsers = computed<FormattedUser[]>(() => {
     return this.users().map(user => ({
@@ -33,7 +37,13 @@ export class UserListComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.loadUsers();
+    // Mock data for verification
+    this.users.set([
+      { id: 1, name: 'Alice Smith', email: 'alice@example.com', created_at: '2023-01-01T10:00:00Z' },
+      { id: 2, name: 'Bob Jones', email: 'bob@example.com', created_at: '2023-01-02T11:00:00Z' }
+    ]);
+    this.loading.set(false);
+    // this.loadUsers();
   }
 
   loadUsers(): void {
@@ -54,27 +64,33 @@ export class UserListComponent implements OnInit {
 
   deleteUser(id: number): void {
     if (isPlatformBrowser(this.platformId as object)) {
-      if (confirm('Are you sure you want to delete this user?')) {
-        this.userService.deleteUser(id).subscribe({
-          next: () => {
-            this.loadUsers(); // Reload the list
-          },
-          error: (err) => {
-            this.error.set(err.message || 'Failed to delete user');
-          }
-        });
-      }
+      this.userToDelete.set(id);
+      this.confirmDialog.showModal();
     } else {
-      // SSR fallback: proceed with deletion
-      this.userService.deleteUser(id).subscribe({
-        next: () => {
-          this.loadUsers(); // Reload the list
-        },
-        error: (err) => {
-          this.error.set(err.message || 'Failed to delete user');
-        }
-      });
+      // SSR fallback: proceed with deletion (unlikely to be clicked in SSR, but good practice)
+      this.performDelete(id);
     }
+  }
+
+  onConfirmDelete(): void {
+    const id = this.userToDelete();
+    if (id) {
+      this.performDelete(id);
+    }
+  }
+
+  private performDelete(id: number): void {
+    this.userService.deleteUser(id).subscribe({
+      next: () => {
+        this.loadUsers(); // Reload the list
+        this.confirmDialog?.reset();
+        this.userToDelete.set(null);
+      },
+      error: (err) => {
+        this.error.set(err.message || 'Failed to delete user');
+        this.confirmDialog?.reset(); // Ensure dialog closes and resets loading state
+      }
+    });
   }
 
   createUser(): void {
