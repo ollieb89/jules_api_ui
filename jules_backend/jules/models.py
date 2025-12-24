@@ -3,7 +3,14 @@ from django.core.exceptions import ValidationError
 from django.conf import settings
 import base64
 import hashlib
+from cryptography.fernet import Fernet, InvalidToken
 
+def get_fernet_key():
+    """Derive a URL-safe base64-encoded 32-byte key from Django SECRET_KEY."""
+    # Use SHA256 to get 32 bytes from the SECRET_KEY
+    digest = hashlib.sha256(settings.SECRET_KEY.encode()).digest()
+    # Base64 encode it to make it URL-safe, required by Fernet
+    return base64.urlsafe_b64encode(digest)
 
 class JulesSettings(models.Model):
     """Settings for Jules API configuration."""
@@ -27,29 +34,42 @@ class JulesSettings(models.Model):
         return "Jules Settings"
     
     def set_api_key(self, api_key: str) -> None:
-        """Store API key with simple encoding (base64)."""
+        """Store API key encrypted with Fernet."""
         if not api_key:
             self._encrypted_api_key = None
             return
         
         try:
-            # Simple base64 encoding (not encryption, but obfuscates in DB)
-            # In production, use proper encryption with Fernet or similar
-            encoded = base64.b64encode(api_key.encode()).decode()
-            self._encrypted_api_key = encoded
+            key = get_fernet_key()
+            f = Fernet(key)
+            encrypted = f.encrypt(api_key.encode()).decode()
+            self._encrypted_api_key = encrypted
         except Exception as e:
-            raise ValidationError(f"Failed to encode API key: {e}")
+            raise ValidationError(f"Failed to encrypt API key: {e}")
     
     def get_api_key(self) -> str | None:
-        """Decode and return API key."""
+        """Decrypt and return API key (supports legacy base64 fallback)."""
         if not self._encrypted_api_key:
             return None
         
         try:
-            decoded = base64.b64decode(self._encrypted_api_key.encode()).decode()
-            return decoded
+            key = get_fernet_key()
+            f = Fernet(key)
+            decrypted = f.decrypt(self._encrypted_api_key.encode()).decode()
+            return decrypted
+        except InvalidToken:
+            # Fallback for legacy Base64 encoded keys
+            try:
+                decoded = base64.b64decode(self._encrypted_api_key.encode()).decode()
+                # Optionally migrate to new encryption on read?
+                # Better to do it explicitly or on next save.
+                # For now, just return the decoded value.
+                return decoded
+            except Exception:
+                 # If it's neither valid Fernet nor valid Base64, re-raise or fail
+                 raise ValidationError("Failed to decrypt API key")
         except Exception as e:
-            raise ValidationError(f"Failed to decode API key: {e}")
+            raise ValidationError(f"Failed to decrypt API key: {e}")
     
     def get_masked_api_key(self) -> str | None:
         """Return masked version of API key for display."""
@@ -67,4 +87,3 @@ class JulesSettings(models.Model):
         """Get or create the singleton settings instance."""
         settings, _ = cls.objects.get_or_create(pk=1)
         return settings
-
