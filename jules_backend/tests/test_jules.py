@@ -13,7 +13,11 @@ def api_client():
 @pytest.fixture
 def mock_jules_client():
     """Mock JulesApiClient for testing."""
-    with patch("jules.services.JulesApiClient") as mock_client_class:
+    # We patch jules.views.JulesApiClient because the views import it from services.
+    # However, depending on how it's imported in views.py, it might be jules.views.JulesApiClient or jules.services.JulesApiClient.
+    # views.py has `from .services import JulesApiClient`
+    # So we should patch `jules.views.JulesApiClient`
+    with patch("jules.views.JulesApiClient") as mock_client_class:
         mock_client = Mock()
         mock_client_class.return_value = mock_client
         yield mock_client
