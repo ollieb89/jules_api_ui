@@ -198,5 +198,10 @@
         <app-activity-timeline [sessionId]="sessionId()" [showPagination]="false"></app-activity-timeline>
       }
     </div>
+
+    <app-confirmation-dialog
+      (confirmed)="onDeleteConfirmed()"
+      (cancelled)="onDeleteCancelled()"
+    ></app-confirmation-dialog>
   }
 </div>
