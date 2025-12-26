@@ -1,6 +1,8 @@
+import logging
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.exceptions import APIException
 
 from .serializers import (
     ActivitySerializer,
@@ -15,6 +17,33 @@ from .serializers import (
 from .models import JulesSettings
 from .services import JulesApiClient
 
+logger = logging.getLogger(__name__)
+
+def handle_view_exception(e):
+    """Helper to handle exceptions securely without leaking internal details."""
+    logger.error(f"Internal error: {e}", exc_info=True)
+
+    # If it's already an APIException (like ValidationError), let DRF handle it
+    # or return its detail. But here we are manually catching Exception.
+    if isinstance(e, APIException):
+        return Response(e.get_full_details(), status=e.status_code)
+
+    # Check if it is a ValueError (often used for user errors in this app)
+    # We might want to expose ValueError messages if they are safe, but
+    # ideally we should use ValidationError for user input issues.
+    # The existing code treated all exceptions as 500 and exposed the message.
+    # We will treat ValueError as 400 Bad Request if safe, otherwise generic 500.
+
+    # For now, to be safe and fix the vulnerability, we mask all non-DRF exceptions
+    # unless we are sure.
+
+    # However, existing tests might rely on specific error messages.
+    # Let's start by masking 500 errors.
+
+    return Response(
+        {"error": "An unexpected error occurred. Please try again later."},
+        status=status.HTTP_500_INTERNAL_SERVER_ERROR
+    )
 
 class SourceViewSet(viewsets.ViewSet):
     """ViewSet for listing sources (GitHub repositories)."""
@@ -29,9 +58,7 @@ class SourceViewSet(viewsets.ViewSet):
             serializer.is_valid(raise_exception=True)
             return Response({"sources": serializer.data})
         except Exception as e:
-            return Response(
-                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return handle_view_exception(e)
 
 
 class SessionViewSet(viewsets.ViewSet):
@@ -51,9 +78,7 @@ class SessionViewSet(viewsets.ViewSet):
             session_serializer.is_valid(raise_exception=True)
             return Response(session_serializer.data, status=status.HTTP_201_CREATED)
         except Exception as e:
-            return Response(
-                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return handle_view_exception(e)
 
     def list(self, request):
         """List all sessions with pagination."""
@@ -72,9 +97,7 @@ class SessionViewSet(viewsets.ViewSet):
                 }
             )
         except Exception as e:
-            return Response(
-                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return handle_view_exception(e)
 
     def retrieve(self, request, pk=None):  # noqa: ARG002
         """Get a specific session by ID."""
@@ -85,9 +108,7 @@ class SessionViewSet(viewsets.ViewSet):
             serializer.is_valid(raise_exception=True)
             return Response(serializer.data)
         except Exception as e:
-            return Response(
-                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return handle_view_exception(e)
 
     def destroy(self, request, pk=None):  # noqa: ARG002
         """Delete a session."""
@@ -96,9 +117,7 @@ class SessionViewSet(viewsets.ViewSet):
             client.delete_session(pk)
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
-            return Response(
-                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return handle_view_exception(e)
 
     @action(detail=True, methods=["post"])
     def approve_plan(self, request, pk=None):  # noqa: ARG002
@@ -112,9 +131,7 @@ class SessionViewSet(viewsets.ViewSet):
             session_serializer.is_valid(raise_exception=True)
             return Response(session_serializer.data)
         except Exception as e:
-            return Response(
-                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return handle_view_exception(e)
 
     @action(detail=True, methods=["post"])
     def send_message(self, request, pk=None):  # noqa: ARG002
@@ -128,9 +145,7 @@ class SessionViewSet(viewsets.ViewSet):
             session_serializer.is_valid(raise_exception=True)
             return Response(session_serializer.data)
         except Exception as e:
-            return Response(
-                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return handle_view_exception(e)
 
     @action(detail=True, methods=["get"])
     def activities(self, request, pk=None):  # noqa: ARG002
@@ -152,9 +167,7 @@ class SessionViewSet(viewsets.ViewSet):
                 }
             )
         except Exception as e:
-            return Response(
-                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return handle_view_exception(e)
 
 
 class JulesHealthViewSet(viewsets.ViewSet):
@@ -186,13 +199,17 @@ class JulesHealthViewSet(viewsets.ViewSet):
                 status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
         except Exception as e:
-            # API connectivity issue
+            # API connectivity issue - we still want to return a structured error
+            # but maybe mask the details if they are sensitive?
+            # For health check, the error might be useful for admin.
+            # But let's be consistent.
+            logger.error(f"Health check failed: {e}", exc_info=True)
             return Response(
                 {
                     "status": "error",
                     "api_key_configured": True,
                     "api_connectivity": "failed",
-                    "error": str(e),
+                    "error": "Connectivity check failed. Check server logs for details.",
                 },
                 status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
@@ -232,9 +249,7 @@ class SettingsViewSet(viewsets.ViewSet):
                 status=status.HTTP_200_OK,
             )
         except Exception as e:
-            return Response(
-                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return handle_view_exception(e)
 
     @action(detail=False, methods=["post"], url_path="test")
     def test_connection(self, request):  # noqa: ARG002
@@ -277,13 +292,14 @@ class SettingsViewSet(viewsets.ViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as e:
+            logger.error(f"Test connection failed: {e}", exc_info=True)
             return Response(
                 {
                     "status": "error",
                     "message": "Connection failed",
                     "api_key_configured": True,
                     "api_connectivity": "failed",
-                    "error": str(e),
+                    "error": "Connectivity check failed. Check server logs for details.",
                 },
                 status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
