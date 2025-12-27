@@ -19,13 +19,14 @@ type WizardStep = 1 | 2 | 3;
       </div>
 
       <!-- Step Indicator -->
-      <div class="mb-8">
-        <div class="flex items-center justify-between">
+      <nav aria-label="Progress" class="mb-8">
+        <ol class="flex items-center justify-between">
           @for (step of [1, 2, 3]; track step) {
-            <div class="flex items-center flex-1">
+            <li class="flex items-center flex-1" [attr.aria-current]="currentStep() === step ? 'step' : null">
               <div class="flex flex-col items-center">
                 <div 
                   [class]="'w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-colors ' + getStepCircleClass(step)"
+                  aria-hidden="true"
                 >
                   @if (currentStep() > step) {
                     ✓
@@ -36,6 +37,7 @@ type WizardStep = 1 | 2 | 3;
                 <span 
                   [class]="'mt-2 text-xs font-medium ' + getStepLabelClass(step)"
                 >
+                  <span class="sr-only">Step {{ step }}: </span>
                   @switch (step) {
                     @case (1) { Select Source }
                     @case (2) { Configure }
@@ -46,12 +48,13 @@ type WizardStep = 1 | 2 | 3;
               @if (step < 3) {
                 <div 
                   [class]="'flex-1 h-0.5 mx-4 ' + (currentStep() > step ? 'bg-blue-600 dark:bg-blue-500' : 'bg-gray-300 dark:bg-gray-600')"
+                  aria-hidden="true"
                 ></div>
               }
-            </div>
+            </li>
           }
-        </div>
-      </div>
+        </ol>
+      </nav>
 
       @if (error()) {
         <div 
