@@ -14,6 +14,7 @@ from .serializers import (
 )
 from .models import JulesSettings
 from .services import JulesApiClient
+from .utils import handle_view_exception
 
 
 class SourceViewSet(viewsets.ViewSet):
@@ -29,9 +30,7 @@ class SourceViewSet(viewsets.ViewSet):
             serializer.is_valid(raise_exception=True)
             return Response({"sources": serializer.data})
         except Exception as e:
-            return Response(
-                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return handle_view_exception(e, __name__)
 
 
 class SessionViewSet(viewsets.ViewSet):
@@ -51,9 +50,7 @@ class SessionViewSet(viewsets.ViewSet):
             session_serializer.is_valid(raise_exception=True)
             return Response(session_serializer.data, status=status.HTTP_201_CREATED)
         except Exception as e:
-            return Response(
-                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return handle_view_exception(e, __name__)
 
     def list(self, request):
         """List all sessions with pagination."""
@@ -72,9 +69,7 @@ class SessionViewSet(viewsets.ViewSet):
                 }
             )
         except Exception as e:
-            return Response(
-                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return handle_view_exception(e, __name__)
 
     def retrieve(self, request, pk=None):  # noqa: ARG002
         """Get a specific session by ID."""
@@ -85,9 +80,7 @@ class SessionViewSet(viewsets.ViewSet):
             serializer.is_valid(raise_exception=True)
             return Response(serializer.data)
         except Exception as e:
-            return Response(
-                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return handle_view_exception(e, __name__)
 
     def destroy(self, request, pk=None):  # noqa: ARG002
         """Delete a session."""
@@ -96,9 +89,7 @@ class SessionViewSet(viewsets.ViewSet):
             client.delete_session(pk)
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
-            return Response(
-                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return handle_view_exception(e, __name__)
 
     @action(detail=True, methods=["post"])
     def approve_plan(self, request, pk=None):  # noqa: ARG002
@@ -112,9 +103,7 @@ class SessionViewSet(viewsets.ViewSet):
             session_serializer.is_valid(raise_exception=True)
             return Response(session_serializer.data)
         except Exception as e:
-            return Response(
-                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return handle_view_exception(e, __name__)
 
     @action(detail=True, methods=["post"])
     def send_message(self, request, pk=None):  # noqa: ARG002
@@ -128,9 +117,7 @@ class SessionViewSet(viewsets.ViewSet):
             session_serializer.is_valid(raise_exception=True)
             return Response(session_serializer.data)
         except Exception as e:
-            return Response(
-                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return handle_view_exception(e, __name__)
 
     @action(detail=True, methods=["get"])
     def activities(self, request, pk=None):  # noqa: ARG002
@@ -152,9 +139,7 @@ class SessionViewSet(viewsets.ViewSet):
                 }
             )
         except Exception as e:
-            return Response(
-                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return handle_view_exception(e, __name__)
 
 
 class JulesHealthViewSet(viewsets.ViewSet):
@@ -232,9 +217,7 @@ class SettingsViewSet(viewsets.ViewSet):
                 status=status.HTTP_200_OK,
             )
         except Exception as e:
-            return Response(
-                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return handle_view_exception(e, __name__)
 
     @action(detail=False, methods=["post"], url_path="test")
     def test_connection(self, request):  # noqa: ARG002

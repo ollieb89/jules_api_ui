@@ -1,11 +1,4 @@
-# Sentinel's Journal
-
-## 2024-05-22 - Insecure API Key Storage
-**Vulnerability:** API Keys in `JulesSettings` are stored using Base64 encoding instead of encryption.
-**Learning:** The codebase acknowledges this with a comment `# In production, use proper encryption`, but it presents a high risk if the database is compromised.
-**Prevention:** Use `fernet` or similar field-level encryption libraries for sensitive data fields.
-
-## 2024-05-22 - Mixed Framework Identity
-**Vulnerability:** The project uses both FastAPI and Django, but `pixi.toml` and `manage.py` suggest a migration to Django. This leads to confusion on which dependencies are active and which security middleware is applied.
-**Learning:** Legacy or transitional code can hide vulnerabilities if it's unclear what is actually running in production.
-**Prevention:** Clearly deprecate and remove unused frameworks/routes. Ensure documentation (`AGENTS.md`) matches the active deployment configuration.
+## 2024-05-23 - Information Leakage in API Responses
+**Vulnerability:** Django REST Framework views were catching generic `Exception` and returning `str(e)` in the response body. This could leak sensitive internal details (stack traces, database connection strings, file paths) to the client in 500 error responses.
+**Learning:** Broad exception handling in API views must be paired with sanitised error messages. Returning raw exception strings is a common but dangerous pattern in development that must be caught before production.
+**Prevention:** Implement a centralized exception handler (e.g., `handle_view_exception`) that logs the full stack trace server-side and returns a generic "Internal Server Error" message to the client. Use specific exception handling for expected user errors (like `ValidationError` or 400s) where the message is safe to expose.
