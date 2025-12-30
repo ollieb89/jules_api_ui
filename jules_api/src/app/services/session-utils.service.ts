@@ -11,6 +11,15 @@ export class SessionUtilsService {
    * @returns The extracted session ID
    */
   extractSessionId(sessionName: string): string {
-    return sessionName.split('/').pop() || sessionName;
+    if (!sessionName) {
+      return sessionName;
+    }
+
+    const parts = sessionName.split('/').filter(Boolean);
+    if (parts.length === 0) {
+      return sessionName;
+    }
+
+    return parts[parts.length - 1];
   }
 }
