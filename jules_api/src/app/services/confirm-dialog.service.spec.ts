@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { of } from 'rxjs';
 import { ConfirmDialogService } from './confirm-dialog.service';
 import { ConfirmDialogComponent } from '../components/confirm-dialog/confirm-dialog.component';
