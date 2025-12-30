@@ -2,8 +2,12 @@ import { Component, OnInit, signal, ChangeDetectionStrategy, inject, computed, e
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { take } from 'rxjs/operators';
 import { SessionCacheService, SortField } from '../../services/session-cache.service';
 import { ThemeService } from '../../services/theme.service';
+import { NotificationService } from '../../services/notification.service';
+import { ConfirmDialogService } from '../../services/confirm-dialog.service';
+import { SessionUtilsService } from '../../services/session-utils.service';
 import { Session, SessionState } from '../../models/jules.model';
 
 interface FormattedSession extends Session {
@@ -279,6 +283,9 @@ export class SessionListComponent implements OnInit {
   readonly cacheService = inject(SessionCacheService);
   readonly themeService = inject(ThemeService);
   private router = inject(Router);
+  private notificationService = inject(NotificationService);
+  private confirmDialogService = inject(ConfirmDialogService);
+  private sessionUtils = inject(SessionUtilsService);
 
   // Search input with debounce
   searchInput = signal<string>('');
@@ -376,24 +383,41 @@ export class SessionListComponent implements OnInit {
   }
 
   viewSession(sessionName: string): void {
-    const id = sessionName.split('/').pop() || sessionName;
+    const id = this.sessionUtils.extractSessionId(sessionName);
     this.router.navigate(['/jules', id]);
   }
 
   sendMessage(sessionName: string): void {
-    const id = sessionName.split('/').pop() || sessionName;
+    const id = this.sessionUtils.extractSessionId(sessionName);
     this.router.navigate(['/jules', id], { queryParams: { action: 'message' } });
   }
 
   deleteSession(sessionName: string): void {
-    if (confirm('Are you sure you want to delete this session?')) {
-      const id = sessionName.split('/').pop() || sessionName;
-      this.cacheService.deleteSession(id).subscribe({
-        error: (err) => {
-          alert('Failed to delete session: ' + (err.message || 'Unknown error'));
+    this.confirmDialogService
+      .confirm(
+        'Delete Session',
+        'Are you sure you want to delete this session? This action cannot be undone.',
+        'Delete',
+        'Cancel'
+      )
+      .pipe(take(1))
+      .subscribe(confirmed => {
+        if (confirmed) {
+          const id = this.sessionUtils.extractSessionId(sessionName);
+          this.cacheService.deleteSession(id)
+            .pipe(take(1))
+            .subscribe({
+              next: () => {
+                this.notificationService.success('Session deleted successfully');
+              },
+              error: (err) => {
+                this.notificationService.error(
+                  'Failed to delete session: ' + (err.message || 'Unknown error')
+                );
+              }
+            });
         }
       });
-    }
   }
 
   getStateLabel(state: SessionState): string {
