@@ -14,6 +14,11 @@ body {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
+:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
 /* Diff highlighting styles */
 .diff-container {
   @apply rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600;
