@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../components/confirm-dialog/confirm-dialog.component';
 
 @Injectable({
@@ -36,16 +37,8 @@ export class ConfirmDialogService {
       }
     );
 
-    return new Observable<boolean>(observer => {
-      dialogRef.afterClosed().subscribe({
-        next: (result) => {
-          observer.next(result ?? false);
-          observer.complete();
-        },
-        error: (err) => {
-          observer.error(err);
-        }
-      });
-    });
+    return dialogRef.afterClosed().pipe(
+      map(result => result ?? false)
+    );
   }
 }
