@@ -1,9 +1,8 @@
 import pytest
 
 
-@pytest.mark.django_db
-def test_health_check(client):
-    """Test health check endpoint."""
-    response = client.get("/health")
+@pytest.mark.asyncio
+async def test_health_check(async_client):
+    response = await async_client.get("/health")
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
