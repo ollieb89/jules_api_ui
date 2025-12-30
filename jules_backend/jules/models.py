@@ -6,18 +6,11 @@ import hashlib
 from cryptography.fernet import Fernet, InvalidToken
 
 def get_fernet_key():
-    """Derive a URL-safe base64-encoded 32-byte key from Django SECRET_KEY using PBKDF2-HMAC-SHA256."""
-    # Use PBKDF2-HMAC-SHA256 with a fixed salt and high iteration count to derive a 32-byte key
-    salt = b"jules_backend.jules.models.get_fernet_key"
-    derived_key = hashlib.pbkdf2_hmac(
-        "sha256",
-        settings.SECRET_KEY.encode(),
-        salt,
-        260000,
-        dklen=32,
-    )
+    """Derive a URL-safe base64-encoded 32-byte key from Django SECRET_KEY."""
+    # Use SHA256 to get 32 bytes from the SECRET_KEY
+    digest = hashlib.sha256(settings.SECRET_KEY.encode()).digest()
     # Base64 encode it to make it URL-safe, required by Fernet
-    return base64.urlsafe_b64encode(derived_key)
+    return base64.urlsafe_b64encode(digest)
 
 class JulesSettings(models.Model):
     """Settings for Jules API configuration."""
@@ -73,8 +66,8 @@ class JulesSettings(models.Model):
                 # For now, just return the decoded value.
                 return decoded
             except Exception as e:
-                # If it's neither valid Fernet nor valid Base64, re-raise or fail
-                raise ValidationError(f"Failed to decode legacy Base64 API key: {e}")
+                 # If it's neither valid Fernet nor valid Base64, re-raise or fail
+                 raise ValidationError(f"Failed to decode legacy Base64 API key: {e}")
         except Exception as e:
             raise ValidationError(f"Failed to decrypt API key: {e}")
     
