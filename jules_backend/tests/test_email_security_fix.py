@@ -5,9 +5,9 @@ from users.models import User
 @pytest.mark.django_db
 def test_invalid_email_behavior():
     """
-    Test to verify current behavior of email validation.
-    Currently, invalid emails are accepted (CharField).
-    After fix, they should be rejected (EmailField).
+    Test to verify that the email field correctly rejects invalid email addresses.
+    The User.email field is now an EmailField, so invalid emails must raise a ValidationError.
+    This test verifies the behavior after the email validation fix has been applied.
     """
     invalid_email = "not-an-email"
     user = User(name="Test User", email=invalid_email)
