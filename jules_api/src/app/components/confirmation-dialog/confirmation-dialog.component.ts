@@ -78,13 +78,18 @@ export class ConfirmationDialogComponent {
     this.dialog.nativeElement.showModal();
   }
 
-  close() {
-    this.dialog.nativeElement.close();
+  private handleCancel() {
     this.cancelled.emit();
+    this.dialog.nativeElement.close();
+  }
+
+  close() {
+    this.handleCancel();
   }
 
   onCancel(event: Event) {
-    this.cancelled.emit();
+    event.preventDefault();
+    this.handleCancel();
   }
 
   confirm() {
