@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, ChangeDetectionStrategy, inject, computed } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectionStrategy, inject, computed, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -8,6 +8,7 @@ import { JulesService } from '../../services/jules.service';
 import { Session, SessionState } from '../../models/jules.model';
 import { ActivityTimelineComponent } from '../activity-timeline/activity-timeline.component';
 import { CodeBlockStyleDirective } from '../../directives/code-block-style.directive';
+import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
 
 interface PRInfo {
   url?: string;
@@ -17,7 +18,7 @@ interface PRInfo {
 
 @Component({
   selector: 'app-session-detail',
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, ActivityTimelineComponent, MarkdownComponent, CodeBlockStyleDirective],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, ActivityTimelineComponent, MarkdownComponent, CodeBlockStyleDirective, ConfirmationDialogComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './session-detail.component.html',
   styleUrl: './session-detail.component.css'
@@ -27,6 +28,8 @@ export class SessionDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private fb = inject(FormBuilder);
+
+  @ViewChild('deleteDialog') deleteDialog!: ConfirmationDialogComponent;
 
   session = signal<Session | null>(null);
   loading = signal<boolean>(false);
@@ -143,16 +146,20 @@ export class SessionDetailComponent implements OnInit {
   }
 
   deleteSession(): void {
-    if (confirm('Are you sure you want to delete this session?')) {
-      this.julesService.deleteSession(this.sessionId()).subscribe({
-        next: () => {
-          this.router.navigate(['/jules']);
-        },
-        error: (err) => {
-          this.error.set(err.message || 'Failed to delete session');
-        }
-      });
-    }
+    this.deleteDialog.showModal();
+  }
+
+  onDeleteConfirmed(): void {
+    this.julesService.deleteSession(this.sessionId()).subscribe({
+      next: () => {
+        this.deleteDialog.reset();
+        this.router.navigate(['/jules']);
+      },
+      error: (err) => {
+        this.deleteDialog.reset();
+        this.error.set(err.message || 'Failed to delete session');
+      }
+    });
   }
 
   toggleActivities(): void {
