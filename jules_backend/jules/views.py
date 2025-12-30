@@ -23,22 +23,9 @@ def handle_view_exception(e):
     """Helper to handle exceptions securely without leaking internal details."""
     logger.error(f"Internal error: {e}", exc_info=True)
 
-    # If it's already an APIException (like ValidationError), let DRF handle it
-    # or return its detail. But here we are manually catching Exception.
+    # If it's already an APIException (like ValidationError), let DRF handle it.
     if isinstance(e, APIException):
         return Response(e.get_full_details(), status=e.status_code)
-
-    # Check if it is a ValueError (often used for user errors in this app)
-    # We might want to expose ValueError messages if they are safe, but
-    # ideally we should use ValidationError for user input issues.
-    # The existing code treated all exceptions as 500 and exposed the message.
-    # We will treat ValueError as 400 Bad Request if safe, otherwise generic 500.
-
-    # For now, to be safe and fix the vulnerability, we mask all non-DRF exceptions
-    # unless we are sure.
-
-    # However, existing tests might rely on specific error messages.
-    # Let's start by masking 500 errors.
 
     return Response(
         {"error": "An unexpected error occurred. Please try again later."},
@@ -55,7 +42,9 @@ class SourceViewSet(viewsets.ViewSet):
             data = client.list_sources()
             sources = data.get("sources", [])
             serializer = SourceSerializer(data=sources, many=True)
-            serializer.is_valid(raise_exception=True)
+            if not serializer.is_valid():
+                logger.error(f"Upstream data validation failed: {serializer.errors}")
+                raise Exception("Upstream API returned invalid data")
             return Response({"sources": serializer.data})
         except Exception as e:
             return handle_view_exception(e)
@@ -66,16 +55,19 @@ class SessionViewSet(viewsets.ViewSet):
 
     def create(self, request):
         """Create a new coding session."""
-        serializer = SessionCreateSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        client = JulesApiClient()
         try:
+            serializer = SessionCreateSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+
+            client = JulesApiClient()
             data = client.create_session(
                 prompt=serializer.validated_data["prompt"],
                 source=serializer.validated_data["source"],
             )
             session_serializer = SessionSerializer(data=data)
-            session_serializer.is_valid(raise_exception=True)
+            if not session_serializer.is_valid():
+                logger.error(f"Upstream data validation failed: {session_serializer.errors}")
+                raise Exception("Upstream API returned invalid data")
             return Response(session_serializer.data, status=status.HTTP_201_CREATED)
         except Exception as e:
             return handle_view_exception(e)
@@ -89,7 +81,9 @@ class SessionViewSet(viewsets.ViewSet):
             data = client.list_sessions(page_size=page_size, page_token=page_token)
             sessions = data.get("sessions", [])
             serializer = SessionSerializer(data=sessions, many=True)
-            serializer.is_valid(raise_exception=True)
+            if not serializer.is_valid():
+                logger.error(f"Upstream data validation failed: {serializer.errors}")
+                raise Exception("Upstream API returned invalid data")
             return Response(
                 {
                     "sessions": serializer.data,
@@ -105,7 +99,9 @@ class SessionViewSet(viewsets.ViewSet):
         try:
             data = client.get_session(pk)
             serializer = SessionSerializer(data=data)
-            serializer.is_valid(raise_exception=True)
+            if not serializer.is_valid():
+                logger.error(f"Upstream data validation failed: {serializer.errors}")
+                raise Exception("Upstream API returned invalid data")
             return Response(serializer.data)
         except Exception as e:
             return handle_view_exception(e)
@@ -122,13 +118,16 @@ class SessionViewSet(viewsets.ViewSet):
     @action(detail=True, methods=["post"])
     def approve_plan(self, request, pk=None):  # noqa: ARG002
         """Approve a generated plan."""
-        serializer = ApprovePlanSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        client = JulesApiClient()
         try:
+            serializer = ApprovePlanSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+
+            client = JulesApiClient()
             data = client.approve_plan(pk)
             session_serializer = SessionSerializer(data=data)
-            session_serializer.is_valid(raise_exception=True)
+            if not session_serializer.is_valid():
+                logger.error(f"Upstream data validation failed: {session_serializer.errors}")
+                raise Exception("Upstream API returned invalid data")
             return Response(session_serializer.data)
         except Exception as e:
             return handle_view_exception(e)
@@ -136,13 +135,16 @@ class SessionViewSet(viewsets.ViewSet):
     @action(detail=True, methods=["post"])
     def send_message(self, request, pk=None):  # noqa: ARG002
         """Send a message to the agent."""
-        serializer = SendMessageSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        client = JulesApiClient()
         try:
+            serializer = SendMessageSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+
+            client = JulesApiClient()
             data = client.send_message(pk, serializer.validated_data["message"])
             session_serializer = SessionSerializer(data=data)
-            session_serializer.is_valid(raise_exception=True)
+            if not session_serializer.is_valid():
+                logger.error(f"Upstream data validation failed: {session_serializer.errors}")
+                raise Exception("Upstream API returned invalid data")
             return Response(session_serializer.data)
         except Exception as e:
             return handle_view_exception(e)
@@ -159,7 +161,9 @@ class SessionViewSet(viewsets.ViewSet):
             )
             activities = data.get("activities", [])
             serializer = ActivitySerializer(data=activities, many=True)
-            serializer.is_valid(raise_exception=True)
+            if not serializer.is_valid():
+                logger.error(f"Upstream data validation failed: {serializer.errors}")
+                raise Exception("Upstream API returned invalid data")
             return Response(
                 {
                     "activities": serializer.data,
@@ -199,10 +203,6 @@ class JulesHealthViewSet(viewsets.ViewSet):
                 status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
         except Exception as e:
-            # API connectivity issue - we still want to return a structured error
-            # but maybe mask the details if they are sensitive?
-            # For health check, the error might be useful for admin.
-            # But let's be consistent.
             logger.error(f"Health check failed: {e}", exc_info=True)
             return Response(
                 {
@@ -232,11 +232,11 @@ class SettingsViewSet(viewsets.ViewSet):
     @action(detail=False, methods=["post"], url_path="api-key")
     def update_api_key(self, request):
         """Update the API key."""
-        serializer = ApiKeyUpdateSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        
-        settings = JulesSettings.get_settings()
         try:
+            serializer = ApiKeyUpdateSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+
+            settings = JulesSettings.get_settings()
             settings.set_api_key(serializer.validated_data["api_key"])
             settings.save()
             
