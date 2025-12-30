@@ -156,7 +156,27 @@ markdown h2[data-cursor-element-id] {
 
 /* Ensure "Task:" text is bold in markdown */
 markdown h2 strong,
-markdown h2 **,
 .prose h2 strong {
   font-weight: 900 !important;
+}
+
+/* Snackbar notification styles */
+.snackbar-success {
+  --mdc-snackbar-container-color: #10b981;
+  --mat-snack-bar-button-color: #ffffff;
+}
+
+.snackbar-error {
+  --mdc-snackbar-container-color: #ef4444;
+  --mat-snack-bar-button-color: #ffffff;
+}
+
+.snackbar-info {
+  --mdc-snackbar-container-color: #3b82f6;
+  --mat-snack-bar-button-color: #ffffff;
+}
+
+.snackbar-warning {
+  --mdc-snackbar-container-color: #f59e0b;
+  --mat-snack-bar-button-color: #ffffff;
 }

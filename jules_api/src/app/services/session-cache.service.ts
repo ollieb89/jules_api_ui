@@ -1,6 +1,7 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import { JulesService } from './jules.service';
+import { SessionUtilsService } from './session-utils.service';
 import { Session, SessionState } from '../models/jules.model';
 
 export interface SessionFilter {
@@ -17,6 +18,7 @@ export type SortDirection = 'asc' | 'desc';
 @Injectable({ providedIn: 'root' })
 export class SessionCacheService {
   private readonly julesService = inject(JulesService);
+  private readonly sessionUtils = inject(SessionUtilsService);
   
   // Maximum number of sessions to fetch (configurable)
   private readonly MAX_SESSIONS = 1000;
@@ -170,7 +172,7 @@ export class SessionCacheService {
       tap(() => {
         this.sessions.update(current =>
           current.filter(s => {
-            const id = s.name.split('/').pop() || s.name;
+            const id = this.sessionUtils.extractSessionId(s.name);
             return id !== sessionId;
           })
         );
