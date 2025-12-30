@@ -1,0 +1,29 @@
+$ ng serve --port "4700"
+❯ Building...
+✔ Building...
+Browser bundles
+Initial chunk files  | Names            |  Raw size
+main.js              | main             | 259.57 kB |
+styles.css           | styles           | 159.53 kB |
+
+                     | Initial total    | 419.10 kB
+
+
+Server bundles
+Initial chunk files  | Names            |  Raw size
+main.server.mjs      | main.server      | 261.26 kB |
+server.mjs           | server           |   1.81 kB |
+polyfills.server.mjs | polyfills.server | 243 bytes |
+
+Application bundle generation complete. [11.267 seconds] - 2025-12-25T19:35:05.848Z
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mUnexpected "*"[0m [css-syntax-error]
+
+    src/styles.css:3696:13:
+[37m      3696 │ markdown h2 *[32m*[37m,
+           ╵              [32m^[0m
+
+
+Watch mode enabled. Watching for file changes...
+NOTE: Raw file sizes do not reflect development server per-request transformations.
+  ➜  Local:   http://localhost:4700/

@@ -1,7 +1,8 @@
-import { Component, OnInit, signal, ChangeDetectionStrategy, inject, computed, effect } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectionStrategy, inject, computed, effect, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
 import { SessionCacheService, SortField } from '../../services/session-cache.service';
 import { ThemeService } from '../../services/theme.service';
 import { Session, SessionState } from '../../models/jules.model';
@@ -14,7 +15,7 @@ interface FormattedSession extends Session {
 
 @Component({
   selector: 'app-session-list',
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, ConfirmationDialogComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="container mx-auto px-4 py-8">
@@ -59,14 +60,26 @@ interface FormattedSession extends Session {
             <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Search
             </label>
-            <input
-              id="search"
-              type="text"
-              [(ngModel)]="searchInput"
-              (ngModelChange)="onSearchChange($event)"
-              placeholder="Search by title or prompt..."
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
+            <div class="relative">
+              <input
+                id="search"
+                type="text"
+                [(ngModel)]="searchInput"
+                (ngModelChange)="onSearchChange($event)"
+                placeholder="Search by title or prompt..."
+                class="w-full pl-3 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+              @if (searchInput()) {
+                <button
+                  (click)="onSearchChange('')"
+                  type="button"
+                  aria-label="Clear search"
+                  class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                >
+                  <span aria-hidden="true">✕</span>
+                </button>
+              }
+            </div>
           </div>
 
           <!-- Status Filter -->
@@ -272,6 +285,11 @@ interface FormattedSession extends Session {
           </div>
         </div>
       }
+
+      <app-confirmation-dialog
+        (confirmed)="onDeleteConfirmed()"
+        (cancelled)="onDeleteCancelled()"
+      ></app-confirmation-dialog>
     </div>
   `
 })
@@ -279,6 +297,8 @@ export class SessionListComponent implements OnInit {
   readonly cacheService = inject(SessionCacheService);
   readonly themeService = inject(ThemeService);
   private router = inject(Router);
+
+  @ViewChild(ConfirmationDialogComponent) confirmationDialog!: ConfirmationDialogComponent;
 
   // Search input with debounce
   searchInput = signal<string>('');
@@ -385,15 +405,39 @@ export class SessionListComponent implements OnInit {
     this.router.navigate(['/jules', id], { queryParams: { action: 'message' } });
   }
 
-  deleteSession(sessionName: string): void {
-    if (confirm('Are you sure you want to delete this session?')) {
-      const id = sessionName.split('/').pop() || sessionName;
-      this.cacheService.deleteSession(id).subscribe({
+  // Delete state
+  sessionToDelete = signal<string | null>(null);
+
+  deleteSession(sessionId: string): void {
+    this.sessionToDelete.set(sessionId);
+    // Find session name/title for better UX
+    const session = this.cacheService.filteredSessions().find(s => s.name === sessionId);
+    const sessionName = session ? session.display_name : 'this session';
+
+    this.confirmationDialog.title = 'Delete Session';
+    this.confirmationDialog.message = `Are you sure you want to delete "${sessionName}"? This action cannot be undone.`;
+    this.confirmationDialog.confirmText = 'Delete';
+    this.confirmationDialog.showModal();
+  }
+
+  onDeleteConfirmed(): void {
+    const sessionId = this.sessionToDelete();
+    if (sessionId) {
+      this.cacheService.deleteSession(sessionId).subscribe({
+        next: () => {
+          this.confirmationDialog.reset();
+          this.sessionToDelete.set(null);
+        },
         error: (err) => {
-          alert('Failed to delete session: ' + (err.message || 'Unknown error'));
+          this.cacheService.error.set(err.message || 'Failed to delete session');
+          this.confirmationDialog.reset();
         }
       });
     }
+  }
+
+  onDeleteCancelled(): void {
+    this.sessionToDelete.set(null);
   }
 
   getStateLabel(state: SessionState): string {
