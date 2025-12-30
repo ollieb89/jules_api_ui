@@ -1,5 +1,5 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { Observable, Subscription, tap, timer } from 'rxjs';
 import { JulesService } from './jules.service';
 import { SessionUtilsService } from './session-utils.service';
 import { Session, SessionState } from '../models/jules.model';
@@ -28,9 +28,12 @@ export class SessionCacheService {
   
   // Loading state
   readonly loading = signal<boolean>(false);
-  
+
   // Error state
   readonly error = signal<string | null>(null);
+
+  // Last updated timestamp
+  readonly lastUpdated = signal<Date | null>(null);
   
   // Filter state
   readonly filter = signal<SessionFilter>({});
@@ -116,11 +119,25 @@ export class SessionCacheService {
     
     return result;
   });
+
+  // Session counts by status
+  readonly totalCount = computed(() => this.sessions().length);
+  readonly activeCount = computed(() => this.sessions().filter(session => session.state === 'ACTIVE').length);
+  readonly completedCount = computed(() =>
+    this.sessions().filter(session => session.state === 'COMPLETED').length
+  );
+  readonly failedCount = computed(() => this.sessions().filter(session => session.state === 'FAILED').length);
+
+  private autoRefreshSubscription: Subscription | null = null;
   
   /**
    * Load all sessions from the API (up to MAX_SESSIONS)
    */
   loadAllSessions(): void {
+    if (this.loading()) {
+      return;
+    }
+
     this.loading.set(true);
     this.error.set(null);
     
@@ -130,7 +147,7 @@ export class SessionCacheService {
     
     const fetchPage = (token: string | null = null): void => {
       if (!hasMore || allSessions.length >= this.MAX_SESSIONS) {
-        this.sessions.set(allSessions);
+        this.updateSessions(allSessions);
         this.loading.set(false);
         return;
       }
@@ -142,7 +159,7 @@ export class SessionCacheService {
           if (response.next_page_token && allSessions.length < this.MAX_SESSIONS) {
             fetchPage(response.next_page_token);
           } else {
-            this.sessions.set(allSessions);
+            this.updateSessions(allSessions);
             this.loading.set(false);
             hasMore = false;
           }
@@ -162,6 +179,27 @@ export class SessionCacheService {
    */
   refresh(): void {
     this.loadAllSessions();
+  }
+
+  /**
+   * Start polling for session updates
+   */
+  startAutoRefresh(intervalMs = 2000): void {
+    if (this.autoRefreshSubscription) {
+      return;
+    }
+
+    this.autoRefreshSubscription = timer(0, intervalMs).subscribe(() => {
+      this.loadAllSessions();
+    });
+  }
+
+  /**
+   * Stop polling for session updates
+   */
+  stopAutoRefresh(): void {
+    this.autoRefreshSubscription?.unsubscribe();
+    this.autoRefreshSubscription = null;
   }
 
   /**
@@ -225,15 +263,14 @@ export class SessionCacheService {
     });
     return Array.from(sources).sort();
   });
-  
-  /**
-   * Get session count
-   */
-  readonly totalCount = computed(() => this.sessions().length);
-  
+
   /**
    * Get filtered count
    */
   readonly filteredCount = computed(() => this.filteredSessions().length);
-}
 
+  private updateSessions(sessions: Session[]): void {
+    this.sessions.set(sessions);
+    this.lastUpdated.set(new Date());
+  }
+}

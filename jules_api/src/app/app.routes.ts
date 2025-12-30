@@ -5,12 +5,17 @@ import { SessionListComponent } from './jules/session-list/session-list.componen
 import { SessionCreateComponent } from './jules/session-create/session-create.component';
 import { SessionDetailComponent } from './jules/session-detail/session-detail.component';
 import { SettingsComponent } from './jules/settings/settings.component';
+import { DashboardComponent } from './jules/dashboard/dashboard.component';
 
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: '/users',
+    redirectTo: '/dashboard',
     pathMatch: 'full'
+  },
+  {
+    path: 'dashboard',
+    component: DashboardComponent
   },
   {
     path: 'users',
