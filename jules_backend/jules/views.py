@@ -1,5 +1,6 @@
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .serializers import (
@@ -20,6 +21,8 @@ from .utils import handle_api_exception
 class SourceViewSet(viewsets.ViewSet):
     """ViewSet for listing sources (GitHub repositories)."""
 
+    permission_classes = [IsAuthenticated]
+
     def list(self, request):  # noqa: ARG002
         """List all connected GitHub repositories."""
         client = JulesApiClient()
@@ -35,6 +38,8 @@ class SourceViewSet(viewsets.ViewSet):
 
 class SessionViewSet(viewsets.ViewSet):
     """ViewSet for managing Jules sessions."""
+
+    permission_classes = [IsAuthenticated]
 
     def create(self, request):
         """Create a new coding session."""
@@ -185,6 +190,8 @@ class JulesHealthViewSet(viewsets.ViewSet):
 
 class SettingsViewSet(viewsets.ViewSet):
     """ViewSet for managing Jules settings (API key configuration)."""
+
+    permission_classes = [IsAuthenticated]
 
     def list(self, request):  # noqa: ARG002
         """Get current settings (masked API key)."""

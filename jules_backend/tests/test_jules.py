@@ -1,6 +1,7 @@
 import pytest
 from unittest.mock import Mock, patch
 from django.urls import reverse
+from django.contrib.auth.models import User
 from rest_framework.test import APIClient
 from rest_framework import status
 
@@ -11,9 +12,18 @@ def api_client():
 
 
 @pytest.fixture
+def authenticated_client(api_client):
+    """Authenticated APIClient for testing."""
+    user = User.objects.create_user(username="testuser", password="testpassword")
+    api_client.force_authenticate(user=user)
+    return api_client
+
+
+@pytest.fixture
 def mock_jules_client():
     """Mock JulesApiClient for testing."""
-    with patch("jules.services.JulesApiClient") as mock_client_class:
+    # Patch where it is imported in views.py
+    with patch("jules.views.JulesApiClient") as mock_client_class:
         mock_client = Mock()
         mock_client_class.return_value = mock_client
         yield mock_client
@@ -23,7 +33,7 @@ def mock_jules_client():
 class TestSourceViewSet:
     """Tests for SourceViewSet."""
 
-    def test_list_sources(self, api_client, mock_jules_client):
+    def test_list_sources(self, authenticated_client, mock_jules_client):
         """Test listing sources."""
         mock_jules_client.list_sources.return_value = {
             "sources": [
@@ -39,7 +49,7 @@ class TestSourceViewSet:
         }
 
         url = reverse("source-list")
-        response = api_client.get(url)
+        response = authenticated_client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
         assert "sources" in response.data
@@ -50,7 +60,7 @@ class TestSourceViewSet:
 class TestSessionViewSet:
     """Tests for SessionViewSet."""
 
-    def test_create_session(self, api_client, mock_jules_client):
+    def test_create_session(self, authenticated_client, mock_jules_client):
         """Test creating a session."""
         mock_jules_client.create_session.return_value = {
             "name": "sessions/test-session",
@@ -64,12 +74,12 @@ class TestSessionViewSet:
 
         url = reverse("session-list")
         data = {"prompt": "Test prompt", "source": "sources/test-repo"}
-        response = api_client.post(url, data, format="json")
+        response = authenticated_client.post(url, data, format="json")
 
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["display_name"] == "Test Session"
 
-    def test_list_sessions(self, api_client, mock_jules_client):
+    def test_list_sessions(self, authenticated_client, mock_jules_client):
         """Test listing sessions."""
         mock_jules_client.list_sessions.return_value = {
             "sessions": [
@@ -87,13 +97,13 @@ class TestSessionViewSet:
         }
 
         url = reverse("session-list")
-        response = api_client.get(url)
+        response = authenticated_client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
         assert "sessions" in response.data
         assert len(response.data["sessions"]) == 1
 
-    def test_get_session(self, api_client, mock_jules_client):
+    def test_get_session(self, authenticated_client, mock_jules_client):
         """Test getting a session."""
         mock_jules_client.get_session.return_value = {
             "name": "sessions/test-session",
@@ -106,21 +116,21 @@ class TestSessionViewSet:
         }
 
         url = reverse("session-detail", kwargs={"pk": "test-session"})
-        response = api_client.get(url)
+        response = authenticated_client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
         assert response.data["display_name"] == "Test Session"
 
-    def test_delete_session(self, api_client, mock_jules_client):
+    def test_delete_session(self, authenticated_client, mock_jules_client):
         """Test deleting a session."""
         mock_jules_client.delete_session.return_value = None
 
         url = reverse("session-detail", kwargs={"pk": "test-session"})
-        response = api_client.delete(url)
+        response = authenticated_client.delete(url)
 
         assert response.status_code == status.HTTP_204_NO_CONTENT
 
-    def test_approve_plan(self, api_client, mock_jules_client):
+    def test_approve_plan(self, authenticated_client, mock_jules_client):
         """Test approving a plan."""
         mock_jules_client.approve_plan.return_value = {
             "name": "sessions/test-session",
@@ -133,11 +143,11 @@ class TestSessionViewSet:
         }
 
         url = reverse("session-approve-plan", kwargs={"pk": "test-session"})
-        response = api_client.post(url, {}, format="json")
+        response = authenticated_client.post(url, {}, format="json")
 
         assert response.status_code == status.HTTP_200_OK
 
-    def test_send_message(self, api_client, mock_jules_client):
+    def test_send_message(self, authenticated_client, mock_jules_client):
         """Test sending a message."""
         mock_jules_client.send_message.return_value = {
             "name": "sessions/test-session",
@@ -151,11 +161,11 @@ class TestSessionViewSet:
 
         url = reverse("session-send-message", kwargs={"pk": "test-session"})
         data = {"message": "Test message"}
-        response = api_client.post(url, data, format="json")
+        response = authenticated_client.post(url, data, format="json")
 
         assert response.status_code == status.HTTP_200_OK
 
-    def test_list_activities(self, api_client, mock_jules_client):
+    def test_list_activities(self, authenticated_client, mock_jules_client):
         """Test listing activities."""
         mock_jules_client.list_activities.return_value = {
             "activities": [
@@ -174,7 +184,7 @@ class TestSessionViewSet:
         }
 
         url = reverse("session-activities", kwargs={"pk": "test-session"})
-        response = api_client.get(url)
+        response = authenticated_client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
         assert "activities" in response.data
