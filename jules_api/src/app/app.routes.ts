@@ -44,5 +44,12 @@ export const routes: Routes = [
   {
     path: 'jules/settings',
     component: SettingsComponent
+  },
+  {
+    path: 'jules/integrations',
+    loadComponent: () =>
+      import('./jules/phase-two/phase-two.component').then(
+        (module) => module.PhaseTwoComponent
+      )
   }
 ];
