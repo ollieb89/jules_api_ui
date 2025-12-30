@@ -101,8 +101,30 @@ export interface PaginatedActivitiesResponse {
   next_page_token?: string | null;
 }
 
+// Settings types
+export interface JulesSettings {
+  api_key_configured: boolean;
+  masked_api_key?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UpdateApiKeyResponse {
+  status: string;
+  message: string;
+  masked_api_key?: string;
+}
+
+export interface TestConnectionResponse {
+  status: string;
+  message: string;
+  api_key_configured: boolean;
+  api_connectivity?: string;
+  sources_count?: number;
+  error?: string;
+}
+
 // API Error types
 export interface JulesApiError {
   error: string;
 }
-
