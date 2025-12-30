@@ -72,9 +72,9 @@ class JulesSettings(models.Model):
                 # Better to do it explicitly or on next save.
                 # For now, just return the decoded value.
                 return decoded
-            except Exception:
+            except Exception as e:
                 # If it's neither valid Fernet nor valid Base64, re-raise or fail
-                raise ValidationError("Failed to decrypt API key")
+                raise ValidationError(f"Failed to decode legacy Base64 API key: {e}")
         except Exception as e:
             raise ValidationError(f"Failed to decrypt API key: {e}")
     
