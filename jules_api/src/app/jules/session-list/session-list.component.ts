@@ -431,6 +431,7 @@ export class SessionListComponent implements OnInit {
         error: (err) => {
           this.cacheService.error.set(err.message || 'Failed to delete session');
           this.confirmationDialog.reset();
+          this.sessionToDelete.set(null);
         }
       });
     }
