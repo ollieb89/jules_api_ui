@@ -1,11 +1,4 @@
 import { Routes } from '@angular/router';
-import { UserListComponent } from './components/user-list/user-list.component';
-import { UserFormComponent } from './components/user-form/user-form.component';
-import { SessionListComponent } from './jules/session-list/session-list.component';
-import { SessionCreateComponent } from './jules/session-create/session-create.component';
-import { SessionDetailComponent } from './jules/session-detail/session-detail.component';
-import { SettingsComponent } from './jules/settings/settings.component';
-import { DashboardComponent } from './jules/dashboard/dashboard.component';
 
 export const routes: Routes = [
   {
@@ -15,35 +8,59 @@ export const routes: Routes = [
   },
   {
     path: 'dashboard',
-    component: DashboardComponent
+    loadComponent: () =>
+      import('./jules/dashboard/dashboard.component').then(
+        (module) => module.DashboardComponent
+      )
   },
   {
     path: 'users',
-    component: UserListComponent
+    loadComponent: () =>
+      import('./components/user-list/user-list.component').then(
+        (module) => module.UserListComponent
+      )
   },
   {
     path: 'users/new',
-    component: UserFormComponent
+    loadComponent: () =>
+      import('./components/user-form/user-form.component').then(
+        (module) => module.UserFormComponent
+      )
   },
   {
     path: 'users/:id/edit',
-    component: UserFormComponent
+    loadComponent: () =>
+      import('./components/user-form/user-form.component').then(
+        (module) => module.UserFormComponent
+      )
   },
   {
     path: 'jules',
-    component: SessionListComponent
+    loadComponent: () =>
+      import('./jules/session-list/session-list.component').then(
+        (module) => module.SessionListComponent
+      )
   },
   {
     path: 'jules/create',
-    component: SessionCreateComponent
+    loadComponent: () =>
+      import('./jules/session-create/session-create.component').then(
+        (module) => module.SessionCreateComponent
+      )
   },
   {
     path: 'jules/:id',
-    component: SessionDetailComponent
+    loadComponent: () =>
+      import('./jules/session-detail/session-detail.component').then(
+        (module) => module.SessionDetailComponent
+      )
   },
   {
     path: 'jules/settings',
-    component: SettingsComponent
+    loadComponent: () =>
+      import('./jules/settings/settings.component').then(
+        (module) => module.SettingsComponent
+      )
   },
   {
     path: 'jules/integrations',

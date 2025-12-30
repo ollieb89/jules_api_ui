@@ -1,1 +1,33 @@
-<router-outlet />
+@if (errorState(); as error) {
+  <main
+    class="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 flex items-center justify-center px-6 py-10"
+  >
+    <section
+      class="max-w-xl rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-8 shadow-lg"
+    >
+      <p class="text-sm font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400">
+        App issue
+      </p>
+      <h1 class="mt-2 text-2xl font-semibold text-gray-900 dark:text-gray-100">
+        Something went wrong
+      </h1>
+      <p class="mt-3 text-sm text-gray-600 dark:text-gray-400">
+        {{ error.message }}
+      </p>
+      <div class="mt-6 flex flex-wrap gap-3">
+        <button
+          type="button"
+          class="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+          (click)="handleRecovery()"
+        >
+          Return to dashboard
+        </button>
+      </div>
+      <p class="mt-4 text-xs text-gray-500 dark:text-gray-400">
+        If this keeps happening, try refreshing the page or contact support.
+      </p>
+    </section>
+  </main>
+} @else {
+  <router-outlet />
+}
