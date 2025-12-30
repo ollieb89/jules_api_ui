@@ -1,0 +1,25 @@
+body {
+  background-color: var(--color-background-primary);
+  color: var(--color-text-primary);
+}
+
+a {
+  color: var(--color-interactive-primary);
+  text-decoration: underline;
+}
+
+a:hover {
+  color: var(--color-interactive-primary-hover);
+}
+
+.text-secondary {
+  color: var(--color-text-secondary);
+}
+
+.text-tertiary {
+  color: var(--color-text-tertiary);
+}
+
+.text-disabled {
+  color: var(--color-text-disabled);
+}

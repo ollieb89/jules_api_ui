@@ -1,4 +1,4 @@
-from .example import User
+from .user import User, UserRole
 
 
-__all__ = ["User"]
+__all__ = ["User", "UserRole"]

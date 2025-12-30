@@ -5,6 +5,9 @@ import { FormsModule } from '@angular/forms';
 import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
 import { SessionCacheService, SortField } from '../../services/session-cache.service';
 import { ThemeService } from '../../services/theme.service';
+import { NotificationService } from '../../services/notification.service';
+import { ConfirmDialogService } from '../../services/confirm-dialog.service';
+import { SessionUtilsService } from '../../services/session-utils.service';
 import { Session, SessionState } from '../../models/jules.model';
 
 interface FormattedSession extends Session {
@@ -297,6 +300,9 @@ export class SessionListComponent implements OnInit {
   readonly cacheService = inject(SessionCacheService);
   readonly themeService = inject(ThemeService);
   private router = inject(Router);
+  private notificationService = inject(NotificationService);
+  private confirmDialogService = inject(ConfirmDialogService);
+  private sessionUtils = inject(SessionUtilsService);
 
   @ViewChild(ConfirmationDialogComponent) confirmationDialog!: ConfirmationDialogComponent;
 
@@ -396,12 +402,12 @@ export class SessionListComponent implements OnInit {
   }
 
   viewSession(sessionName: string): void {
-    const id = sessionName.split('/').pop() || sessionName;
+    const id = this.sessionUtils.extractSessionId(sessionName);
     this.router.navigate(['/jules', id]);
   }
 
   sendMessage(sessionName: string): void {
-    const id = sessionName.split('/').pop() || sessionName;
+    const id = this.sessionUtils.extractSessionId(sessionName);
     this.router.navigate(['/jules', id], { queryParams: { action: 'message' } });
   }
 
@@ -433,7 +439,6 @@ export class SessionListComponent implements OnInit {
           this.confirmationDialog.reset();
         }
       });
-    }
   }
 
   onDeleteCancelled(): void {

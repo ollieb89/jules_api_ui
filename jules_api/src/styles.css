@@ -2,34 +2,15 @@
 
 @import "tailwindcss";
 @import '@angular/material/prebuilt-themes/indigo-pink.css';
+@import './styles/colors/palette.css';
+@import './styles/colors/semantic.css';
+@import './styles/colors/dark-mode.css';
+@import './styles/components/button.css';
+@import './styles/components/input.css';
+@import './styles/components/card.css';
+@import './styles/components/text.css';
 
-/* Dark mode CSS variables */
-:root {
-  --color-bg-primary: #ffffff;
-  --color-bg-secondary: #f9fafb;
-  --color-bg-tertiary: #f3f4f6;
-  --color-text-primary: #111827;
-  --color-text-secondary: #6b7280;
-  --color-text-tertiary: #9ca3af;
-  --color-border: #e5e7eb;
-  --color-border-hover: #d1d5db;
-}
-
-.dark {
-  --color-bg-primary: #111827;
-  --color-bg-secondary: #1f2937;
-  --color-bg-tertiary: #374151;
-  --color-text-primary: #f9fafb;
-  --color-text-secondary: #d1d5db;
-  --color-text-tertiary: #9ca3af;
-  --color-border: #374151;
-  --color-border-hover: #4b5563;
-}
-
-/* Apply theme colors to body */
 body {
-  background-color: var(--color-bg-primary);
-  color: var(--color-text-primary);
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
@@ -149,14 +130,34 @@ markdown h2,
 markdown h2[data-cursor-element-id] {
   font-size: 17px !important;
   font-weight: 900 !important;
-  color: rgba(205, 35, 103, 1) !important;
+  color: var(--color-interactive-primary) !important;
   margin-top: 1em;
   margin-bottom: 0.5em;
 }
 
 /* Ensure "Task:" text is bold in markdown */
 markdown h2 strong,
-markdown h2 **,
 .prose h2 strong {
   font-weight: 900 !important;
+}
+
+/* Snackbar notification styles */
+.snackbar-success {
+  --mdc-snackbar-container-color: var(--color-success-500);
+  --mat-snack-bar-button-color: var(--color-text-inverse);
+}
+
+.snackbar-error {
+  --mdc-snackbar-container-color: var(--color-error-500);
+  --mat-snack-bar-button-color: var(--color-text-inverse);
+}
+
+.snackbar-info {
+  --mdc-snackbar-container-color: var(--color-info-500);
+  --mat-snack-bar-button-color: var(--color-text-inverse);
+}
+
+.snackbar-warning {
+  --mdc-snackbar-container-color: var(--color-warning-500);
+  --mat-snack-bar-button-color: var(--color-text-inverse);
 }

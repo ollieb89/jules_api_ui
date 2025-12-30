@@ -1,17 +1,38 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
+import {
+  ApplicationConfig,
+  importProvidersFrom,
+  provideBrowserGlobalErrorListeners
+} from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient, withFetch } from '@angular/common/http';
+import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { provideMarkdown } from 'ngx-markdown';
+import { provideAnimations } from '@angular/platform-browser/animations';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { routes } from './app.routes';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
+import { authInterceptor } from './interceptors/auth.interceptor';
+import { errorInterceptor } from './interceptors/error.interceptor';
+import { loggingInterceptor } from './interceptors/logging.interceptor';
+import { retryInterceptor } from './interceptors/retry.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideClientHydration(withEventReplay()),
-    provideHttpClient(withFetch()),
-    provideMarkdown()
+    provideHttpClient(
+      withFetch(),
+      withInterceptors([
+        authInterceptor,
+        loggingInterceptor,
+        retryInterceptor,
+        errorInterceptor
+      ])
+    ),
+    provideMarkdown(),
+    provideAnimations(),
+    importProvidersFrom(MatDialogModule, MatSnackBarModule)
   ]
 };
