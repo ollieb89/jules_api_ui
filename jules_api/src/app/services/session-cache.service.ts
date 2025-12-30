@@ -168,7 +168,12 @@ export class SessionCacheService {
   deleteSession(sessionId: string): Observable<void> {
     return this.julesService.deleteSession(sessionId).pipe(
       tap(() => {
-        this.sessions.update(sessions => sessions.filter(s => s.name !== sessionId));
+        this.sessions.update(current =>
+          current.filter(s => {
+            const id = s.name.split('/').pop() || s.name;
+            return id !== sessionId;
+          })
+        );
       })
     );
   }
