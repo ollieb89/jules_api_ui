@@ -121,6 +121,12 @@ import { ThemeService } from '../../services/theme.service';
             >
               Configure API settings
             </a>
+            <a
+              routerLink="/jules/integrations"
+              class="px-4 py-2 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+            >
+              Phase 2 integrations
+            </a>
           </div>
           <div class="mt-6 text-xs text-gray-500 dark:text-gray-400">
             Live updates refresh every 2 seconds.
