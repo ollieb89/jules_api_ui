@@ -1,0 +1,62 @@
+button,
+.button,
+.btn,
+.btn-primary {
+  background: var(--color-interactive-primary);
+  color: var(--color-text-inverse);
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+}
+
+button:hover,
+.button:hover,
+.btn:hover,
+.btn-primary:hover {
+  background: var(--color-interactive-primary-hover);
+}
+
+button:active,
+.button:active,
+.btn:active,
+.btn-primary:active {
+  background: var(--color-interactive-primary-active);
+}
+
+button:disabled,
+.button:disabled,
+.btn:disabled,
+.btn-primary:disabled {
+  background: var(--color-interactive-primary-disabled);
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+}
+
+button:focus-visible,
+.button:focus-visible,
+.btn:focus-visible,
+.btn-primary:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-focus-ring),
+    0 0 0 6px var(--color-focus-ring-offset);
+}
+
+.btn-secondary {
+  background: var(--color-interactive-secondary);
+  color: var(--color-text-inverse);
+}
+
+.btn-secondary:hover {
+  background: var(--color-interactive-secondary-hover);
+}
+
+.btn-secondary:active {
+  background: var(--color-interactive-secondary-active);
+}
+
+.btn-secondary:disabled {
+  background: var(--color-interactive-secondary-disabled);
+  color: var(--color-text-disabled);
+}
