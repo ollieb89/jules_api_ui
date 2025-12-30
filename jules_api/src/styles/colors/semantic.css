@@ -1,0 +1,45 @@
+:root {
+  /* Semantic Token Aliases */
+  --color-background-primary: var(--color-neutral-50);
+  --color-background-secondary: var(--color-neutral-100);
+  --color-background-tertiary: var(--color-neutral-200);
+
+  --color-surface-primary: var(--color-neutral-50);
+  --color-surface-secondary: var(--color-neutral-100);
+  --color-surface-elevated: var(--color-neutral-100);
+  --color-surface-overlay: rgba(0, 0, 0, 0.5);
+
+  --color-text-primary: var(--color-neutral-900);
+  --color-text-secondary: var(--color-neutral-600);
+  --color-text-tertiary: var(--color-neutral-500);
+  --color-text-disabled: var(--color-neutral-400);
+  --color-text-inverse: var(--color-neutral-50);
+
+  --color-border-default: var(--color-neutral-200);
+  --color-border-subtle: var(--color-neutral-100);
+  --color-border-strong: var(--color-neutral-300);
+
+  --color-interactive-primary: var(--color-primary-500);
+  --color-interactive-primary-hover: var(--color-primary-600);
+  --color-interactive-primary-active: var(--color-primary-700);
+  --color-interactive-primary-disabled: var(--color-neutral-300);
+
+  --color-interactive-secondary: var(--color-secondary-500);
+  --color-interactive-secondary-hover: var(--color-secondary-600);
+  --color-interactive-secondary-active: var(--color-secondary-700);
+  --color-interactive-secondary-disabled: var(--color-neutral-300);
+
+  /* State Colors */
+  --color-state-success: var(--color-success-500);
+  --color-state-error: var(--color-error-500);
+  --color-state-warning: var(--color-warning-500);
+  --color-state-info: var(--color-info-500);
+
+  /* Focus & Validation */
+  --color-focus-ring: var(--color-primary-300);
+  --color-focus-ring-offset: var(--color-neutral-50);
+
+  --color-validation-success: var(--color-success-500);
+  --color-validation-error: var(--color-error-500);
+  --color-validation-warning: var(--color-warning-500);
+}
