@@ -40,5 +40,15 @@ describe('SessionUtilsService', () => {
       const result = service.extractSessionId('prefix/session-id');
       expect(result).toBe('session-id');
     });
+
+    it('should handle trailing slash', () => {
+      const result = service.extractSessionId('projects/123/sessions/456/');
+      expect(result).toBe('456');
+    });
+
+    it('should handle multiple trailing slashes', () => {
+      const result = service.extractSessionId('projects/123/sessions/456///');
+      expect(result).toBe('456');
+    });
   });
 });
