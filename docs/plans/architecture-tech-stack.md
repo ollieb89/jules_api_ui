@@ -67,7 +67,7 @@ jules_api/
 │   │   ├── models/                # Typed models/interfaces
 │   │   └── interceptors/          # Http interceptors
 │   ├── public/                    # Static assets
-│   └── app.css                    # Tailwind entry
+│   └── styles.css                 # Tailwind entry (imports Tailwind and global styles)
 └── package.json
 ```
 
