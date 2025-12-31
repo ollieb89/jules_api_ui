@@ -15,9 +15,8 @@ class TestGetFernetKey:
     def test_returns_valid_fernet_key(self):
         """Test that get_fernet_key returns a valid Fernet key."""
         key = get_fernet_key()
-        # Should be able to create a Fernet instance with this key
-        f = Fernet(key)
-        assert f is not None
+        # Should be able to create a Fernet instance with this key without raising an exception
+        Fernet(key)
 
     def test_key_is_deterministic(self):
         """Test that get_fernet_key always returns the same key for the same SECRET_KEY."""
@@ -180,13 +179,15 @@ class TestJulesSettingsErrorHandling:
         """Test error when Fernet token is corrupted but looks like Fernet format."""
         settings_obj = JulesSettings.get_settings()
         
-        # Create a valid Fernet token then corrupt it slightly
+        # Create a valid Fernet token then corrupt it
         key = get_fernet_key()
         f = Fernet(key)
         valid_token = f.encrypt(b"test-key").decode()
         
-        # Corrupt the token (change a few characters in the middle)
-        corrupted_token = valid_token[:20] + "XXX" + valid_token[23:]
+        # Corrupt the token by replacing characters in the middle (approximately 20% of the token)
+        mid_point = len(valid_token) // 2
+        corruption_length = max(1, len(valid_token) // 5)
+        corrupted_token = valid_token[:mid_point] + "X" * corruption_length + valid_token[mid_point + corruption_length:]
         settings_obj._encrypted_api_key = corrupted_token
         settings_obj.save()
         
@@ -215,26 +216,28 @@ class TestJulesSettingsErrorHandling:
 @pytest.mark.django_db
 class TestJulesSettingsMaskedApiKey:
     """Tests for get_masked_api_key method."""
+    
+    # Test constants
+    LONG_API_KEY = "abcdefghijklmnop"  # 16 characters
+    SHORT_API_KEY = "short"  # 5 characters
 
     def test_mask_long_key(self):
         """Test that long API keys are properly masked."""
         settings_obj = JulesSettings.get_settings()
-        test_key = "abcdefghijklmnop"  # 16 characters
         
-        settings_obj.set_api_key(test_key)
+        settings_obj.set_api_key(self.LONG_API_KEY)
         settings_obj.save()
         
         masked = settings_obj.get_masked_api_key()
         
         assert masked == "abcd...mnop"
-        assert len(masked) < len(test_key)
+        assert len(masked) < len(self.LONG_API_KEY)
 
     def test_mask_short_key(self):
         """Test that short API keys are fully masked."""
         settings_obj = JulesSettings.get_settings()
-        test_key = "short"  # 5 characters
         
-        settings_obj.set_api_key(test_key)
+        settings_obj.set_api_key(self.SHORT_API_KEY)
         settings_obj.save()
         
         masked = settings_obj.get_masked_api_key()
