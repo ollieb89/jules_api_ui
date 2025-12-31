@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { JulesService } from '../../services/jules.service';
+import { JulesApiError } from '../../models/jules.model';
 
 interface SettingsResponse {
   api_key_configured: boolean;
@@ -190,8 +191,8 @@ export class SettingsComponent implements OnInit {
         this.updateConnectionStatus(response.api_key_configured);
         this.loading.set(false);
       },
-      error: (err) => {
-        this.error.set(err.message || 'Failed to load settings');
+      error: (err: JulesApiError) => {
+        this.error.set(this.julesService.getErrorMessage(err, 'Failed to load settings'));
         this.loading.set(false);
       }
     });
@@ -211,8 +212,8 @@ export class SettingsComponent implements OnInit {
           this.loadSettings();
           this.saving.set(false);
         },
-        error: (err) => {
-          this.error.set(err.message || 'Failed to save API key');
+        error: (err: JulesApiError) => {
+          this.error.set(this.julesService.getErrorMessage(err, 'Failed to save API key'));
           this.saving.set(false);
         }
       });
@@ -235,8 +236,8 @@ export class SettingsComponent implements OnInit {
         }
         this.testing.set(false);
       },
-      error: (err) => {
-        this.error.set(err.message || 'Failed to test connection');
+      error: (err: JulesApiError) => {
+        this.error.set(this.julesService.getErrorMessage(err, 'Failed to test connection'));
         this.connectionStatus.set('error');
         this.testing.set(false);
       }
@@ -266,4 +267,3 @@ export class SettingsComponent implements OnInit {
     return this.apiKeyForm.get('apiKey');
   }
 }
-

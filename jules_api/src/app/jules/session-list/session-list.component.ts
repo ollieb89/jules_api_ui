@@ -8,7 +8,8 @@ import { ThemeService } from '../../services/theme.service';
 import { NotificationService } from '../../services/notification.service';
 import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 import { SessionUtilsService } from '../../services/session-utils.service';
-import { Session, SessionState } from '../../models/jules.model';
+import { JulesApiError, Session, SessionState } from '../../models/jules.model';
+import { getApiErrorMessage } from '../../utils/api-error';
 
 interface FormattedSession extends Session {
   formattedCreateTime: string;
@@ -449,8 +450,8 @@ export class SessionListComponent implements OnInit {
           this.confirmationDialog.reset();
           this.sessionToDelete.set(null);
         },
-        error: (err) => {
-          this.cacheService.error.set(err.message || 'Failed to delete session');
+        error: (err: JulesApiError) => {
+          this.cacheService.error.set(getApiErrorMessage(err, 'Failed to delete session'));
           this.confirmationDialog.reset();
         }
       });

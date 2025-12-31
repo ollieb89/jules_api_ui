@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { JulesService } from '../../services/jules.service';
-import { Source, CreateSession } from '../../models/jules.model';
+import { CreateSession, JulesApiError, Source } from '../../models/jules.model';
 
 type WizardStep = 1 | 2 | 3;
 
@@ -288,9 +288,9 @@ export class SessionCreateComponent {
         this.sources.set(response.sources);
         this.loadingSources.set(false);
       },
-      error: (err) => {
+      error: (err: JulesApiError) => {
         console.error('Error loading sources:', err);
-        this.error.set(err.message || 'Failed to load sources');
+        this.error.set(this.julesService.getErrorMessage(err, 'Failed to load sources'));
         this.loadingSources.set(false);
       }
     });
@@ -351,8 +351,8 @@ export class SessionCreateComponent {
           const id = session.name.split('/').pop() || session.name;
           this.router.navigate(['/jules', id]);
         },
-        error: (err) => {
-          this.error.set(err.message || 'Failed to create session');
+        error: (err: JulesApiError) => {
+          this.error.set(this.julesService.getErrorMessage(err, 'Failed to create session'));
           this.loading.set(false);
         }
       });

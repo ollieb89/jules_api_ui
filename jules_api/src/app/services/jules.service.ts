@@ -15,11 +15,16 @@ import {
   UpdateApiKeyResponse,
   TestConnectionResponse
 } from '../models/jules.model';
+import { getApiErrorMessage } from '../utils/api-error';
 
 @Injectable({ providedIn: 'root' })
 export class JulesService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/jules`;
+
+  getErrorMessage(error: unknown, fallback: string): string {
+    return getApiErrorMessage(error, fallback);
+  }
 
   // Sources
   getSources(): Observable<PaginatedSourcesResponse> {

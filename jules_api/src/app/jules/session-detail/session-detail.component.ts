@@ -6,7 +6,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { MarkdownComponent } from 'ngx-markdown';
 import { JulesService } from '../../services/jules.service';
 import { AuthTokenService } from '../../services/auth-token.service';
-import { Session, SessionState } from '../../models/jules.model';
+import { JulesApiError, Session, SessionState } from '../../models/jules.model';
 import { ActivityTimelineComponent } from '../activity-timeline/activity-timeline.component';
 import { CodeBlockStyleDirective } from '../../directives/code-block-style.directive';
 import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
@@ -101,8 +101,8 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
         // Extract PR info from session if available (placeholder)
         // this.extractPRInfo(session);
       },
-      error: (err) => {
-        this.error.set(err.message || 'Failed to load session');
+      error: (err: JulesApiError) => {
+        this.error.set(this.julesService.getErrorMessage(err, 'Failed to load session'));
         this.loading.set(false);
       }
     });
@@ -128,8 +128,8 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
           this.sendingMessage.set(false);
           this.refreshSession();
         },
-        error: (err) => {
-          this.error.set(err.message || 'Failed to send message');
+        error: (err: JulesApiError) => {
+          this.error.set(this.julesService.getErrorMessage(err, 'Failed to send message'));
           this.sendingMessage.set(false);
         }
       });
@@ -148,8 +148,8 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
         this.approvingPlan.set(false);
         this.refreshSession();
       },
-      error: (err) => {
-        this.error.set(err.message || 'Failed to approve plan');
+      error: (err: JulesApiError) => {
+        this.error.set(this.julesService.getErrorMessage(err, 'Failed to approve plan'));
         this.approvingPlan.set(false);
       }
     });
@@ -165,9 +165,9 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
         this.deleteDialog.reset();
         this.router.navigate(['/jules']);
       },
-      error: (err) => {
+      error: (err: JulesApiError) => {
         this.deleteDialog.reset();
-        this.error.set(err.message || 'Failed to delete session');
+        this.error.set(this.julesService.getErrorMessage(err, 'Failed to delete session'));
       }
     });
   }
