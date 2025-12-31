@@ -27,13 +27,6 @@ django-cors-headers = ">=4.3,<5"
 djangorestframework-simplejwt = ">=5.5,<6"
 # Database
 psycopg = { version = ">=3.3.2, <4", extras = ["binary"] }
-# FastAPI (to be removed after migration)
-fastapi = ">=0.125.0, <0.126"
-uvicorn = ">=0.38.0, <0.39"
-python-multipart = ">=0.0.21, <0.0.22"
-sqlalchemy = ">=2.0.45, <3"
-alembic = ">=1.17.2, <2"
-pydantic-settings = ">=2.12.0, <3"
 # Utilities
 python-dotenv = ">=1.2.1, <2"
 cryptography = ">=46.0.3, <47"
