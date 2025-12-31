@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import timezone as dt_timezone
+
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 
@@ -13,7 +15,7 @@ def parse_api_datetime(value: str | None) -> timezone.datetime | None:
     if parsed is None:
         return None
     if timezone.is_naive(parsed):
-        return timezone.make_aware(parsed, timezone=timezone.utc)
+        return timezone.make_aware(parsed, timezone=dt_timezone.utc)
     return parsed
 
 
