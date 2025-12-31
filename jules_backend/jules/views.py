@@ -1,3 +1,7 @@
+import json
+import time
+
+from django.http import StreamingHttpResponse
 from rest_framework import status, viewsets
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -9,13 +13,14 @@ from .serializers import (
     ActivitySerializer,
     ApiKeyUpdateSerializer,
     ApprovePlanSerializer,
+    JulesActivitySerializer,
     JulesSettingsSerializer,
     SendMessageSerializer,
     SessionCreateSerializer,
     SessionSerializer,
     SourceSerializer,
 )
-from .models import JulesSettings
+from .models import JulesActivity, JulesSettings
 from .services import JulesApiClient
 from .utils import handle_api_exception
 
@@ -149,6 +154,34 @@ class SessionViewSet(viewsets.ViewSet):
             )
         except Exception as e:
             return handle_api_exception(e)
+
+    @action(detail=True, methods=["get"], url_path="activity-stream")
+    def activity_stream(self, request, pk=None):  # noqa: ARG002
+        """Stream cached activities for a session using SSE."""
+        last_event_id = request.headers.get("Last-Event-ID")
+        if not last_event_id:
+            last_event_id = request.query_params.get("last_event_id")
+        heartbeat = int(request.query_params.get("heartbeat", 15))
+
+        def event_generator():
+            yield "retry: 5000\n\n"
+            last_seen = int(last_event_id) if last_event_id and last_event_id.isdigit() else 0
+            while True:
+                activities = (
+                    JulesActivity.objects.filter(session__session_id=pk, id__gt=last_seen)
+                    .order_by("id")[:100]
+                )
+                for activity in activities:
+                    payload = JulesActivitySerializer(activity).data
+                    yield f"id: {activity.id}\n"
+                    yield "event: activity\n"
+                    yield f"data: {json.dumps(payload)}\n\n"
+                    last_seen = activity.id
+                time.sleep(heartbeat)
+
+        response = StreamingHttpResponse(event_generator(), content_type="text/event-stream")
+        response["Cache-Control"] = "no-cache"
+        return response
 
 
 class JulesHealthViewSet(viewsets.ViewSet):

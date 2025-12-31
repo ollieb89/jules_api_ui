@@ -1,10 +1,13 @@
-from django.db import models
-from django.core.exceptions import ValidationError
-from django.conf import settings
 import base64
-from cryptography.fernet import Fernet
 import hashlib
 from functools import lru_cache
+
+from cryptography.fernet import Fernet
+from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.db import models
+from django.utils import timezone
+
 
 @lru_cache(maxsize=1)
 def get_fernet():
@@ -20,6 +23,7 @@ def get_fernet():
     key = hashlib.sha256(settings.SECRET_KEY.encode()).digest()
     key_b64 = base64.urlsafe_b64encode(key)
     return Fernet(key_b64)
+
 
 class JulesSettings(models.Model):
     """Settings for Jules API configuration."""
@@ -101,3 +105,40 @@ class JulesSettings(models.Model):
         """Get or create the singleton settings instance."""
         settings, _ = cls.objects.get_or_create(pk=1)
         return settings
+
+
+class JulesSession(models.Model):
+    """Session metadata cached from the Jules API."""
+
+    session_id = models.CharField(max_length=255, unique=True)
+    source = models.CharField(max_length=255, blank=True)
+    state = models.CharField(max_length=64, blank=True)
+    create_time = models.DateTimeField(null=True, blank=True)
+    last_polled_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "jules_sessions"
+
+    def mark_polled(self) -> None:
+        self.last_polled_at = timezone.now()
+        self.save(update_fields=["last_polled_at"])
+
+
+class JulesActivity(models.Model):
+    """Activity event cached from the Jules API."""
+
+    session = models.ForeignKey(
+        JulesSession, on_delete=models.CASCADE, related_name="activities"
+    )
+    name = models.CharField(max_length=255)
+    activity_type = models.CharField(max_length=64, blank=True)
+    payload = models.JSONField(default=dict)
+    create_time = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "jules_activities"
+        constraints = [
+            models.UniqueConstraint(fields=["session", "name"], name="unique_session_activity")
+        ]
