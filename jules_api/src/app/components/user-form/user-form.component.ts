@@ -89,12 +89,12 @@ export class UserFormComponent implements OnInit {
         
         // Handle field-specific errors if available
         if (hasFieldErrors(err)) {
-          this.fieldErrors.set(err.fieldErrors ?? null);
+          this.fieldErrors.set(err.fieldErrors);
           // Set field-specific errors on form controls
-          Object.keys(err.fieldErrors ?? {}).forEach((field) => {
+          Object.keys(err.fieldErrors).forEach((field) => {
             const control = this.userForm.get(field);
             if (control) {
-              control.setErrors({ serverError: err.fieldErrors?.[field][0] });
+              control.setErrors({ serverError: err.fieldErrors[field][0] });
               control.markAsTouched();
             }
           });

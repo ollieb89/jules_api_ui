@@ -28,16 +28,14 @@ export class ApiErrorService {
     } else if (error.status >= 500) {
       const apiError = error.error as JulesApiError | undefined;
       errorMessage = apiError?.error || 'Server error. Please try again later.';
-    } else if (typeof error.error === 'object' && error.error) {
-      const apiError = error.error as JulesApiError;
-      errorMessage = apiError.error || errorMessage;
     } else {
       errorMessage = `Error: ${error.status} ${error.statusText}`;
     }
 
-    return {
-      error: errorMessage,
-      fieldErrors: fieldErrors ?? undefined
-    };
+    const result: JulesApiError = { error: errorMessage };
+    if (fieldErrors) {
+      result.fieldErrors = fieldErrors;
+    }
+    return result;
   }
 }

@@ -1,3 +1,5 @@
+import { JulesApiError } from './jules.model';
+
 export interface User {
   id: number;
   name: string;
@@ -26,8 +28,10 @@ export interface ApiError {
   [field: string]: string[];
 }
 
-export interface HttpErrorWithFields {
-  fieldErrors?: ApiError;
+export interface HttpErrorWithFields extends JulesApiError {
+  // This interface extends JulesApiError with a required fieldErrors property
+  // for type narrowing when checking for field errors
+  fieldErrors: ApiError;
 }
 
 export interface ValidationErrorResponse {
@@ -58,6 +62,8 @@ export function hasFieldErrors(error: unknown): error is HttpErrorWithFields {
     error !== null &&
     typeof error === 'object' &&
     'fieldErrors' in error &&
+    (error as HttpErrorWithFields).fieldErrors !== null &&
+    (error as HttpErrorWithFields).fieldErrors !== undefined &&
     typeof (error as HttpErrorWithFields).fieldErrors === 'object'
   );
 }

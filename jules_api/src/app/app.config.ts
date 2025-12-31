@@ -32,9 +32,9 @@ export const appConfig: ApplicationConfig = {
       withFetch(),
       withInterceptors([
         authInterceptor,
-        julesApiErrorInterceptor,
         loggingInterceptor,
-        retryInterceptor
+        retryInterceptor,
+        julesApiErrorInterceptor
       ])
     ),
     provideMarkdown(),
