@@ -24,14 +24,12 @@ def test_jules_endpoints_require_authentication(path):
 @pytest.mark.parametrize(
     ("method", "path", "payload"),
     [
-        ("get", "/api/jules/sessions/", None),
         ("post", "/api/jules/sessions/", {"prompt": "Test", "source": "repo"}),
-        ("get", "/api/jules/settings/", None),
         ("post", "/api/jules/settings/api-key/", {"api_key": "secret"}),
         ("post", "/api/jules/settings/test/", None),
     ],
 )
-def test_jules_settings_and_sessions_require_authentication(method, path, payload):
+def test_jules_post_endpoints_require_authentication(method, path, payload):
     client = APIClient()
 
     request = getattr(client, method)
