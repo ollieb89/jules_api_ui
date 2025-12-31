@@ -184,10 +184,8 @@ class TestJulesSettingsErrorHandling:
         f = Fernet(key)
         valid_token = f.encrypt(b"test-key").decode()
         
-        # Corrupt the token by replacing characters in the middle (approximately 20% of the token)
-        mid_point = len(valid_token) // 2
-        corruption_length = max(1, len(valid_token) // 5)
-        corrupted_token = valid_token[:mid_point] + "X" * corruption_length + valid_token[mid_point + corruption_length:]
+        # Corrupt the token by replacing some characters to make it invalid
+        corrupted_token = valid_token[:-10] + "CORRUPTED!"
         settings_obj._encrypted_api_key = corrupted_token
         settings_obj.save()
         
@@ -217,7 +215,7 @@ class TestJulesSettingsErrorHandling:
 class TestJulesSettingsMaskedApiKey:
     """Tests for get_masked_api_key method."""
     
-    # Test constants
+    # Test data constants
     LONG_API_KEY = "abcdefghijklmnop"  # 16 characters
     SHORT_API_KEY = "short"  # 5 characters
 
@@ -230,7 +228,9 @@ class TestJulesSettingsMaskedApiKey:
         
         masked = settings_obj.get_masked_api_key()
         
-        assert masked == "abcd...mnop"
+        # Expected format: first 4 chars + "..." + last 4 chars
+        expected = f"{self.LONG_API_KEY[:4]}...{self.LONG_API_KEY[-4:]}"
+        assert masked == expected
         assert len(masked) < len(self.LONG_API_KEY)
 
     def test_mask_short_key(self):
