@@ -116,7 +116,7 @@ bun run start
 # Build for production
 bun run build
 
-# Run unit tests (Vitest)
+# Run unit tests
 bun run test
 
 # Watch mode for development
@@ -128,9 +128,9 @@ bun run serve:ssr:jules_api
 
 ### Frontend Architecture
 
-- **Framework**: Angular 21.0.6
+- **Framework**: Angular 21.0.0
 - **Styling**: Tailwind CSS v4.1
-- **Testing**: Vitest 4.0
+- **Testing**: Angular Testing (Vitest configured)
 - **Package Manager**: Bun 1.3.5
 - **SSR**: Angular SSR with Express
 - **Components**: Standalone components with signals
@@ -182,18 +182,13 @@ Create a `.env` file in `jules_backend/` with the following:
 # Database
 DATABASE_URL=postgresql://user:password@localhost:5432/jules_db
 
-# Django Settings
-DJANGO_SECRET_KEY=your-secret-key-here
-DEBUG=True
-ALLOWED_HOSTS=localhost,127.0.0.1
-
-# FastAPI Settings
+# Application Settings
 APP_NAME="Jules API"
+DEBUG=True
 CORS_ORIGINS=["http://localhost:4700"]
-
-# Jules API (optional)
-JULES_API_KEY=your-jules-api-key-here
 ```
+
+**Note**: Additional environment variables may be required for Django settings (e.g., `DJANGO_SECRET_KEY`, `ALLOWED_HOSTS`) or Jules API integration (e.g., `JULES_API_KEY`) depending on your specific deployment needs.
 
 ### Database Setup
 
@@ -563,7 +558,7 @@ This project is licensed under the MIT License. See the LICENSE file for details
 
 ## 🎯 Project Status
 
-**Current Version**: 0.1.0 (Development)
+**Current Version**: 0.0.0 (Development)
 
 **Active Development**: ✅ Yes
 
