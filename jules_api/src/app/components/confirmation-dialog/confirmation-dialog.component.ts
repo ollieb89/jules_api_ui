@@ -8,12 +8,15 @@ import { CommonModule } from '@angular/common';
   template: `
     <dialog
       #dialog
+      role="alertdialog"
+      aria-labelledby="confirmation-dialog-title"
+      aria-describedby="confirmation-dialog-message"
       class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-0 backdrop:bg-black/50 min-w-[320px] max-w-lg text-left"
       (cancel)="onCancel($event)"
     >
       <div class="p-6">
-        <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">{{ title }}</h2>
-        <p class="text-gray-600 dark:text-gray-300 mb-6">{{ message }}</p>
+        <h2 id="confirmation-dialog-title" class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">{{ title }}</h2>
+        <p id="confirmation-dialog-message" class="text-gray-600 dark:text-gray-300 mb-6">{{ message }}</p>
 
         <div class="flex justify-end gap-3">
           <button

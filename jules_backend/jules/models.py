@@ -8,6 +8,13 @@ from cryptography.fernet import Fernet, InvalidToken
 
 def get_cipher_suite():
     """Derive a Fernet key from the Django SECRET_KEY."""
+    # Validate SECRET_KEY strength
+    if not settings.SECRET_KEY or len(settings.SECRET_KEY) < 32:
+        raise ValidationError(
+            "Django SECRET_KEY must be at least 32 characters long for secure encryption. "
+            "Please ensure SECRET_KEY is properly configured in settings."
+        )
+    
     # SHA256 the secret key to get 32 bytes
     key = hashlib.sha256(settings.SECRET_KEY.encode()).digest()
     # Base64 encode it for Fernet
@@ -44,7 +51,9 @@ class JulesSettings(models.Model):
         try:
             cipher = get_cipher_suite()
             self._encrypted_api_key = cipher.encrypt(api_key.encode()).decode()
-        except Exception as e:
+        except (TypeError, AttributeError) as e:
+            # TypeError: if api_key is not a string
+            # AttributeError: if api_key doesn't have encode method
             raise ValidationError(f"Failed to encrypt API key: {e}")
 
     def get_api_key(self) -> str | None:
@@ -60,9 +69,13 @@ class JulesSettings(models.Model):
             # InvalidToken is raised by Fernet if decryption fails
             # ValueError might be raised if encoding is messed up
             try:
-                return base64.b64decode(self._encrypted_api_key.encode()).decode()
-            except Exception as e:
-                raise ValidationError(f"Failed to decrypt API key: {e}")
+                legacy_key = base64.b64decode(self._encrypted_api_key.encode()).decode()
+                return legacy_key
+            except (ValueError, UnicodeDecodeError) as decode_error:
+                # More specific error message indicating both decryption and legacy decode failed
+                raise ValidationError(
+                    f"Failed to decrypt API key with Fernet and failed to decode as legacy base64 key: {decode_error}"
+                )
 
     def get_masked_api_key(self) -> str | None:
         """Return masked version of API key for display."""
