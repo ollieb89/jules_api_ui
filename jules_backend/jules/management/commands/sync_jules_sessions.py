@@ -24,30 +24,60 @@ class Command(BaseCommand):
         synced_sessions = 0
         synced_activities = 0
 
-        while True:
-            data = client.list_sessions(page_size=page_size, page_token=page_token)
-            sessions = data.get("sessions", [])
-            for session_data in sessions:
-                session = upsert_session(session_data)
-                synced_sessions += 1
-
-                activity_token = None
-                while True:
-                    activities_payload = client.list_activities(
-                        session_id=session.name,
-                        page_size=page_size,
-                        page_token=activity_token,
+        try:
+            while True:
+                try:
+                    data = client.list_sessions(page_size=page_size, page_token=page_token)
+                except Exception as e:
+                    self.stdout.write(
+                        self.style.ERROR(f"Failed to fetch sessions: {e}")
                     )
-                    activities = activities_payload.get("activities", [])
-                    upsert_activities(session, activities)
-                    synced_activities += len(activities)
-                    activity_token = activities_payload.get("nextPageToken")
-                    if not activity_token:
-                        break
+                    break
 
-            page_token = data.get("nextPageToken")
-            if not page_token:
-                break
+                sessions = data.get("sessions", [])
+                for session_data in sessions:
+                    try:
+                        session = upsert_session(session_data)
+                        synced_sessions += 1
+
+                        activity_token = None
+                        while True:
+                            try:
+                                activities_payload = client.list_activities(
+                                    session_id=session.name,
+                                    page_size=page_size,
+                                    page_token=activity_token,
+                                )
+                            except Exception as e:
+                                self.stdout.write(
+                                    self.style.WARNING(
+                                        f"Failed to fetch activities for {session.name}: {e}"
+                                    )
+                                )
+                                break
+
+                            activities = activities_payload.get("activities", [])
+                            upsert_activities(session, activities)
+                            synced_activities += len(activities)
+                            activity_token = activities_payload.get("nextPageToken")
+                            if not activity_token:
+                                break
+                    except Exception as e:
+                        self.stdout.write(
+                            self.style.WARNING(
+                                f"Failed to sync session {session_data.get('name', 'unknown')}: {e}"
+                            )
+                        )
+                        continue
+
+                page_token = data.get("nextPageToken")
+                if not page_token:
+                    break
+
+        except Exception as e:
+            self.stdout.write(
+                self.style.ERROR(f"Sync operation failed: {e}")
+            )
 
         self.stdout.write(
             self.style.SUCCESS(

@@ -34,13 +34,24 @@ def upsert_session(session_data: dict) -> JulesSession:
         ),
         "raw_payload": session_data,
     }
-    session, _ = JulesSession.objects.update_or_create(name=name, defaults=defaults)
+    session, created = JulesSession.objects.get_or_create(
+        name=name,
+        defaults=defaults,
+    )
+    if not created:
+        has_changes = False
+        for field_name, value in defaults.items():
+            if getattr(session, field_name) != value:
+                setattr(session, field_name, value)
+                has_changes = True
+        if has_changes:
+            session.save(update_fields=list(defaults.keys()) + ["last_synced_at"])
     return session
 
 
 def detect_activity_type(activity_data: dict) -> str:
     for key in ("planGenerated", "planApproved", "progressUpdated", "sessionCompleted"):
-        if activity_data.get(key) is not None:
+        if activity_data.get(key):
             return key
     return ""
 
