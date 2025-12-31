@@ -87,6 +87,41 @@ class JulesApiClient:
         return min(delay, MAX_RETRY_DELAY)
 
     def _request(self, method: str, url: str, **kwargs: Any) -> httpx.Response:
+        """
+        Execute an HTTP request with automatic retry logic for transient failures.
+
+        Retries are performed for:
+        - Timeout exceptions (httpx.TimeoutException)
+        - Request errors (httpx.RequestError)
+        - Retryable HTTP status codes (408, 429, 500, 502, 503, 504)
+
+        Retry behavior:
+        - Uses exponential backoff with configurable factor (BACKOFF_FACTOR)
+        - Honors Retry-After headers from upstream services
+        - Caps delay at MAX_RETRY_DELAY to prevent indefinite blocking
+        - Logs warnings for each retry attempt
+
+        Note: This method uses synchronous time.sleep() for retry delays, which blocks
+        the current thread. In a production Django application with limited worker threads,
+        long retry delays (especially from Retry-After headers) could reduce concurrency.
+        For high-traffic scenarios, consider:
+        - Using async/await with httpx.AsyncClient and asyncio.sleep
+        - Implementing retry logic at a higher level (e.g., via Celery task queue)
+        - Configuring shorter MAX_RETRY_DELAY values
+
+        Args:
+            method: HTTP method (GET, POST, etc.)
+            url: Full URL to request
+            **kwargs: Additional arguments passed to httpx.Client.request
+
+        Returns:
+            httpx.Response: Successful response from upstream
+
+        Raises:
+            httpx.TimeoutException: If all retries are exhausted due to timeouts
+            httpx.RequestError: If all retries are exhausted due to connection errors
+            httpx.HTTPStatusError: If response has non-retryable error status code
+        """
         for attempt in range(MAX_RETRIES + 1):
             try:
                 response = self.client.request(method, url, **kwargs)
