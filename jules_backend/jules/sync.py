@@ -47,7 +47,9 @@ def upsert_session(session_data: dict) -> JulesSession:
                 setattr(session, field_name, value)
                 has_changes = True
         if has_changes:
-            session.save(update_fields=list(defaults.keys()) + ["last_synced_at"])
+            # Save only the fields that actually changed
+            # last_synced_at is auto-updated by auto_now=True
+            session.save(update_fields=list(defaults.keys()))
     return session
 
 

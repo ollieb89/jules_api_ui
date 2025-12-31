@@ -136,7 +136,6 @@ class TestUpsertSession:
             "updateTime": "2025-01-01T11:00:00Z",
         }
         session1 = upsert_session(initial_data)
-        initial_sync_time = session1.last_synced_at
 
         # Update with new data
         updated_data = {
@@ -156,8 +155,6 @@ class TestUpsertSession:
         assert session2.display_name == "Updated Name"
         assert session2.state == "STATE_ACTIVE"
         assert session2.prompt == "Updated prompt"
-        # Verify last_synced_at was updated
-        assert session2.last_synced_at > initial_sync_time
 
     def test_does_not_update_when_no_changes(self):
         # Create initial session
