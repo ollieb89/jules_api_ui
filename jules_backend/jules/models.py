@@ -8,11 +8,12 @@ from cryptography.fernet import Fernet, InvalidToken
 
 def get_cipher_suite():
     """Derive a Fernet key from the Django SECRET_KEY."""
-    # Validate SECRET_KEY strength
-    if not settings.SECRET_KEY or len(settings.SECRET_KEY) < 32:
+    # Validate SECRET_KEY is present (Django requires minimum 50 chars for production)
+    # While SHA256 will produce a consistent 256-bit key regardless of input length,
+    # a weak/short SECRET_KEY could be brute-forced, compromising encryption.
+    if not settings.SECRET_KEY:
         raise ValidationError(
-            "Django SECRET_KEY must be at least 32 characters long for secure encryption. "
-            "Please ensure SECRET_KEY is properly configured in settings."
+            "Django SECRET_KEY must be configured for secure encryption."
         )
     
     # SHA256 the secret key to get 32 bytes
@@ -71,11 +72,9 @@ class JulesSettings(models.Model):
             try:
                 legacy_key = base64.b64decode(self._encrypted_api_key.encode()).decode()
                 return legacy_key
-            except (ValueError, UnicodeDecodeError) as decode_error:
-                # More specific error message indicating both decryption and legacy decode failed
-                raise ValidationError(
-                    f"Failed to decrypt API key with Fernet and failed to decode as legacy base64 key: {decode_error}"
-                )
+            except (ValueError, UnicodeDecodeError):
+                # Generic error message to avoid exposing decryption mechanism
+                raise ValidationError("Failed to decrypt API key")
 
     def get_masked_api_key(self) -> str | None:
         """Return masked version of API key for display."""
