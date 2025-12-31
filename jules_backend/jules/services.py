@@ -1,15 +1,38 @@
+import logging
 import os
+import threading
 import time
 from typing import Any
 
 import httpx
 from django.conf import settings
 
+logger = logging.getLogger(__name__)
+
 DEFAULT_TIMEOUT = httpx.Timeout(30.0, connect=10.0)
 MAX_RETRIES = 3
 BACKOFF_FACTOR = 0.5
 RETRY_STATUS_CODES = {408, 429, 500, 502, 503, 504}
-_CLIENT = httpx.Client(timeout=DEFAULT_TIMEOUT)
+MAX_RETRY_DELAY = 60.0  # Cap retry delay at 60 seconds
+
+# Thread-local storage for httpx clients to ensure thread-safety
+_thread_local = threading.local()
+
+
+def _get_client() -> httpx.Client:
+    """Get or create a thread-local httpx.Client instance."""
+    if not hasattr(_thread_local, "client"):
+        _thread_local.client = httpx.Client(timeout=DEFAULT_TIMEOUT)
+    return _thread_local.client
+
+
+def cleanup_clients() -> None:
+    """Close all thread-local httpx.Client instances."""
+    if hasattr(_thread_local, "client"):
+        try:
+            _thread_local.client.close()
+        except Exception as e:
+            logger.warning("Error closing httpx client: %s", str(e))
 
 
 class JulesApiClient:
@@ -22,60 +45,95 @@ class JulesApiClient:
         # Try to get API key from database settings first, then environment
         try:
             from .models import JulesSettings
+
             settings_obj = JulesSettings.get_settings()
             self.api_key = settings_obj.get_api_key()
         except Exception:
             self.api_key = None
-        
+
         if not self.api_key:
-            self.api_key = getattr(settings, "JULES_API_KEY", os.getenv("JULES_API_KEY"))
-        
+            self.api_key = getattr(
+                settings, "JULES_API_KEY", os.getenv("JULES_API_KEY")
+            )
+
         if not self.api_key:
             raise ValueError("JULES_API_KEY must be set in settings or environment")
         self.headers = {
             "X-Goog-Api-Key": self.api_key,
             "Content-Type": "application/json",
         }
-        self.client = _CLIENT
+
+    @property
+    def client(self) -> httpx.Client:
+        """Get the thread-local httpx.Client instance."""
+        return _get_client()
 
     def _get_url(self, endpoint: str) -> str:
         """Construct full API URL."""
         return f"{self.BASE_URL}/{self.API_VERSION}/{endpoint}"
 
-    def _get_backoff_delay(self, attempt: int, response: httpx.Response | None = None) -> float:
+    def _get_backoff_delay(
+        self, attempt: int, response: httpx.Response | None = None
+    ) -> float:
+        delay = BACKOFF_FACTOR * (2**attempt)
         if response is not None:
             retry_after = response.headers.get("Retry-After")
             if retry_after:
                 try:
-                    return float(retry_after)
+                    delay = float(retry_after)
                 except ValueError:
                     pass
-        return BACKOFF_FACTOR * (2**attempt)
+        # Cap the delay to prevent indefinite blocking
+        return min(delay, MAX_RETRY_DELAY)
 
     def _request(self, method: str, url: str, **kwargs: Any) -> httpx.Response:
         for attempt in range(MAX_RETRIES + 1):
             try:
-                response = self.client.request(method, url, timeout=DEFAULT_TIMEOUT, **kwargs)
-            except httpx.TimeoutException:
+                response = self.client.request(method, url, **kwargs)
+            except httpx.TimeoutException as e:
                 if attempt >= MAX_RETRIES:
                     raise
-                time.sleep(self._get_backoff_delay(attempt))
+                delay = self._get_backoff_delay(attempt)
+                logger.warning(
+                    "Request timeout on attempt %d/%d: %s. Retrying in %.2fs",
+                    attempt + 1,
+                    MAX_RETRIES + 1,
+                    str(e),
+                    delay,
+                )
+                time.sleep(delay)
                 continue
-            except httpx.RequestError:
+            except httpx.RequestError as e:
                 if attempt >= MAX_RETRIES:
                     raise
-                time.sleep(self._get_backoff_delay(attempt))
+                delay = self._get_backoff_delay(attempt)
+                logger.warning(
+                    "Request error on attempt %d/%d: %s. Retrying in %.2fs",
+                    attempt + 1,
+                    MAX_RETRIES + 1,
+                    str(e),
+                    delay,
+                )
+                time.sleep(delay)
                 continue
 
             if response.status_code in RETRY_STATUS_CODES and attempt < MAX_RETRIES:
+                delay = self._get_backoff_delay(attempt, response)
+                logger.warning(
+                    "Retryable status %d on attempt %d/%d for %s %s. Retrying in %.2fs",
+                    response.status_code,
+                    attempt + 1,
+                    MAX_RETRIES + 1,
+                    method,
+                    url,
+                    delay,
+                )
                 response.close()
-                time.sleep(self._get_backoff_delay(attempt, response))
+                time.sleep(delay)
                 continue
 
             response.raise_for_status()
             return response
-
-        raise httpx.HTTPError("Upstream request failed after retries.")
 
     def list_sources(self) -> dict[str, Any]:
         """List all connected GitHub repositories."""
@@ -93,7 +151,9 @@ class JulesApiClient:
         response = self._request("POST", url, headers=self.headers, json=payload)
         return response.json()
 
-    def list_sessions(self, page_size: int = 100, page_token: str | None = None) -> dict[str, Any]:
+    def list_sessions(
+        self, page_size: int = 100, page_token: str | None = None
+    ) -> dict[str, Any]:
         """List all sessions with pagination."""
         url = self._get_url("sessions")
         params: dict[str, Any] = {"pageSize": page_size}
@@ -119,8 +179,7 @@ class JulesApiClient:
         """Delete a session."""
         normalized_id = self._normalize_session_id(session_id)
         url = self._get_url(normalized_id)
-        response = self._request("DELETE", url, headers=self.headers)
-        response.raise_for_status()
+        self._request("DELETE", url, headers=self.headers)
 
     def approve_plan(self, session_id: str) -> dict[str, Any]:
         """Approve a generated plan."""
