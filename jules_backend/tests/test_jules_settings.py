@@ -27,14 +27,11 @@ class TestGetFernetKey:
 
     def test_key_changes_with_secret_key(self):
         """Test that get_fernet_key returns different key when SECRET_KEY changes."""
-        original_secret = settings.SECRET_KEY
-        
         key1 = get_fernet_key()
         
         with patch.object(settings, 'SECRET_KEY', 'different-secret-key'):
             key2 = get_fernet_key()
         
-        # Restore original
         assert key1 != key2
 
 
@@ -66,15 +63,9 @@ class TestJulesSettingsEncryption:
         
         # The encrypted value should not match the original
         assert settings_obj._encrypted_api_key != test_key
-        # It should not be Base64 encoded plain text either
-        try:
-            decoded = base64.b64decode(settings_obj._encrypted_api_key.encode()).decode()
-            # If it decodes successfully as Base64, it should not match the original
-            # (Fernet output is Base64, but it's not just the plain text encoded)
-            assert decoded != test_key
-        except Exception:
-            # If it fails to decode, that's also fine - it means it's encrypted
-            pass
+        # It should not be simple Base64 encoded plain text
+        simple_base64 = base64.b64encode(test_key.encode()).decode()
+        assert settings_obj._encrypted_api_key != simple_base64
 
     def test_set_empty_api_key(self):
         """Test that setting an empty API key clears the stored value."""
@@ -211,9 +202,9 @@ class TestJulesSettingsErrorHandling:
         """Test error handling when encryption fails."""
         settings_obj = JulesSettings.get_settings()
         
-        # Mock Fernet to raise an exception
-        with patch('jules.models.Fernet') as mock_fernet:
-            mock_fernet.return_value.encrypt.side_effect = Exception("Encryption failed")
+        # Mock get_fernet_key to raise an exception
+        with patch('jules.models.get_fernet_key') as mock_get_key:
+            mock_get_key.side_effect = Exception("Key derivation failed")
             
             with pytest.raises(ValidationError) as exc_info:
                 settings_obj.set_api_key("test-key")
