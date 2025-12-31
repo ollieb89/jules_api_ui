@@ -26,7 +26,4 @@ def test_jules_endpoints_require_authentication(method, path, payload):
 
     response = getattr(client, method)(path, data=payload, format="json")
 
-    assert response.status_code in {
-        status.HTTP_401_UNAUTHORIZED,
-        status.HTTP_403_FORBIDDEN,
-    }
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
