@@ -204,5 +204,63 @@ describe('JulesService', () => {
       req.flush(mockResponse);
     });
   });
-});
 
+  describe('getSettings', () => {
+    it('should fetch settings', () => {
+      const mockResponse = {
+        api_key_configured: true,
+        masked_api_key: '****1234',
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: '2024-01-02T00:00:00Z'
+      };
+
+      service.getSettings().subscribe(response => {
+        expect(response.api_key_configured).toBe(true);
+        expect(response.masked_api_key).toBe('****1234');
+      });
+
+      const req = httpMock.expectOne(`${environment.apiUrl}/jules/settings/`);
+      expect(req.request.method).toBe('GET');
+      req.flush(mockResponse);
+    });
+  });
+
+  describe('updateApiKey', () => {
+    it('should update the API key', () => {
+      const mockResponse = {
+        status: 'success',
+        message: 'API key saved'
+      };
+
+      service.updateApiKey('test-key').subscribe(response => {
+        expect(response.message).toBe('API key saved');
+      });
+
+      const req = httpMock.expectOne(`${environment.apiUrl}/jules/settings/api-key/`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ api_key: 'test-key' });
+      req.flush(mockResponse);
+    });
+  });
+
+  describe('testConnection', () => {
+    it('should test the connection', () => {
+      const mockResponse = {
+        status: 'success',
+        message: 'Connection ok',
+        api_key_configured: true,
+        api_connectivity: 'ok',
+        sources_count: 3
+      };
+
+      service.testConnection().subscribe(response => {
+        expect(response.status).toBe('success');
+        expect(response.sources_count).toBe(3);
+      });
+
+      const req = httpMock.expectOne(`${environment.apiUrl}/jules/settings/test/`);
+      expect(req.request.method).toBe('POST');
+      req.flush(mockResponse);
+    });
+  });
+});
