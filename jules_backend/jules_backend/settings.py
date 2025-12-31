@@ -149,32 +149,37 @@ REST_FRAMEWORK = {
 
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:4700",
-    "http://127.0.0.1:4700",
+    origin.strip()
+    for origin in os.getenv(
+        "CORS_ALLOWED_ORIGINS",
+        "http://localhost:4700,http://127.0.0.1:4700",
+    ).split(",")
+    if origin.strip()
 ]
 
-CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_CREDENTIALS = os.getenv("CORS_ALLOW_CREDENTIALS", "True").lower() == "true"
 
 CORS_ALLOW_METHODS = [
-    "DELETE",
-    "GET",
-    "OPTIONS",
-    "PATCH",
-    "POST",
-    "PUT",
+    method.strip()
+    for method in os.getenv(
+        "CORS_ALLOW_METHODS",
+        "DELETE,GET,OPTIONS,PATCH,POST,PUT",
+    ).split(",")
+    if method.strip()
 ]
 
 CORS_ALLOW_HEADERS = [
-    "accept",
-    "accept-encoding",
-    "authorization",
-    "content-type",
-    "dnt",
-    "origin",
-    "user-agent",
-    "x-csrftoken",
-    "x-requested-with",
+    header.strip()
+    for header in os.getenv(
+        "CORS_ALLOW_HEADERS",
+        "accept,accept-encoding,authorization,content-type,dnt,origin,user-agent,"
+        "x-csrftoken,x-requested-with",
+    ).split(",")
+    if header.strip()
 ]
 
 # Jules API Configuration
 JULES_API_KEY = os.getenv("JULES_API_KEY", "")
+JULES_API_BASE_URL = os.getenv("JULES_API_BASE_URL", "https://jules.googleapis.com")
+JULES_API_VERSION = os.getenv("JULES_API_VERSION", "v1alpha")
+JULES_ENCRYPTION_KEY = os.getenv("JULES_ENCRYPTION_KEY", "")

@@ -8,9 +8,6 @@ from django.conf import settings
 class JulesApiClient:
     """Client for interacting with the Google Jules API."""
 
-    BASE_URL = "https://jules.googleapis.com"
-    API_VERSION = "v1alpha"
-
     def __init__(self):
         # Try to get API key from database settings first, then environment
         try:
@@ -22,9 +19,15 @@ class JulesApiClient:
         
         if not self.api_key:
             self.api_key = getattr(settings, "JULES_API_KEY", os.getenv("JULES_API_KEY"))
-        
+
         if not self.api_key:
             raise ValueError("JULES_API_KEY must be set in settings or environment")
+        self.base_url = getattr(settings, "JULES_API_BASE_URL", os.getenv("JULES_API_BASE_URL"))
+        self.api_version = getattr(
+            settings,
+            "JULES_API_VERSION",
+            os.getenv("JULES_API_VERSION"),
+        )
         self.headers = {
             "X-Goog-Api-Key": self.api_key,
             "Content-Type": "application/json",
@@ -32,7 +35,7 @@ class JulesApiClient:
 
     def _get_url(self, endpoint: str) -> str:
         """Construct full API URL."""
-        return f"{self.BASE_URL}/{self.API_VERSION}/{endpoint}"
+        return f"{self.base_url}/{self.api_version}/{endpoint}"
 
     def list_sources(self) -> dict[str, Any]:
         """List all connected GitHub repositories."""
@@ -120,4 +123,3 @@ class JulesApiClient:
             response = client.get(url, headers=self.headers, params=params, timeout=30.0)
             response.raise_for_status()
             return response.json()
-
