@@ -20,11 +20,15 @@ from .services import JulesApiClient
 from .utils import handle_api_exception
 
 
-class SourceViewSet(viewsets.ViewSet):
-    """ViewSet for listing sources (GitHub repositories)."""
+class JulesAuthenticatedViewSet(viewsets.ViewSet):
+    """Base ViewSet that enforces JWT or session authentication."""
 
     authentication_classes = [SessionAuthentication, JWTAuthentication]
     permission_classes = [IsAuthenticated]
+
+
+class SourceViewSet(JulesAuthenticatedViewSet):
+    """ViewSet for listing sources (GitHub repositories)."""
 
     def list(self, request):  # noqa: ARG002
         """List all connected GitHub repositories."""
@@ -39,11 +43,8 @@ class SourceViewSet(viewsets.ViewSet):
             return handle_api_exception(e)
 
 
-class SessionViewSet(viewsets.ViewSet):
+class SessionViewSet(JulesAuthenticatedViewSet):
     """ViewSet for managing Jules sessions."""
-
-    authentication_classes = [SessionAuthentication, JWTAuthentication]
-    permission_classes = [IsAuthenticated]
 
     def create(self, request):
         """Create a new coding session."""
@@ -151,11 +152,8 @@ class SessionViewSet(viewsets.ViewSet):
             return handle_api_exception(e)
 
 
-class JulesHealthViewSet(viewsets.ViewSet):
+class JulesHealthViewSet(JulesAuthenticatedViewSet):
     """ViewSet for Jules API health check."""
-
-    authentication_classes = [SessionAuthentication, JWTAuthentication]
-    permission_classes = [IsAuthenticated]
 
     def list(self, request):  # noqa: ARG002
         """Check Jules API connectivity and configuration."""
@@ -195,11 +193,8 @@ class JulesHealthViewSet(viewsets.ViewSet):
             )
 
 
-class SettingsViewSet(viewsets.ViewSet):
+class SettingsViewSet(JulesAuthenticatedViewSet):
     """ViewSet for managing Jules settings (API key configuration)."""
-
-    authentication_classes = [SessionAuthentication, JWTAuthentication]
-    permission_classes = [IsAuthenticated]
 
     def list(self, request):  # noqa: ARG002
         """Get current settings (masked API key)."""
