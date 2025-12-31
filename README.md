@@ -128,9 +128,9 @@ bun run serve:ssr:jules_api
 
 ### Frontend Architecture
 
-- **Framework**: Angular 21.0.0
+- **Framework**: Angular 21
 - **Styling**: Tailwind CSS v4.1
-- **Testing**: Angular Testing (Vitest configured)
+- **Testing**: Angular Testing Framework with Vitest integration
 - **Package Manager**: Bun 1.3.5
 - **SSR**: Angular SSR with Express
 - **Components**: Standalone components with signals
@@ -371,9 +371,8 @@ pixi run pytest -v
 ```bash
 cd jules_api
 
-# Prettier is configured automatically
-# Format on save in VS Code, or run:
-bun run ng lint  # If ESLint is configured
+# Prettier is configured automatically (format on save in most IDEs)
+# Formatting rules are defined in package.json
 ```
 
 ### Backend Linting & Formatting
@@ -381,17 +380,11 @@ bun run ng lint  # If ESLint is configured
 ```bash
 cd jules_backend
 
-# Format code with Black
-pixi run black .
-
-# Lint with Ruff
-pixi run ruff check .
+# Format and lint code (runs both black and ruff)
+pixi run format
 
 # Type check with MyPy
-pixi run mypy .
-
-# Run all checks
-pixi run format
+pixi run typecheck
 ```
 
 ### Pre-commit Hooks
