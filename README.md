@@ -38,7 +38,9 @@ jules_api_ui/
 │   └── package.json   # Frontend dependencies
 │
 ├── jules_backend/      # Django backend (Pixi)
-│   ├── migrations/    # Database migrations
+│   ├── migrations/    # Shared/project-level migrations (most migrations live in each app's migrations/ dir)
+│   ├── users/         # Users Django app (includes users/migrations/)
+│   ├── jules/         # Jules Django app (includes jules/migrations/)
 │   ├── tests/         # Backend tests
 │   ├── pixi.toml      # Python dependencies and tasks
 │   └── manage.py      # Django management script
@@ -188,7 +190,7 @@ DEBUG=True
 ALLOWED_HOSTS=localhost,127.0.0.1
 ```
 
-**Note**: Additional environment variables may be required for Django settings (e.g., `DJANGO_SECRET_KEY`, `ALLOWED_HOSTS`) or Jules API integration (e.g., `JULES_API_KEY`) depending on your specific deployment needs.
+**Note**: Additional environment variables may be required for Django settings (e.g., `DJANGO_SECRET_KEY`, `ALLOWED_HOSTS`) or Jules API integration (e.g., `JULES_API_KEY`) depending on your specific deployment needs. If you are migrating from a setup that used a `CORS_ORIGINS` environment variable with a JSON array, be aware that Django uses `ALLOWED_HOSTS` instead, and it expects a comma-separated list (as shown above) rather than JSON.
 
 ### Database Setup
 

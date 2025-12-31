@@ -22,7 +22,7 @@ Run commands from `jules_backend/`.
 ## Coding Style & Naming Conventions
 - Python code is formatted with Black and linted with Ruff; type hints are required and checked by MyPy.
 - Use `snake_case` for variables/functions and `PascalCase` for Django models/DRF serializers.
-- Prefer clear module names and keep files focused (e.g., `app/routes/users.py`).
+- Prefer clear module names and keep files focused (e.g., `users/views.py`).
 
 ## Testing Guidelines
 - Tests live in `tests/` and follow `test_*.py` naming.
