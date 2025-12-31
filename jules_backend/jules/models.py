@@ -8,12 +8,12 @@ from cryptography.fernet import Fernet, InvalidToken
 
 def get_cipher_suite():
     """Derive a Fernet key from the Django SECRET_KEY."""
-    # Validate SECRET_KEY is present (Django requires minimum 50 chars for production)
-    # While SHA256 will produce a consistent 256-bit key regardless of input length,
-    # a weak/short SECRET_KEY could be brute-forced, compromising encryption.
-    if not settings.SECRET_KEY:
+    # Validate SECRET_KEY is present and meets minimum security requirements
+    # Django recommends 50+ characters for production keys
+    # While SHA256 produces consistent output length, short keys are vulnerable to brute-force
+    if not settings.SECRET_KEY or len(settings.SECRET_KEY) < 32:
         raise ValidationError(
-            "Django SECRET_KEY must be configured for secure encryption."
+            "Django SECRET_KEY must be at least 32 characters for secure encryption."
         )
     
     # SHA256 the secret key to get 32 bytes
@@ -52,10 +52,10 @@ class JulesSettings(models.Model):
         try:
             cipher = get_cipher_suite()
             self._encrypted_api_key = cipher.encrypt(api_key.encode()).decode()
-        except (TypeError, AttributeError) as e:
+        except (TypeError, AttributeError):
             # TypeError: if api_key is not a string
             # AttributeError: if api_key doesn't have encode method
-            raise ValidationError(f"Failed to encrypt API key: {e}")
+            raise ValidationError("Invalid API key format")
 
     def get_api_key(self) -> str | None:
         """Decrypt and return API key."""
