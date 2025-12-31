@@ -106,9 +106,22 @@ class JulesSettings(models.Model):
 class JulesSession(models.Model):
     """Persisted Jules session data."""
 
+    class State(models.TextChoices):
+        """Possible lifecycle states for a Jules session."""
+
+        UNSPECIFIED = "STATE_UNSPECIFIED", "Unspecified"
+        PENDING = "STATE_PENDING", "Pending"
+        ACTIVE = "STATE_ACTIVE", "Active"
+        COMPLETED = "STATE_COMPLETED", "Completed"
+        FAILED = "STATE_FAILED", "Failed"
+
     name = models.CharField(max_length=255, unique=True)
     display_name = models.CharField(max_length=255, blank=True)
-    state = models.CharField(max_length=32)
+    state = models.CharField(
+        max_length=32,
+        choices=State.choices,
+        default=State.UNSPECIFIED,
+    )
     prompt = models.TextField(blank=True)
     source = models.CharField(max_length=255, blank=True)
     create_time = models.DateTimeField(null=True, blank=True)
@@ -118,6 +131,10 @@ class JulesSession(models.Model):
 
     class Meta:
         db_table = "jules_sessions"
+        indexes = [
+            models.Index(fields=["update_time"]),
+            models.Index(fields=["last_synced_at"]),
+        ]
 
     def __str__(self) -> str:
         return self.display_name or self.name
