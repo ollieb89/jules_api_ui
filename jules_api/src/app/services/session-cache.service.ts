@@ -1,8 +1,11 @@
-import { Injectable, signal, computed, inject } from '@angular/core';
+import { Injectable, signal, computed, inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Observable, Subscription, tap, timer } from 'rxjs';
 import { JulesService } from './jules.service';
 import { SessionUtilsService } from './session-utils.service';
+import { AuthTokenService } from './auth-token.service';
 import { Session, SessionState } from '../models/jules.model';
+import { environment } from '../../environments/environment';
 
 export interface SessionFilter {
   search?: string;
@@ -19,9 +22,13 @@ export type SortDirection = 'asc' | 'desc';
 export class SessionCacheService {
   private readonly julesService = inject(JulesService);
   private readonly sessionUtils = inject(SessionUtilsService);
+  private readonly authTokenService = inject(AuthTokenService);
+  private readonly platformId = inject(PLATFORM_ID);
   
   // Maximum number of sessions to fetch (configurable)
   private readonly MAX_SESSIONS = 1000;
+
+  private readonly ssePollIntervalSeconds = 10;
   
   // Raw cached sessions
   private readonly sessions = signal<Session[]>([]);
@@ -129,6 +136,8 @@ export class SessionCacheService {
   readonly failedCount = computed(() => this.sessions().filter(session => session.state === 'FAILED').length);
 
   private autoRefreshSubscription: Subscription | null = null;
+  private eventSource: EventSource | null = null;
+  private lastSessionUpdateTime: string | null = null;
   
   /**
    * Load all sessions from the API (up to MAX_SESSIONS)
@@ -184,7 +193,8 @@ export class SessionCacheService {
   /**
    * Start polling for session updates
    */
-  startAutoRefresh(intervalMs = 2000): void {
+  startAutoRefresh(intervalMs = 15000): void {
+    this.startLiveUpdates();
     if (this.autoRefreshSubscription) {
       return;
     }
@@ -194,12 +204,47 @@ export class SessionCacheService {
     });
   }
 
+  startLiveUpdates(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
+    const token = this.authTokenService.getToken();
+    if (!token || this.eventSource) {
+      return;
+    }
+
+    const params = new URLSearchParams({
+      token,
+      poll_interval: this.ssePollIntervalSeconds.toString()
+    });
+
+    if (this.lastSessionUpdateTime) {
+      params.set('last_update', this.lastSessionUpdateTime);
+    }
+
+    const streamUrl = `${environment.apiUrl}/jules/sessions/events/?${params.toString()}`;
+    this.eventSource = new EventSource(streamUrl);
+
+    this.eventSource.addEventListener('sessions_update', event => {
+      const data = JSON.parse((event as MessageEvent).data) as Session[];
+      this.updateSessions(data);
+    });
+
+    this.eventSource.addEventListener('error', () => {
+      this.eventSource?.close();
+      this.eventSource = null;
+    });
+  }
+
   /**
    * Stop polling for session updates
    */
   stopAutoRefresh(): void {
     this.autoRefreshSubscription?.unsubscribe();
     this.autoRefreshSubscription = null;
+    this.eventSource?.close();
+    this.eventSource = null;
   }
 
   /**
@@ -272,5 +317,22 @@ export class SessionCacheService {
   private updateSessions(sessions: Session[]): void {
     this.sessions.set(sessions);
     this.lastUpdated.set(new Date());
+    this.lastSessionUpdateTime = this.getLatestUpdateTime(sessions);
+  }
+
+  private getLatestUpdateTime(sessions: Session[]): string | null {
+    if (sessions.length === 0) {
+      return null;
+    }
+
+    return sessions.reduce<string | null>((latest, session) => {
+      if (!session.update_time) {
+        return latest;
+      }
+      if (!latest || session.update_time > latest) {
+        return session.update_time;
+      }
+      return latest;
+    }, null);
   }
 }

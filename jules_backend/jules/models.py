@@ -108,37 +108,62 @@ class JulesSettings(models.Model):
 
 
 class JulesSession(models.Model):
-    """Session metadata cached from the Jules API."""
+    """Locally cached Jules session data."""
 
-    session_id = models.CharField(max_length=255, unique=True)
-    source = models.CharField(max_length=255, blank=True)
-    state = models.CharField(max_length=64, blank=True)
-    create_time = models.DateTimeField(null=True, blank=True)
-    last_polled_at = models.DateTimeField(null=True, blank=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    name = models.CharField(max_length=255, unique=True)
+    display_name = models.CharField(max_length=255, blank=True)
+    state = models.CharField(max_length=32, default="STATE_UNSPECIFIED", blank=True)
+    prompt = models.TextField(blank=True)
+    source = models.TextField(blank=True)
+    create_time = models.DateTimeField(blank=True, null=True)
+    update_time = models.DateTimeField(blank=True, null=True)
+    last_synced_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         db_table = "jules_sessions"
 
-    def mark_polled(self) -> None:
-        self.last_polled_at = timezone.now()
-        self.save(update_fields=["last_polled_at"])
+    def __str__(self) -> str:
+        return self.display_name or self.name
 
 
 class JulesActivity(models.Model):
-    """Activity event cached from the Jules API."""
+    """Locally cached Jules activity data."""
+
+    TYPE_PLAN_GENERATED = "plan_generated"
+    TYPE_PLAN_APPROVED = "plan_approved"
+    TYPE_PROGRESS_UPDATED = "progress_updated"
+    TYPE_SESSION_COMPLETED = "session_completed"
+    TYPE_UNKNOWN = "unknown"
+
+    TYPE_CHOICES = [
+        (TYPE_PLAN_GENERATED, "Plan Generated"),
+        (TYPE_PLAN_APPROVED, "Plan Approved"),
+        (TYPE_PROGRESS_UPDATED, "Progress Updated"),
+        (TYPE_SESSION_COMPLETED, "Session Completed"),
+        (TYPE_UNKNOWN, "Unknown"),
+    ]
 
     session = models.ForeignKey(
-        JulesSession, on_delete=models.CASCADE, related_name="activities"
+        JulesSession,
+        on_delete=models.CASCADE,
+        related_name="activities",
     )
-    name = models.CharField(max_length=255)
-    activity_type = models.CharField(max_length=64, blank=True)
-    payload = models.JSONField(default=dict)
-    create_time = models.DateTimeField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    name = models.CharField(max_length=255, unique=True)
+    activity_type = models.CharField(
+        max_length=32,
+        choices=TYPE_CHOICES,
+        default=TYPE_UNKNOWN,
+    )
+    payload = models.JSONField(default=dict, blank=True)
+    create_time = models.DateTimeField(blank=True, null=True)
+    last_synced_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         db_table = "jules_activities"
-        constraints = [
-            models.UniqueConstraint(fields=["session", "name"], name="unique_session_activity")
+        indexes = [
+            models.Index(fields=["session", "create_time"]),
+            models.Index(fields=["activity_type"]),
         ]
+
+    def __str__(self) -> str:
+        return self.name
