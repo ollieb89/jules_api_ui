@@ -12,6 +12,7 @@ def api_client():
 
 
 @pytest.fixture
+@pytest.mark.django_db
 def authenticated_client(api_client):
     """Authenticated APIClient for testing."""
     user = User.objects.create_user(username="testuser", password="testpassword")

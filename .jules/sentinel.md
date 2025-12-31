@@ -9,7 +9,7 @@
 **Vulnerability:** The project uses both FastAPI and Django, but `pixi.toml` and `manage.py` suggest a migration to Django. This leads to confusion on which dependencies are active and which security middleware is applied.
 **Learning:** Legacy or transitional code can hide vulnerabilities if it's unclear what is actually running in production.
 **Prevention:** Clearly deprecate and remove unused frameworks/routes. Ensure documentation (`AGENTS.md`) matches the active deployment configuration.
-## 2024-05-20 - Unauthenticated Critical Endpoints
+## 2024-05-23 - Unauthenticated Critical Endpoints
 **Vulnerability:** Core settings and session management endpoints were exposed without authentication because DRF defaults to AllowAny.
 **Learning:** Never assume secure defaults in Django Rest Framework. Explicitly set DEFAULT_PERMISSION_CLASSES or check every ViewSet.
 **Prevention:** Configure REST_FRAMEWORK settings with DEFAULT_PERMISSION_CLASSES = ['rest_framework.permissions.IsAuthenticated'] to fail secure by default.
