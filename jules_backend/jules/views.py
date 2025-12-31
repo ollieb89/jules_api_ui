@@ -15,8 +15,22 @@ from .serializers import (
     SessionSerializer,
     SourceSerializer,
 )
-from .models import JulesSettings
+from .models import JulesSession, JulesSettings
 from .services import JulesApiClient
+from .store import (
+    get_cached_activities_payload,
+    get_cached_sessions_payload,
+    get_or_create_session_stub,
+    is_activities_cache_fresh,
+    is_session_fresh,
+    is_sessions_cache_fresh,
+    mark_activities_synced,
+    mark_sessions_synced,
+    normalize_session_name,
+    session_to_api_dict,
+    upsert_activity_from_api,
+    upsert_session_from_api,
+)
 from .utils import handle_api_exception
 
 
@@ -55,6 +69,7 @@ class SessionViewSet(viewsets.ViewSet):
                 prompt=serializer.validated_data["prompt"],
                 source=serializer.validated_data["source"],
             )
+            upsert_session_from_api(data)
             session_serializer = SessionSerializer(data=data)
             session_serializer.is_valid(raise_exception=True)
             return Response(session_serializer.data, status=status.HTTP_201_CREATED)
@@ -63,12 +78,21 @@ class SessionViewSet(viewsets.ViewSet):
 
     def list(self, request):
         """List all sessions with pagination."""
+        refresh = request.query_params.get("refresh") in {"1", "true", "True"}
+        if not refresh and is_sessions_cache_fresh():
+            cached_sessions = get_cached_sessions_payload()
+            serializer = SessionSerializer(data=cached_sessions, many=True)
+            serializer.is_valid(raise_exception=True)
+            return Response({"sessions": serializer.data, "next_page_token": None})
         client = JulesApiClient()
         page_size = int(request.query_params.get("page_size", 100))
         page_token = request.query_params.get("page_token")
         try:
             data = client.list_sessions(page_size=page_size, page_token=page_token)
             sessions = data.get("sessions", [])
+            for session_data in sessions:
+                upsert_session_from_api(session_data)
+            mark_sessions_synced()
             serializer = SessionSerializer(data=sessions, many=True)
             serializer.is_valid(raise_exception=True)
             return Response(
@@ -82,9 +106,22 @@ class SessionViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):  # noqa: ARG002
         """Get a specific session by ID."""
+        refresh = request.query_params.get("refresh") in {"1", "true", "True"}
+        session_name = normalize_session_name(pk)
+        if not refresh:
+            try:
+                cached_session = JulesSession.objects.get(name=session_name)
+            except JulesSession.DoesNotExist:
+                cached_session = None
+            if cached_session and is_session_fresh(cached_session):
+                payload = session_to_api_dict(cached_session)
+                serializer = SessionSerializer(data=payload)
+                serializer.is_valid(raise_exception=True)
+                return Response(serializer.data)
         client = JulesApiClient()
         try:
             data = client.get_session(pk)
+            upsert_session_from_api(data)
             serializer = SessionSerializer(data=data)
             serializer.is_valid(raise_exception=True)
             return Response(serializer.data)
@@ -96,6 +133,8 @@ class SessionViewSet(viewsets.ViewSet):
         client = JulesApiClient()
         try:
             client.delete_session(pk)
+            session_name = normalize_session_name(pk)
+            JulesSession.objects.filter(name=session_name).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
             return handle_api_exception(e)
@@ -108,6 +147,7 @@ class SessionViewSet(viewsets.ViewSet):
         client = JulesApiClient()
         try:
             data = client.approve_plan(pk)
+            upsert_session_from_api(data)
             session_serializer = SessionSerializer(data=data)
             session_serializer.is_valid(raise_exception=True)
             return Response(session_serializer.data)
@@ -122,6 +162,7 @@ class SessionViewSet(viewsets.ViewSet):
         client = JulesApiClient()
         try:
             data = client.send_message(pk, serializer.validated_data["message"])
+            upsert_session_from_api(data)
             session_serializer = SessionSerializer(data=data)
             session_serializer.is_valid(raise_exception=True)
             return Response(session_serializer.data)
@@ -131,6 +172,13 @@ class SessionViewSet(viewsets.ViewSet):
     @action(detail=True, methods=["get"])
     def activities(self, request, pk=None):  # noqa: ARG002
         """List activities for a session."""
+        refresh = request.query_params.get("refresh") in {"1", "true", "True"}
+        session_name = normalize_session_name(pk)
+        if not refresh and is_activities_cache_fresh(session_name):
+            cached_activities = get_cached_activities_payload(session_name)
+            serializer = ActivitySerializer(data=cached_activities, many=True)
+            serializer.is_valid(raise_exception=True)
+            return Response({"activities": serializer.data, "next_page_token": None})
         client = JulesApiClient()
         page_size = int(request.query_params.get("page_size", 100))
         page_token = request.query_params.get("page_token")
@@ -139,6 +187,10 @@ class SessionViewSet(viewsets.ViewSet):
                 session_id=pk, page_size=page_size, page_token=page_token
             )
             activities = data.get("activities", [])
+            session = get_or_create_session_stub(session_name)
+            for activity in activities:
+                upsert_activity_from_api(session, activity)
+            mark_activities_synced(session_name)
             serializer = ActivitySerializer(data=activities, many=True)
             serializer.is_valid(raise_exception=True)
             return Response(
