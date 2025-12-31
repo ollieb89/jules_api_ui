@@ -12,9 +12,10 @@
   </div>
 
   @if (loading()) {
-    <div class="flex justify-center items-center py-12" aria-busy="true" aria-live="polite">
-      <div class="text-gray-600">Loading users...</div>
-    </div>
+    <app-loading-spinner
+      containerClass="py-12"
+      label="Loading users..."
+    ></app-loading-spinner>
   } @else if (error()) {
     <div 
       class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4"
