@@ -67,6 +67,9 @@ Located in `jules_backend/`.
 - **Migrations:** Django Migrations
 - **Environment Manager:** Pixi
 
+**Status:** The Django backend is the active runtime. Any legacy FastAPI prototype code is archived
+and not part of deployment or development workflows.
+
 ### Development Commands
 
 Run these commands from the `jules_backend/` directory (or use `pixi run -m jules_backend ...` if supported):
