@@ -56,7 +56,14 @@ class SessionViewSet(viewsets.ViewSet):
                 prompt=serializer.validated_data["prompt"],
                 source=serializer.validated_data["source"],
             )
-            upsert_session(data)
+            try:
+                upsert_session(data)
+            except Exception as e:
+                # Log the error but don't fail the request since API call succeeded
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Failed to persist session locally: {e}", exc_info=True)
+            
             session_serializer = SessionSerializer(data=data)
             session_serializer.is_valid(raise_exception=True)
             return Response(session_serializer.data, status=status.HTTP_201_CREATED)
@@ -72,7 +79,13 @@ class SessionViewSet(viewsets.ViewSet):
             data = client.list_sessions(page_size=page_size, page_token=page_token)
             sessions = data.get("sessions", [])
             for session_data in sessions:
-                upsert_session(session_data)
+                try:
+                    upsert_session(session_data)
+                except Exception as e:
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f"Failed to persist session {session_data.get('name')}: {e}", exc_info=True)
+            
             serializer = SessionSerializer(data=sessions, many=True)
             serializer.is_valid(raise_exception=True)
             return Response(
@@ -89,7 +102,13 @@ class SessionViewSet(viewsets.ViewSet):
         client = JulesApiClient()
         try:
             data = client.get_session(pk)
-            upsert_session(data)
+            try:
+                upsert_session(data)
+            except Exception as e:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Failed to persist session locally: {e}", exc_info=True)
+            
             serializer = SessionSerializer(data=data)
             serializer.is_valid(raise_exception=True)
             return Response(serializer.data)
@@ -101,7 +120,7 @@ class SessionViewSet(viewsets.ViewSet):
         client = JulesApiClient()
         try:
             client.delete_session(pk)
-            session_name = pk if pk.startswith("sessions/") else f"sessions/{pk}"
+            session_name = client._normalize_session_id(pk)
             JulesSession.objects.filter(name=session_name).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
@@ -115,7 +134,13 @@ class SessionViewSet(viewsets.ViewSet):
         client = JulesApiClient()
         try:
             data = client.approve_plan(pk)
-            upsert_session(data)
+            try:
+                upsert_session(data)
+            except Exception as e:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Failed to persist session locally: {e}", exc_info=True)
+            
             session_serializer = SessionSerializer(data=data)
             session_serializer.is_valid(raise_exception=True)
             return Response(session_serializer.data)
@@ -130,7 +155,13 @@ class SessionViewSet(viewsets.ViewSet):
         client = JulesApiClient()
         try:
             data = client.send_message(pk, serializer.validated_data["message"])
-            upsert_session(data)
+            try:
+                upsert_session(data)
+            except Exception as e:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Failed to persist session locally: {e}", exc_info=True)
+            
             session_serializer = SessionSerializer(data=data)
             session_serializer.is_valid(raise_exception=True)
             return Response(session_serializer.data)
@@ -148,18 +179,32 @@ class SessionViewSet(viewsets.ViewSet):
                 session_id=pk, page_size=page_size, page_token=page_token
             )
             activities = data.get("activities", [])
-            session_name = pk if pk.startswith("sessions/") else f"sessions/{pk}"
-            session, _ = JulesSession.objects.get_or_create(
-                name=session_name,
-                defaults={
-                    "display_name": session_name,
-                    "state": "STATE_UNSPECIFIED",
-                    "prompt": "",
-                    "source": "",
-                    "raw_payload": {},
-                },
-            )
-            upsert_activities(session, activities)
+            session_name = client._normalize_session_id(pk)
+            
+            # Try to fetch full session details first, fall back to placeholder
+            try:
+                session_data = client.get_session(pk)
+                session = upsert_session(session_data)
+            except Exception:
+                # If session fetch fails, create minimal placeholder
+                session, _ = JulesSession.objects.get_or_create(
+                    name=session_name,
+                    defaults={
+                        "display_name": session_name,
+                        "state": "STATE_UNSPECIFIED",
+                        "prompt": "",
+                        "source": "",
+                        "raw_payload": {},
+                    },
+                )
+            
+            try:
+                upsert_activities(session, activities)
+            except Exception as e:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Failed to persist activities locally: {e}", exc_info=True)
+            
             serializer = ActivitySerializer(data=activities, many=True)
             serializer.is_valid(raise_exception=True)
             return Response(
