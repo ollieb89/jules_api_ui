@@ -140,12 +140,8 @@ class JulesApiClient:
 
         if not self.api_key:
             raise ValueError("JULES_API_KEY must be set in settings or environment")
-        self.base_url = getattr(settings, "JULES_API_BASE_URL", os.getenv("JULES_API_BASE_URL"))
-        self.api_version = getattr(
-            settings,
-            "JULES_API_VERSION",
-            os.getenv("JULES_API_VERSION"),
-        )
+        self.base_url = settings.JULES_API_BASE_URL
+        self.api_version = settings.JULES_API_VERSION
         self.headers = {
             "X-Goog-Api-Key": self.api_key,
             "Content-Type": "application/json",
