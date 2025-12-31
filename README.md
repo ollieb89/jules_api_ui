@@ -1,13 +1,13 @@
 # Jules API UI
 
-A full-stack application for managing tasks and code reviews with AI-powered automation. Jules combines an Angular 21 frontend with server-side rendering (SSR) and a FastAPI/Django backend to provide a modern, responsive interface for task management and GitHub integration.
+A full-stack application for managing tasks and code reviews with AI-powered automation. Jules combines an Angular 21 frontend with server-side rendering (SSR) and a Django backend to provide a modern, responsive interface for task management and GitHub integration.
 
 ## 🎯 Project Overview
 
 Jules API UI is a comprehensive task management and code review platform that integrates with AI coding agents to automate development workflows. The application features:
 
 - **Modern Frontend**: Angular 21 with SSR, standalone components, and signals
-- **Robust Backend**: FastAPI/Django REST Framework with PostgreSQL
+- **Robust Backend**: Django REST Framework with PostgreSQL
 - **Real-time Updates**: WebSocket support for live task status
 - **GitHub Integration**: OAuth, PRs, and code review workflows
 - **Design System**: Custom color tokens and accessible component library
@@ -37,8 +37,7 @@ jules_api_ui/
 │   ├── dist/          # Build output
 │   └── package.json   # Frontend dependencies
 │
-├── jules_backend/      # FastAPI/Django backend (Pixi)
-│   ├── app/           # FastAPI routes, models, schemas
+├── jules_backend/      # Django backend (Pixi)
 │   ├── migrations/    # Database migrations
 │   ├── tests/         # Backend tests
 │   ├── pixi.toml      # Python dependencies and tasks
@@ -160,7 +159,8 @@ export const environment = {
 
 ## 🔧 Backend Setup
 
-The backend uses both FastAPI (for new features) and Django (legacy) with Pixi for environment management.
+The backend uses Django with Pixi for environment management. A legacy FastAPI prototype has been
+archived and is not part of the current runtime.
 
 ### Installation
 
@@ -183,9 +183,9 @@ Create a `.env` file in `jules_backend/` with the following:
 DATABASE_URL=postgresql://user:password@localhost:5432/jules_db
 
 # Application Settings
-APP_NAME="Jules API"
+DJANGO_SECRET_KEY=your-secret-key-here
 DEBUG=True
-CORS_ORIGINS=["http://localhost:4700"]
+ALLOWED_HOSTS=localhost,127.0.0.1
 ```
 
 **Note**: Additional environment variables may be required for Django settings (e.g., `DJANGO_SECRET_KEY`, `ALLOWED_HOSTS`) or Jules API integration (e.g., `JULES_API_KEY`) depending on your specific deployment needs.
@@ -228,11 +228,11 @@ pixi run collectstatic
 
 ### Backend Architecture
 
-- **Web Framework**: Django 5 + FastAPI
+- **Web Framework**: Django 5
 - **API Framework**: Django REST Framework 3.15
 - **Database**: PostgreSQL with Psycopg 3
-- **ORM**: Django ORM + SQLAlchemy (FastAPI)
-- **Migrations**: Django Migrations + Alembic
+- **ORM**: Django ORM
+- **Migrations**: Django Migrations
 - **Testing**: Pytest with pytest-django
 - **Code Quality**: Black, Ruff, MyPy
 - **Environment**: Pixi (conda-forge)
@@ -247,11 +247,6 @@ pixi run collectstatic
   - Health: `/api/jules/health/`
   - Sources: `/api/jules/sources/`
   - Sessions: `/api/jules/sessions/`
-
-**FastAPI Endpoints:**
-- Health Check: `http://localhost:8444/health`
-- Users: `http://localhost:8444/api/users`
-- API Documentation: Auto-generated at `/docs` (when enabled)
 
 ## 🔄 Development Workflow
 
@@ -289,7 +284,7 @@ pixi run collectstatic
 - Follow Black formatting
 - Lint with Ruff
 - Use snake_case for functions/variables
-- Use PascalCase for Pydantic models/classes
+- Use PascalCase for DRF serializers and Django model classes
 - Parameterized queries only
 - Validate inputs at schema boundaries
 
@@ -351,7 +346,7 @@ pixi run test
 pixi run pytest tests/test_users.py
 
 # With coverage
-pixi run pytest --cov=app tests/
+pixi run pytest --cov=users --cov=jules tests/
 
 # Verbose output
 pixi run pytest -v
@@ -433,7 +428,7 @@ pixi run collectstatic
 **Deployment Options:**
 - **Docker**: Use provided Dockerfile (if available)
 - **Heroku**: Add `Procfile` and deploy
-- **AWS EC2/ECS**: Deploy with Gunicorn/Uvicorn
+- **AWS EC2/ECS**: Deploy with Gunicorn
 - **Google Cloud Run**: Containerized deployment
 - **Railway**: Quick deployment with PostgreSQL
 
@@ -441,9 +436,6 @@ pixi run collectstatic
 ```bash
 # Django with Gunicorn
 gunicorn jules_backend.wsgi:application --bind 0.0.0.0:8444
-
-# FastAPI with Uvicorn
-uvicorn app.main:app --host 0.0.0.0 --port 8444 --workers 4
 ```
 
 **Environment Variables** (Production):
@@ -470,7 +462,6 @@ uvicorn app.main:app --host 0.0.0.0 --port 8444 --workers 4
 ### API Documentation
 
 - **Django REST Framework**: Visit `/api/` endpoints in browser for browsable API
-- **FastAPI**: Auto-generated docs at `/docs` and `/redoc` (when enabled)
 
 ### Architecture Overview
 
@@ -483,7 +474,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8444 --workers 4
                 │ HTTP/REST
                 │ WebSocket
 ┌───────────────▼─────────────────────────┐
-│    Django/FastAPI Backend               │
+│         Django Backend                  │
 │    (REST API, WebSockets)               │
 │         Port: 8444                      │
 └───────────────┬─────────────────────────┘
@@ -539,7 +530,7 @@ This project is licensed under the MIT License. See the LICENSE file for details
 ## 🙏 Acknowledgments
 
 - Angular Team for the excellent framework
-- Django and FastAPI communities
+- Django community
 - Tailwind CSS for the utility-first approach
 - All contributors and maintainers
 

@@ -1,26 +1,21 @@
 # Jules Backend
 
-This directory contains the backend source code for the Jules application (`jules_backend`). It serves as the API provider for the frontend system.
+This directory contains the backend source code for the Jules application (`jules_backend`). It
+serves as the Django REST API provider for the frontend system.
 
 ## Project Structure
 
-- **`app/`**: Core application logic.
-    - **`main.py`**: The entry point for the FastAPI application.
-    - **`models/`**: SQLAlchemy database models.
-    - **`schemas/`**: Pydantic schemas for data validation and serialization.
-    - **`routes/`**: API route definitions.
-    - **`config.py`**: Configuration management using Pydantic Settings.
-    - **`database.py`**: Database connection and session management.
-- **`migrations/`**: Alembic migration scripts.
+- **`jules_backend/`**: Django project settings, URLs, and WSGI/ASGI entry points.
+- **`users/`, `jules/`**: Django apps that provide API endpoints and domain logic.
 - **`tests/`**: Pytest test suite.
 - **`pixi.toml`**: Dependency and environment configuration.
 
 ## Tech Stack
 
-- **Framework:** FastAPI
+- **Framework:** Django 5 + Django REST Framework
 - **Language:** Python 3.11+
-- **Database:** PostgreSQL (using SQLAlchemy ORM & Psycopg driver)
-- **Migrations:** Alembic
+- **Database:** PostgreSQL (using Django ORM & Psycopg driver)
+- **Migrations:** Django migrations
 - **Environment & Package Management:** Pixi
 - **Testing:** Pytest, HTTPX
 
@@ -47,22 +42,20 @@ This directory contains the backend source code for the Jules application (`jule
 All commands are run using `pixi run` to ensure they execute within the project's environment.
 
 - **Start Development Server:**
-  Runs the server with hot-reload enabled.
+  Runs the Django development server.
   ```bash
-  pixi run uvicorn app.main:app --reload
+  pixi run runserver
   ```
   - API Base URL: `http://localhost:8444`
-  - Swagger UI: `http://localhost:8444/docs`
 
 - **Database Migrations:**
-  - **Apply Migrations (Upgrade):**
+  - **Apply Migrations:**
     ```bash
-    pixi run alembic upgrade head
+    pixi run migrate
     ```
   - **Create New Migration:**
-    Generates a migration script based on changes in `app/models`.
     ```bash
-    pixi run alembic revision --autogenerate -m "your_migration_message"
+    pixi run makemigrations
     ```
 
 - **Testing:**
@@ -81,4 +74,4 @@ All commands are run using `pixi run` to ensure they execute within the project'
 
 - **Code Style:** Follows `black` formatting and `ruff` linting rules.
 - **Type Hinting:** Strict type hinting is encouraged and checked via `mypy`.
-- **Async:** The application is asynchronous; use `async/await` for database operations and route handlers.
+- **API Layers:** Use DRF serializers for validation and viewsets for routing.
