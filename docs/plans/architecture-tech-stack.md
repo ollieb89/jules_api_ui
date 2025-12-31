@@ -8,10 +8,11 @@
 ┌───────────────────────────────────────────────────────────────────────┐
 │                   Frontend (Angular 21 + SSR)                         │
 │  ┌─────────────────────────────────────────────────────────────────┐  │
-│  │  Routing (Standalone Components)                                │  │
-│  │  - /dashboard (overview)                                        │  │
+│  │  Routing (Standalone Components + SSR routes)                   │  │
+│  │  - / -> /dashboard redirect                                    │  │
 │  │  - /users, /users/new, /users/:id/edit                          │  │
-│  │  - /jules (session list, create, detail, settings)              │  │
+│  │  - /jules, /jules/create, /jules/:id, /jules/settings           │  │
+│  │  - /jules/integrations                                         │  │
 │  └─────────────────────────────────────────────────────────────────┘  │
 │                               ↕                                        │
 │  ┌─────────────────────────────────────────────────────────────────┐  │
@@ -83,10 +84,11 @@ jules_backend/
 
 ---
 
-## 🧭 FRONTEND ROUTING (Angular 21 Standalone)
+## 🧭 FRONTEND ROUTING (Angular 21 Standalone + SSR)
 
 The Angular router is configured in `jules_api/src/app/app.routes.ts`:
 
+- `/` → redirect to `/dashboard`
 - `/dashboard` → `DashboardComponent`
 - `/users` → `UserListComponent`
 - `/users/new` → `UserFormComponent`
@@ -99,6 +101,9 @@ The Angular router is configured in `jules_api/src/app/app.routes.ts`:
 
 All routes load standalone components with `loadComponent` for SSR-friendly lazy loading.
 
+SSR rendering modes are configured in `jules_api/src/app/app.routes.server.ts`, with
+server rendering for detail/edit routes and prerendering for the catch-all path.
+
 ---
 
 ## 🔌 BACKEND API SURFACE (Django REST Framework)
@@ -107,7 +112,7 @@ The Jules API endpoints are served under `/api/jules/` (see `jules_backend/jules
 
 ### Core Resources
 - `GET /api/jules/sources/` → list connected sources
-- `GET /api/jules/sessions/` → list sessions (paginated)
+- `GET /api/jules/sessions/` → list sessions (paginated via `page_size`, `page_token`)
 - `POST /api/jules/sessions/` → create a session
 - `GET /api/jules/sessions/:id/` → retrieve a session
 - `DELETE /api/jules/sessions/:id/` → delete a session
@@ -115,13 +120,13 @@ The Jules API endpoints are served under `/api/jules/` (see `jules_backend/jules
 ### Session Actions
 - `POST /api/jules/sessions/:id/approve_plan/` → approve a generated plan
 - `POST /api/jules/sessions/:id/send_message/` → send a message to the agent
-- `GET /api/jules/sessions/:id/activities/` → list session activities
+- `GET /api/jules/sessions/:id/activities/` → list session activities (paginated)
 
 ### Settings & Health
 - `GET /api/jules/settings/` → current API key status
 - `POST /api/jules/settings/api-key/` → update API key
 - `POST /api/jules/settings/test/` → test API connectivity
-- `GET /api/jules/health/` → backend health check
+- `GET /api/jules/health/` → Jules API health check
 
 Additional system health checks are exposed at `/health` via `jules_backend/health`.
 
