@@ -389,12 +389,12 @@ pixi run typecheck
 
 ### Pre-commit Hooks
 
-Pre-commit is configured in the backend to run checks automatically:
+Pre-commit is available in the backend for running checks automatically:
 
 ```bash
 cd jules_backend
-pixi run pre-commit install
-pixi run pre-commit run --all-files
+pre-commit install
+pre-commit run --all-files
 ```
 
 ## 🚀 Deployment
