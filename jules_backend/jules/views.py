@@ -1,3 +1,7 @@
+import json
+import time
+
+from django.http import StreamingHttpResponse
 from rest_framework import status, viewsets
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -104,6 +108,51 @@ class SessionViewSet(viewsets.ViewSet):
         except Exception as e:
             return handle_api_exception(e, request=request)
 
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="events",
+        authentication_classes=[SessionAuthentication, JWTAuthentication, QueryParamJWTAuthentication],
+    )
+    def session_events(self, request):
+        """Stream session list updates via SSE."""
+        client = JulesApiClient()
+        poll_interval = float(request.query_params.get("poll_interval", 10))
+        last_update = request.query_params.get("last_update")
+
+        def event_stream():
+            nonlocal last_update
+            while True:
+                try:
+                    data = client.list_sessions(page_size=100)
+                    sessions = data.get("sessions", [])
+                    if sessions:
+                        latest_update = max(
+                            (session.get("update_time") for session in sessions),
+                            default=None,
+                        )
+                        if latest_update and latest_update != last_update:
+                            serializer = SessionSerializer(data=sessions, many=True)
+                            serializer.is_valid(raise_exception=True)
+                            yield "event: sessions_update\n"
+                            yield f"data: {json.dumps(serializer.data)}\n\n"
+                            last_update = latest_update
+
+                    yield "event: heartbeat\n"
+                    yield "data: {}\n\n"
+                except Exception as e:
+                    error_payload = {"message": str(e)}
+                    yield "event: error\n"
+                    yield f"data: {json.dumps(error_payload)}\n\n"
+                    break
+
+                time.sleep(poll_interval)
+
+        response = StreamingHttpResponse(event_stream(), content_type="text/event-stream")
+        response["Cache-Control"] = "no-cache"
+        response["X-Accel-Buffering"] = "no"
+        return response
+
     def retrieve(self, request, pk=None):  # noqa: ARG002
         """Get a specific session by ID."""
         refresh = request.query_params.get("refresh") in {"1", "true", "True"}
@@ -201,6 +250,63 @@ class SessionViewSet(viewsets.ViewSet):
             )
         except Exception as e:
             return handle_api_exception(e, request=request)
+
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="events",
+        authentication_classes=[SessionAuthentication, JWTAuthentication, QueryParamJWTAuthentication],
+    )
+    def events(self, request, pk=None):  # noqa: ARG002
+        """Stream session/activity updates via SSE."""
+        client = JulesApiClient()
+        poll_interval = float(request.query_params.get("poll_interval", 5))
+        last_update = request.query_params.get("last_update")
+        last_activity_time = request.query_params.get("last_activity_time")
+
+        def event_stream():
+            nonlocal last_update, last_activity_time
+            while True:
+                try:
+                    session_data = client.get_session(pk)
+                    session_serializer = SessionSerializer(data=session_data)
+                    session_serializer.is_valid(raise_exception=True)
+                    session_payload = session_serializer.data
+                    session_update_time = session_payload.get("update_time")
+
+                    if session_update_time and session_update_time != last_update:
+                        yield "event: session_update\n"
+                        yield f"data: {json.dumps(session_payload)}\n\n"
+                        last_update = session_update_time
+
+                    activities_data = client.list_activities(session_id=pk, page_size=20)
+                    activities = activities_data.get("activities", [])
+                    if activities:
+                        latest_activity_time = max(
+                            (activity.get("create_time") for activity in activities),
+                            default=None,
+                        )
+                        if latest_activity_time and latest_activity_time != last_activity_time:
+                            activity_serializer = ActivitySerializer(data=activities, many=True)
+                            activity_serializer.is_valid(raise_exception=True)
+                            yield "event: activity_update\n"
+                            yield f"data: {json.dumps(activity_serializer.data)}\n\n"
+                            last_activity_time = latest_activity_time
+
+                    yield "event: heartbeat\n"
+                    yield "data: {}\n\n"
+                except Exception as e:
+                    error_payload = {"message": str(e)}
+                    yield "event: error\n"
+                    yield f"data: {json.dumps(error_payload)}\n\n"
+                    break
+
+                time.sleep(poll_interval)
+
+        response = StreamingHttpResponse(event_stream(), content_type="text/event-stream")
+        response["Cache-Control"] = "no-cache"
+        response["X-Accel-Buffering"] = "no"
+        return response
 
 
 class JulesHealthViewSet(viewsets.ViewSet):
