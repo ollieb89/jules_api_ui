@@ -10,7 +10,6 @@ import { Session, SessionState } from '../../models/jules.model';
 import { ActivityTimelineComponent } from '../activity-timeline/activity-timeline.component';
 import { CodeBlockStyleDirective } from '../../directives/code-block-style.directive';
 import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
-import { environment } from '../../../environments/environment';
 
 interface PRInfo {
   url?: string;
@@ -187,7 +186,7 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
     }
 
     const params = new URLSearchParams({ token, poll_interval: '5' });
-    const streamUrl = `${environment.apiUrl}/jules/sessions/${this.sessionId()}/events/?${params.toString()}`;
+    const streamUrl = this.julesService.getSessionEventStreamUrl(this.sessionId(), params);
     this.eventSource = new EventSource(streamUrl);
 
     this.eventSource.addEventListener('session_update', event => {

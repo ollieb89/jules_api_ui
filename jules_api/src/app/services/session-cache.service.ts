@@ -5,7 +5,6 @@ import { JulesService } from './jules.service';
 import { SessionUtilsService } from './session-utils.service';
 import { AuthTokenService } from './auth-token.service';
 import { Session, SessionState } from '../models/jules.model';
-import { environment } from '../../environments/environment';
 
 export interface SessionFilter {
   search?: string;
@@ -223,7 +222,7 @@ export class SessionCacheService {
       params.set('last_update', this.lastSessionUpdateTime);
     }
 
-    const streamUrl = `${environment.apiUrl}/jules/sessions/events/?${params.toString()}`;
+    const streamUrl = this.julesService.getSessionsEventStreamUrl(params);
     this.eventSource = new EventSource(streamUrl);
 
     this.eventSource.addEventListener('sessions_update', event => {
