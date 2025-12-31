@@ -51,8 +51,11 @@ def upsert_session(session_data: dict) -> JulesSession:
                 update_fields.append(field_name)
         
         if has_changes:
-            # Always update last_synced_at when there are changes
+            # Include last_synced_at since auto_now=True doesn't work with update_fields
             update_fields.append("last_synced_at")
+            # Manually set last_synced_at since auto_now won't trigger with update_fields
+            from django.utils import timezone
+            session.last_synced_at = timezone.now()
             session.save(update_fields=update_fields)
     
     return session

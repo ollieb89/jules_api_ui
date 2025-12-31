@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.decorators import action
 from rest_framework.response import Response
+import logging
 
 from .serializers import (
     ActivitySerializer,
@@ -19,6 +20,9 @@ from .models import JulesSession, JulesSettings
 from .services import JulesApiClient
 from .sync import upsert_activities, upsert_session
 from .utils import handle_api_exception
+
+
+logger = logging.getLogger(__name__)
 
 
 class SourceViewSet(viewsets.ViewSet):
@@ -60,8 +64,6 @@ class SessionViewSet(viewsets.ViewSet):
                 upsert_session(data)
             except Exception as e:
                 # Log the error but don't fail the request since API call succeeded
-                import logging
-                logger = logging.getLogger(__name__)
                 logger.error(f"Failed to persist session locally: {e}", exc_info=True)
             
             session_serializer = SessionSerializer(data=data)
@@ -82,8 +84,6 @@ class SessionViewSet(viewsets.ViewSet):
                 try:
                     upsert_session(session_data)
                 except Exception as e:
-                    import logging
-                    logger = logging.getLogger(__name__)
                     logger.error(f"Failed to persist session {session_data.get('name')}: {e}", exc_info=True)
             
             serializer = SessionSerializer(data=sessions, many=True)
@@ -105,8 +105,6 @@ class SessionViewSet(viewsets.ViewSet):
             try:
                 upsert_session(data)
             except Exception as e:
-                import logging
-                logger = logging.getLogger(__name__)
                 logger.error(f"Failed to persist session locally: {e}", exc_info=True)
             
             serializer = SessionSerializer(data=data)
@@ -137,8 +135,6 @@ class SessionViewSet(viewsets.ViewSet):
             try:
                 upsert_session(data)
             except Exception as e:
-                import logging
-                logger = logging.getLogger(__name__)
                 logger.error(f"Failed to persist session locally: {e}", exc_info=True)
             
             session_serializer = SessionSerializer(data=data)
@@ -158,8 +154,6 @@ class SessionViewSet(viewsets.ViewSet):
             try:
                 upsert_session(data)
             except Exception as e:
-                import logging
-                logger = logging.getLogger(__name__)
                 logger.error(f"Failed to persist session locally: {e}", exc_info=True)
             
             session_serializer = SessionSerializer(data=data)
@@ -201,8 +195,6 @@ class SessionViewSet(viewsets.ViewSet):
             try:
                 upsert_activities(session, activities)
             except Exception as e:
-                import logging
-                logger = logging.getLogger(__name__)
                 logger.error(f"Failed to persist activities locally: {e}", exc_info=True)
             
             serializer = ActivitySerializer(data=activities, many=True)
