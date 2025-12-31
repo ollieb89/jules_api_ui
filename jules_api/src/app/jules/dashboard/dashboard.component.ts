@@ -129,7 +129,7 @@ import { ThemeService } from '../../services/theme.service';
             </a>
           </div>
           <div class="mt-6 text-xs text-gray-500 dark:text-gray-400">
-            Live updates stream continuously and refresh every 15 seconds.
+            Live updates stream continuously with a minute fallback refresh.
           </div>
         </div>
       </section>

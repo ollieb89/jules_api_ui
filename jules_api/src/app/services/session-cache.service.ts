@@ -1,9 +1,9 @@
-import { Injectable, signal, computed, inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { Observable, Subscription, tap, timer } from 'rxjs';
 import { JulesService } from './jules.service';
 import { SessionUtilsService } from './session-utils.service';
 import { AuthTokenService } from './auth-token.service';
+import { JulesStreamService } from './jules-stream.service';
 import { Session, SessionState } from '../models/jules.model';
 
 export interface SessionFilter {
@@ -22,7 +22,7 @@ export class SessionCacheService {
   private readonly julesService = inject(JulesService);
   private readonly sessionUtils = inject(SessionUtilsService);
   private readonly authTokenService = inject(AuthTokenService);
-  private readonly platformId = inject(PLATFORM_ID);
+  private readonly streamService = inject(JulesStreamService);
   
   // Maximum number of sessions to fetch (configurable)
   private readonly MAX_SESSIONS = 1000;
@@ -135,8 +135,9 @@ export class SessionCacheService {
   readonly failedCount = computed(() => this.sessions().filter(session => session.state === 'FAILED').length);
 
   private autoRefreshSubscription: Subscription | null = null;
-  private eventSource: EventSource | null = null;
+  private streamSubscription: Subscription | null = null;
   private lastSessionUpdateTime: string | null = null;
+  private streamConnected = signal<boolean>(false);
   
   /**
    * Load all sessions from the API (up to MAX_SESSIONS)
@@ -192,48 +193,48 @@ export class SessionCacheService {
   /**
    * Start polling for session updates
    */
-  startAutoRefresh(intervalMs = 15000): void {
+  startAutoRefresh(intervalMs = 60000): void {
     this.startLiveUpdates();
     if (this.autoRefreshSubscription) {
       return;
     }
 
     this.autoRefreshSubscription = timer(0, intervalMs).subscribe(() => {
-      this.loadAllSessions();
+      if (!this.streamConnected()) {
+        this.loadAllSessions();
+      }
     });
   }
 
   startLiveUpdates(): void {
-    if (!isPlatformBrowser(this.platformId)) {
+    if (!this.authTokenService.getToken() || this.streamSubscription) {
       return;
     }
 
-    const token = this.authTokenService.getToken();
-    if (!token || this.eventSource) {
-      return;
-    }
-
-    const params = new URLSearchParams({
-      token,
-      poll_interval: this.ssePollIntervalSeconds.toString()
-    });
-
-    if (this.lastSessionUpdateTime) {
-      params.set('last_update', this.lastSessionUpdateTime);
-    }
-
-    const streamUrl = this.julesService.getSessionsEventStreamUrl(params);
-    this.eventSource = new EventSource(streamUrl);
-
-    this.eventSource.addEventListener('sessions_update', event => {
-      const data = JSON.parse((event as MessageEvent).data) as Session[];
-      this.updateSessions(data);
-    });
-
-    this.eventSource.addEventListener('error', () => {
-      this.eventSource?.close();
-      this.eventSource = null;
-    });
+    this.streamSubscription = this.streamService
+      .sessionsStream({
+        pollIntervalSeconds: this.ssePollIntervalSeconds,
+        lastUpdate: this.lastSessionUpdateTime
+      })
+      .subscribe({
+        next: event => {
+          if (event.type === 'open') {
+            this.streamConnected.set(true);
+            return;
+          }
+          if (event.type === 'error') {
+            this.streamConnected.set(false);
+            return;
+          }
+          if (event.type === 'sessions_update') {
+            this.updateSessions(event.sessions);
+          }
+        },
+        complete: () => {
+          this.streamConnected.set(false);
+          this.streamSubscription = null;
+        }
+      });
   }
 
   /**
@@ -242,8 +243,8 @@ export class SessionCacheService {
   stopAutoRefresh(): void {
     this.autoRefreshSubscription?.unsubscribe();
     this.autoRefreshSubscription = null;
-    this.eventSource?.close();
-    this.eventSource = null;
+    this.streamSubscription?.unsubscribe();
+    this.streamSubscription = null;
   }
 
   /**
