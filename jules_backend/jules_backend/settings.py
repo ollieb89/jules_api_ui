@@ -182,4 +182,3 @@ CORS_ALLOW_HEADERS = [
 JULES_API_KEY = os.getenv("JULES_API_KEY", "")
 JULES_API_BASE_URL = os.getenv("JULES_API_BASE_URL", "https://jules.googleapis.com")
 JULES_API_VERSION = os.getenv("JULES_API_VERSION", "v1alpha")
-JULES_ENCRYPTION_KEY = os.getenv("JULES_ENCRYPTION_KEY", "")
