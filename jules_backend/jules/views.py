@@ -1,4 +1,7 @@
 from rest_framework import status, viewsets
+from rest_framework.authentication import SessionAuthentication
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -20,6 +23,9 @@ from .utils import handle_api_exception
 class SourceViewSet(viewsets.ViewSet):
     """ViewSet for listing sources (GitHub repositories)."""
 
+    authentication_classes = [SessionAuthentication, JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
     def list(self, request):  # noqa: ARG002
         """List all connected GitHub repositories."""
         client = JulesApiClient()
@@ -35,6 +41,9 @@ class SourceViewSet(viewsets.ViewSet):
 
 class SessionViewSet(viewsets.ViewSet):
     """ViewSet for managing Jules sessions."""
+
+    authentication_classes = [SessionAuthentication, JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def create(self, request):
         """Create a new coding session."""
@@ -145,6 +154,9 @@ class SessionViewSet(viewsets.ViewSet):
 class JulesHealthViewSet(viewsets.ViewSet):
     """ViewSet for Jules API health check."""
 
+    authentication_classes = [SessionAuthentication, JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
     def list(self, request):  # noqa: ARG002
         """Check Jules API connectivity and configuration."""
         try:
@@ -186,6 +198,9 @@ class JulesHealthViewSet(viewsets.ViewSet):
 class SettingsViewSet(viewsets.ViewSet):
     """ViewSet for managing Jules settings (API key configuration)."""
 
+    authentication_classes = [SessionAuthentication, JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
     def list(self, request):  # noqa: ARG002
         """Get current settings (masked API key)."""
         settings = JulesSettings.get_settings()
@@ -202,12 +217,12 @@ class SettingsViewSet(viewsets.ViewSet):
         """Update the API key."""
         serializer = ApiKeyUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        
+
         settings = JulesSettings.get_settings()
         try:
             settings.set_api_key(serializer.validated_data["api_key"])
             settings.save()
-            
+
             return Response(
                 {
                     "status": "success",
@@ -224,7 +239,7 @@ class SettingsViewSet(viewsets.ViewSet):
         """Test API connection with current settings."""
         settings = JulesSettings.get_settings()
         api_key = settings.get_api_key()
-        
+
         if not api_key:
             return Response(
                 {
@@ -234,7 +249,7 @@ class SettingsViewSet(viewsets.ViewSet):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        
+
         try:
             client = JulesApiClient()
             # Test by listing sources (lightweight call)
