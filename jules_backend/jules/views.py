@@ -1,7 +1,5 @@
 from rest_framework import status, viewsets
-from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -20,11 +18,14 @@ from .services import JulesApiClient
 from .utils import handle_api_exception
 
 
-class SourceViewSet(viewsets.ViewSet):
-    """ViewSet for listing sources (GitHub repositories)."""
+class AuthenticatedViewSet(viewsets.ViewSet):
+    """Base viewset requiring authentication."""
 
-    authentication_classes = [SessionAuthentication, JWTAuthentication]
     permission_classes = [IsAuthenticated]
+
+
+class SourceViewSet(AuthenticatedViewSet):
+    """ViewSet for listing sources (GitHub repositories)."""
 
     def list(self, request):  # noqa: ARG002
         """List all connected GitHub repositories."""
@@ -39,11 +40,8 @@ class SourceViewSet(viewsets.ViewSet):
             return handle_api_exception(e)
 
 
-class SessionViewSet(viewsets.ViewSet):
+class SessionViewSet(AuthenticatedViewSet):
     """ViewSet for managing Jules sessions."""
-
-    authentication_classes = [SessionAuthentication, JWTAuthentication]
-    permission_classes = [IsAuthenticated]
 
     def create(self, request):
         """Create a new coding session."""
@@ -151,11 +149,8 @@ class SessionViewSet(viewsets.ViewSet):
             return handle_api_exception(e)
 
 
-class JulesHealthViewSet(viewsets.ViewSet):
+class JulesHealthViewSet(AuthenticatedViewSet):
     """ViewSet for Jules API health check."""
-
-    authentication_classes = [SessionAuthentication, JWTAuthentication]
-    permission_classes = [IsAuthenticated]
 
     def list(self, request):  # noqa: ARG002
         """Check Jules API connectivity and configuration."""
@@ -195,11 +190,8 @@ class JulesHealthViewSet(viewsets.ViewSet):
             )
 
 
-class SettingsViewSet(viewsets.ViewSet):
+class SettingsViewSet(AuthenticatedViewSet):
     """ViewSet for managing Jules settings (API key configuration)."""
-
-    authentication_classes = [SessionAuthentication, JWTAuthentication]
-    permission_classes = [IsAuthenticated]
 
     def list(self, request):  # noqa: ARG002
         """Get current settings (masked API key)."""
