@@ -31,7 +31,7 @@ def cleanup_clients() -> None:
     if hasattr(_thread_local, "client"):
         try:
             _thread_local.client.close()
-        except Exception as e:
+        except (httpx.HTTPError, OSError, RuntimeError) as e:
             logger.warning("Error closing httpx client: %s", str(e))
 
 
@@ -169,6 +169,9 @@ class JulesApiClient:
 
             response.raise_for_status()
             return response
+
+        # This should never be reached given the logic above, but satisfies type checker
+        raise httpx.HTTPError("Request failed after all retries exhausted")
 
     def list_sources(self) -> dict[str, Any]:
         """List all connected GitHub repositories."""
