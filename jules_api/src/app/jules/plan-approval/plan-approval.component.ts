@@ -5,7 +5,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { JulesService } from '../../services/jules.service';
-import { JulesApiError, Plan, Step, StepState, PlanState } from '../../models/jules.model';
+import { JulesApiError, Plan, StepState, PlanState } from '../../models/jules.model';
 
 @Component({
   selector: 'app-plan-approval',
