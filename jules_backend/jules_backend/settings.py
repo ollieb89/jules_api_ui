@@ -34,9 +34,10 @@ INSTALLED_APPS = [
     # Third-party apps
     "rest_framework",
     "corsheaders",
+    "django_q",
     # Local apps
     "users",
-    "jules",
+    "jules.apps.JulesConfig",
 ]
 
 MIDDLEWARE = [
@@ -178,3 +179,14 @@ CORS_ALLOW_HEADERS = [
 
 # Jules API Configuration
 JULES_API_KEY = os.getenv("JULES_API_KEY", "")
+
+Q_CLUSTER = {
+    "name": "jules",
+    "workers": 4,
+    "recycle": 500,
+    "timeout": 60,
+    "retry": 120,
+    "queue_limit": 50,
+    "bulk": 10,
+    "orm": "default",
+}

@@ -1,10 +1,13 @@
-from django.db import models
-from django.core.exceptions import ValidationError
-from django.conf import settings
 import base64
-from cryptography.fernet import Fernet
 import hashlib
 from functools import lru_cache
+
+from cryptography.fernet import Fernet
+from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.db import models
+from django.utils import timezone
+
 
 @lru_cache(maxsize=1)
 def get_fernet():
@@ -20,6 +23,7 @@ def get_fernet():
     key = hashlib.sha256(settings.SECRET_KEY.encode()).digest()
     key_b64 = base64.urlsafe_b64encode(key)
     return Fernet(key_b64)
+
 
 class JulesSettings(models.Model):
     """Settings for Jules API configuration."""
