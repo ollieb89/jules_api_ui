@@ -17,6 +17,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-change-this-in-production")
+JULES_ENCRYPTION_KEY = os.getenv("JULES_ENCRYPTION_KEY", SECRET_KEY)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
@@ -34,9 +35,10 @@ INSTALLED_APPS = [
     # Third-party apps
     "rest_framework",
     "corsheaders",
+    "django_q",
     # Local apps
     "users",
-    "jules",
+    "jules.apps.JulesConfig",
 ]
 
 MIDDLEWARE = [
@@ -132,13 +134,13 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 100,
-    "DEFAULT_AUTHENTICATION_CLASSES": [
+    "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.SessionAuthentication",
         "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ],
-    "DEFAULT_PERMISSION_CLASSES": [
+    ),
+    "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",
-    ],
+    ),
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",
     ],
@@ -180,6 +182,14 @@ CORS_ALLOW_HEADERS = [
 
 # Jules API Configuration
 JULES_API_KEY = os.getenv("JULES_API_KEY", "")
-JULES_API_BASE_URL = os.getenv("JULES_API_BASE_URL", "https://jules.googleapis.com")
-JULES_API_VERSION = os.getenv("JULES_API_VERSION", "v1alpha")
-JULES_ENCRYPTION_KEY = os.getenv("JULES_ENCRYPTION_KEY", "")
+
+Q_CLUSTER = {
+    "name": "jules",
+    "workers": 4,
+    "recycle": 500,
+    "timeout": 60,
+    "retry": 120,
+    "queue_limit": 50,
+    "bulk": 10,
+    "orm": "default",
+}
