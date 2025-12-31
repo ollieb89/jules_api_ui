@@ -11,13 +11,14 @@ def get_cipher_suite():
     # Validate SECRET_KEY is present and meets minimum security requirements
     # Django recommends 50+ characters for production keys
     # While SHA256 produces consistent output length, short keys are vulnerable to brute-force
-    if not settings.SECRET_KEY or len(settings.SECRET_KEY) < 32:
+    secret_key = getattr(settings, 'SECRET_KEY', None)
+    if not secret_key or len(secret_key) < 32:
         raise ValidationError(
             "Django SECRET_KEY must be at least 32 characters for secure encryption."
         )
     
     # SHA256 the secret key to get 32 bytes
-    key = hashlib.sha256(settings.SECRET_KEY.encode()).digest()
+    key = hashlib.sha256(secret_key.encode()).digest()
     # Base64 encode it for Fernet
     return Fernet(base64.urlsafe_b64encode(key))
 
@@ -49,8 +50,10 @@ class JulesSettings(models.Model):
             self._encrypted_api_key = None
             return
 
+        # ValidationError from get_cipher_suite() should propagate
+        cipher = get_cipher_suite()
+        
         try:
-            cipher = get_cipher_suite()
             self._encrypted_api_key = cipher.encrypt(api_key.encode()).decode()
         except (TypeError, AttributeError):
             # TypeError: if api_key is not a string
