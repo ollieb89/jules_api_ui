@@ -1,5 +1,4 @@
 from rest_framework import status, viewsets
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -19,9 +18,11 @@ from .utils import handle_api_exception
 
 
 class AuthenticatedViewSet(viewsets.ViewSet):
-    """Base viewset requiring authentication."""
-
-    permission_classes = [IsAuthenticated]
+    """Base viewset requiring authentication.
+    
+    Authentication is enforced via DRF's DEFAULT_PERMISSION_CLASSES setting,
+    which requires IsAuthenticated for all endpoints.
+    """
 
 
 class SourceViewSet(AuthenticatedViewSet):
