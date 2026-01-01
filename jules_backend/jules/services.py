@@ -1,12 +1,12 @@
 import logging
 import os
 import time
-from typing import Any
+from typing import Any, Mapping
 
 import httpx
 from django.conf import settings
 
-from .utils import log_jules_api_call
+from .utils import get_correlation_id, log_jules_api_call
 
 logger = logging.getLogger(__name__)
 
@@ -33,10 +33,12 @@ class ApiRequestError(Exception):
 class SharedHttpClient:
     """Shared HTTP client with retry, backoff, and timeout policies."""
 
-    RETRY_STATUS_CODES = set(getattr(settings, "JULES_API_RETRY_STATUS_CODES", {429, 502, 503, 504}))
+    RETRY_STATUS_CODES = set(
+        getattr(settings, "JULES_API_RETRY_STATUS_CODES", {429, 502, 503, 504})
+    )
     MAX_RETRIES = int(getattr(settings, "JULES_API_MAX_RETRIES", 2))
     BACKOFF_SECONDS = float(getattr(settings, "JULES_API_BACKOFF_SECONDS", 0.5))
-    TIMEOUT_POLICIES = getattr(
+    TIMEOUT_POLICIES: Mapping[str, Any] = getattr(
         settings,
         "JULES_API_TIMEOUT_POLICIES",
         {
@@ -55,23 +57,27 @@ class SharedHttpClient:
         *,
         json: dict[str, Any] | None = None,
         params: dict[str, Any] | None = None,
+        data: dict[str, Any] | None = None,
         timeout_policy: str = "default",
+        headers: dict[str, str] | None = None,
     ) -> httpx.Response:
-        timeout = self.TIMEOUT_POLICIES.get(timeout_policy, self.TIMEOUT_POLICIES["default"])
+        timeout = self._resolve_timeout(timeout_policy)
 
         for attempt in range(self.MAX_RETRIES + 1):
+            start_time = time.monotonic()
             try:
-                start_time = time.monotonic()
                 response = self._client.request(
                     method,
                     url,
                     json=json,
                     params=params,
+                    data=data,
+                    headers=headers,
                     timeout=timeout,
                 )
 
                 if response.status_code in self.RETRY_STATUS_CODES and attempt < self.MAX_RETRIES:
-                    self._sleep_backoff(attempt, url, response.status_code)
+                    self._sleep_backoff(attempt, url, response.status_code, response)
                     continue
 
                 response.raise_for_status()
@@ -86,7 +92,7 @@ class SharedHttpClient:
             except httpx.HTTPStatusError as exc:
                 status_code = exc.response.status_code
                 if status_code in self.RETRY_STATUS_CODES and attempt < self.MAX_RETRIES:
-                    self._sleep_backoff(attempt, url, status_code)
+                    self._sleep_backoff(attempt, url, status_code, exc.response)
                     continue
                 log_jules_api_call(
                     method=method,
@@ -96,10 +102,10 @@ class SharedHttpClient:
                     response_bytes=len(exc.response.content),
                     error=exc.__class__.__name__,
                 )
-                raise self._map_http_status_error(exc) from exc
+                raise self._map_http_status_error(exc, attempt) from exc
             except httpx.RequestError as exc:
                 if attempt < self.MAX_RETRIES:
-                    self._sleep_backoff(attempt, url, None)
+                    self._sleep_backoff(attempt, url, None, None)
                     continue
                 log_jules_api_call(
                     method=method,
@@ -112,7 +118,8 @@ class SharedHttpClient:
                     status_code=503,
                     details={
                         "error_type": exc.__class__.__name__,
-                        "url": str(exc.request.url),
+                        "method": method,
+                        "url": str(exc.request.url) if exc.request else url,
                         "retryable": True,
                     },
                     user_message="Upstream service is unavailable. Please try again shortly.",
@@ -126,23 +133,38 @@ class SharedHttpClient:
             retry_after=self._calculate_backoff(self.MAX_RETRIES),
         )
 
-    def _sleep_backoff(self, attempt: int, url: str, status_code: int | None) -> None:
-        delay = self._calculate_backoff(attempt)
+    def _sleep_backoff(
+        self,
+        attempt: int,
+        url: str,
+        status_code: int | None,
+        response: httpx.Response | None,
+    ) -> None:
+        delay = self._calculate_backoff(attempt, response)
+        log_extra: dict[str, Any] = {
+            "attempt": attempt + 1,
+            "delay_seconds": delay,
+            "status_code": status_code,
+            "url": url,
+        }
+        correlation_id = get_correlation_id()
+        if correlation_id:
+            log_extra["correlation_id"] = correlation_id
         logger.warning(
             "Retrying Jules API request",
-            extra={
-                "attempt": attempt + 1,
-                "delay_seconds": delay,
-                "status_code": status_code,
-                "url": url,
-            },
+            extra=log_extra,
         )
         time.sleep(delay)
 
-    def _calculate_backoff(self, attempt: int) -> float:
+    def _calculate_backoff(self, attempt: int, response: httpx.Response | None = None) -> float:
+        retry_after = self._parse_retry_after(response) if response else None
+        if retry_after is not None:
+            return retry_after
         return self.BACKOFF_SECONDS * (2**attempt)
 
-    def _parse_retry_after(self, response: httpx.Response) -> float | None:
+    def _parse_retry_after(self, response: httpx.Response | None) -> float | None:
+        if response is None:
+            return None
         retry_after = response.headers.get("Retry-After")
         if not retry_after:
             return None
@@ -150,6 +172,20 @@ class SharedHttpClient:
             return float(retry_after)
         except ValueError:
             return None
+
+    def _resolve_timeout(self, timeout_policy: str) -> httpx.Timeout:
+        default_timeout = self._coerce_timeout(self.TIMEOUT_POLICIES.get("default"))
+        policy_value = self.TIMEOUT_POLICIES.get(timeout_policy, default_timeout)
+        return self._coerce_timeout(policy_value) or default_timeout
+
+    def _coerce_timeout(self, value: Any) -> httpx.Timeout:
+        if isinstance(value, httpx.Timeout):
+            return value
+        if isinstance(value, (int, float)):
+            return httpx.Timeout(float(value))
+        if isinstance(value, Mapping):
+            return httpx.Timeout(**value)
+        return httpx.Timeout(30.0)
 
     def _map_http_status_error(
         self,
@@ -159,7 +195,15 @@ class SharedHttpClient:
         response = exc.response
         message = response.text.strip() or response.reason_phrase
         retry_after = self._parse_retry_after(response)
-        details: dict[str, Any] = {"upstream_status": response.status_code}
+        details: dict[str, Any] = {
+            "upstream_status": response.status_code,
+            "error_type": exc.__class__.__name__,
+        }
+        upstream_request_id = response.headers.get("X-Request-ID") or response.headers.get(
+            "X-Correlation-ID"
+        )
+        if upstream_request_id:
+            details["upstream_request_id"] = upstream_request_id
 
         try:
             payload = response.json()
@@ -176,6 +220,8 @@ class SharedHttpClient:
             else:
                 message = payload.get("message", message)
                 details["error_payload"] = payload
+        elif payload is not None:
+            details["error_payload"] = payload
 
         if response.status_code in self.RETRY_STATUS_CODES:
             details["retryable"] = True
@@ -222,115 +268,9 @@ class JulesApiClient:
         }
         self._client = SharedHttpClient(self.headers)
 
-    @property
-    def client(self) -> httpx.Client:
-        """Get the thread-local httpx.Client instance."""
-        return _get_client()
-
     def _get_url(self, endpoint: str) -> str:
         """Construct full API URL."""
         return f"{self.base_url}/{self.api_version}/{endpoint}"
-
-    def _get_backoff_delay(
-        self, attempt: int, response: httpx.Response | None = None
-    ) -> float:
-        delay = BACKOFF_FACTOR * (2**attempt)
-        if response is not None:
-            retry_after = response.headers.get("Retry-After")
-            if retry_after:
-                try:
-                    delay = float(retry_after)
-                except ValueError:
-                    pass
-        # Cap the delay to prevent indefinite blocking
-        return min(delay, MAX_RETRY_DELAY)
-
-    def _request(self, method: str, url: str, **kwargs: Any) -> httpx.Response:
-        """
-        Execute an HTTP request with automatic retry logic for transient failures.
-
-        Retries are performed for:
-        - Timeout exceptions (httpx.TimeoutException)
-        - Request errors (httpx.RequestError)
-        - Retryable HTTP status codes (408, 429, 500, 502, 503, 504)
-
-        Retry behavior:
-        - Uses exponential backoff with configurable factor (BACKOFF_FACTOR)
-        - Honors Retry-After headers from upstream services
-        - Caps delay at MAX_RETRY_DELAY to prevent indefinite blocking
-        - Logs warnings for each retry attempt
-
-        Note: This method uses synchronous time.sleep() for retry delays, which blocks
-        the current thread. In a production Django application with limited worker threads,
-        long retry delays (especially from Retry-After headers) could reduce concurrency.
-        For high-traffic scenarios, consider:
-        - Using async/await with httpx.AsyncClient and asyncio.sleep
-        - Implementing retry logic at a higher level (e.g., via Celery task queue)
-        - Configuring shorter MAX_RETRY_DELAY values
-
-        Args:
-            method: HTTP method (GET, POST, etc.)
-            url: Full URL to request
-            **kwargs: Additional arguments passed to httpx.Client.request
-
-        Returns:
-            httpx.Response: Successful response from upstream
-
-        Raises:
-            httpx.TimeoutException: If all retries are exhausted due to timeouts
-            httpx.RequestError: If all retries are exhausted due to connection errors
-            httpx.HTTPStatusError: If response has non-retryable error status code
-        """
-        for attempt in range(MAX_RETRIES + 1):
-            try:
-                response = self.client.request(method, url, **kwargs)
-            except httpx.TimeoutException as e:
-                if attempt >= MAX_RETRIES:
-                    raise
-                delay = self._get_backoff_delay(attempt)
-                logger.warning(
-                    "Request timeout on attempt %d/%d: %s. Retrying in %.2fs",
-                    attempt + 1,
-                    MAX_RETRIES + 1,
-                    str(e),
-                    delay,
-                )
-                time.sleep(delay)
-                continue
-            except httpx.RequestError as e:
-                if attempt >= MAX_RETRIES:
-                    raise
-                delay = self._get_backoff_delay(attempt)
-                logger.warning(
-                    "Request error on attempt %d/%d: %s. Retrying in %.2fs",
-                    attempt + 1,
-                    MAX_RETRIES + 1,
-                    str(e),
-                    delay,
-                )
-                time.sleep(delay)
-                continue
-
-            if response.status_code in RETRY_STATUS_CODES and attempt < MAX_RETRIES:
-                delay = self._get_backoff_delay(attempt, response)
-                logger.warning(
-                    "Retryable status %d on attempt %d/%d for %s %s. Retrying in %.2fs",
-                    response.status_code,
-                    attempt + 1,
-                    MAX_RETRIES + 1,
-                    method,
-                    url,
-                    delay,
-                )
-                response.close()
-                time.sleep(delay)
-                continue
-
-            response.raise_for_status()
-            return response
-
-        # This should never be reached given the logic above, but satisfies type checker
-        raise httpx.HTTPError("Request failed after all retries exhausted")
 
     def list_sources(self) -> dict[str, Any]:
         """List all connected GitHub repositories."""
