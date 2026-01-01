@@ -76,7 +76,7 @@ import { ThemeService } from '../../services/theme.service';
           </div>
           <div class="h-3 rounded-full bg-[var(--color-background-tertiary)] overflow-hidden">
             <div
-              class="h-full bg-[var(--color-state-success)] transition-all"
+              class="h-full bg-[var(--color-success-500)] transition-all"
               [style.width.%]="completionRate()"
               [attr.aria-valuenow]="completionRate()"
               aria-valuemin="0"
