@@ -1,13 +1,13 @@
 <div class="mb-6">
   <div class="flex justify-between items-center mb-4">
     <div class="flex items-center gap-2">
-      <label for="originator-filter" class="text-sm font-medium text-gray-700 dark:text-gray-300">
+      <label for="originator-filter" class="text-sm font-medium text-[var(--color-text-secondary)]">
         Filter:
       </label>
       <select
         id="originator-filter"
         [(ngModel)]="originatorFilter"
-        class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        class="px-3 py-1 border border-[var(--color-border-strong)] rounded-lg bg-[var(--color-surface-primary)] text-[var(--color-text-primary)] text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
       >
         <option value="all">All</option>
         <option value="agent">Agent</option>
@@ -18,11 +18,11 @@
 
   @if (loading() && activities().length === 0) {
       <div class="flex justify-center items-center py-8" aria-busy="true" aria-live="polite">
-      <div class="text-gray-600 dark:text-gray-400">Loading activities...</div>
+      <div class="text-[var(--color-text-secondary)]">Loading activities...</div>
     </div>
   } @else if (error()) {
     <div 
-      class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded mb-4"
+      class="bg-[var(--color-error-50)] border border-[var(--color-error-200)] text-[var(--color-error-700)] px-4 py-3 rounded mb-4"
       role="alert"
       aria-live="assertive"
     >
@@ -32,13 +32,13 @@
       (click)="loadActivities()"
       type="button"
       aria-label="Retry loading activities"
-      class="bg-gray-600 hover:bg-gray-700 dark:bg-gray-500 dark:hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+      class="bg-[var(--color-interactive-primary)] hover:bg-[var(--color-interactive-primary-hover)] text-[var(--color-text-inverse)] font-semibold py-2 px-4 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
     >
       Retry
     </button>
   } @else if (formattedActivities().length === 0) {
-    <div class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-8 text-center">
-      <p class="text-gray-600 dark:text-gray-400">
+    <div class="bg-[var(--color-surface-secondary)] border border-[var(--color-border-default)] rounded-lg p-8 text-center">
+      <p class="text-[var(--color-text-secondary)]">
         @if (originatorFilter() !== 'all') {
           No {{ originatorFilter() }} activities found.
         } @else {
@@ -48,7 +48,7 @@
     </div>
   } @else {
     <div class="relative">
-      <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-700"></div>
+      <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-[var(--color-border-default)]"></div>
       <div class="space-y-6">
         @for (activity of formattedActivities(); track activity.name) {
           <div class="relative flex gap-4">
@@ -67,19 +67,19 @@
                 •
               }
             </div>
-            <div class="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm">
+            <div class="flex-1 bg-[var(--color-surface-primary)] border border-[var(--color-border-default)] rounded-lg p-4 shadow-sm">
               <div class="flex justify-between items-start mb-2">
                 <div class="flex items-center gap-2">
-                  <h3 class="font-semibold text-gray-900 dark:text-gray-100">{{ activity.activityType }}</h3>
+                  <h3 class="font-semibold text-[var(--color-text-primary)]">{{ activity.activityType }}</h3>
                   <span 
                     [class]="'px-2 py-0.5 rounded-full text-xs font-medium ' + activity.originatorBadgeClass"
                   >
                     {{ activity.originator === 'agent' ? 'Agent' : 'User' }}
                   </span>
                 </div>
-                <span class="text-xs text-gray-500 dark:text-gray-400">{{ activity.formattedTime }}</span>
+                <span class="text-xs text-[var(--color-text-tertiary)]">{{ activity.formattedTime }}</span>
               </div>
-              <p class="text-sm text-gray-600 dark:text-gray-400">{{ activity.description }}</p>
+              <p class="text-sm text-[var(--color-text-secondary)]">{{ activity.description }}</p>
               
               @if (activity.plan_generated && activity.plan) {
                 <app-plan-approval [plan]="activity.plan" [sessionId]="sessionId"></app-plan-approval>

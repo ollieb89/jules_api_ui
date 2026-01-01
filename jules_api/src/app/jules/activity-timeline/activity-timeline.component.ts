@@ -61,7 +61,7 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
       let activityType = this.parseActivityType(activity);
       let description = '';
       let originator: 'agent' | 'user' = 'agent';
-      let iconClass = 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400';
+      let iconClass = 'bg-[var(--color-background-tertiary)] text-[var(--color-text-tertiary)]';
 
       if (activity.plan_generated) {
         const planSnapshot = this.planSnapshot();
@@ -86,23 +86,23 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
         activityType = 'Plan Approved';
         description = 'Plan has been approved';
         originator = 'user';
-        iconClass = 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400';
+        iconClass = 'bg-[var(--color-success-50)] text-[var(--color-success-700)]';
       } else if (activity.progress_updated) {
         activityType = 'Progress Updated';
         const step = activity.progress_updated;
         description = step.title || step.description || 'Progress updated';
         originator = 'agent';
-        iconClass = 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400';
+        iconClass = 'bg-[var(--color-warning-50)] text-[var(--color-warning-700)]';
       } else if (activity.session_completed) {
         activityType = 'Session Completed';
         description = 'Session has been completed';
         originator = 'agent';
-        iconClass = 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400';
+        iconClass = 'bg-[var(--color-secondary-50)] text-[var(--color-secondary-700)]';
       }
 
       const originatorBadgeClass = originator === 'agent'
-        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200'
-        : 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200';
+        ? 'bg-[var(--color-info-50)] text-[var(--color-info-800)]'
+        : 'bg-[var(--color-success-50)] text-[var(--color-success-800)]';
 
       return {
         ...activity,

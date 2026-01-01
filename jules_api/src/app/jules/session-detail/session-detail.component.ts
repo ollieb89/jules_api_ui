@@ -221,25 +221,25 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
 
   getStateBadgeClass(state: SessionState): string {
     const classes: Record<SessionState, string> = {
-      'STATE_UNSPECIFIED': 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300',
-      'ACTIVE': 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200',
-      'COMPLETED': 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200',
-      'FAILED': 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200'
+      'STATE_UNSPECIFIED': 'bg-[var(--color-background-tertiary)] text-[var(--color-text-secondary)]',
+      'ACTIVE': 'bg-[var(--color-info-50)] text-[var(--color-info-800)]',
+      'COMPLETED': 'bg-[var(--color-success-50)] text-[var(--color-success-800)]',
+      'FAILED': 'bg-[var(--color-error-50)] text-[var(--color-error-800)]'
     };
-    return classes[state] || 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
+    return classes[state] || 'bg-[var(--color-background-tertiary)] text-[var(--color-text-secondary)]';
   }
 
   getPRStatusBadgeClass(status?: string): string {
-    if (!status) return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
+    if (!status) return 'bg-[var(--color-background-tertiary)] text-[var(--color-text-secondary)]';
     switch (status) {
       case 'open':
-        return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200';
+        return 'bg-[var(--color-success-50)] text-[var(--color-success-800)]';
       case 'merged':
-        return 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200';
+        return 'bg-[var(--color-secondary-50)] text-[var(--color-secondary-800)]';
       case 'closed':
-        return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200';
+        return 'bg-[var(--color-error-50)] text-[var(--color-error-800)]';
       default:
-        return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
+        return 'bg-[var(--color-background-tertiary)] text-[var(--color-text-secondary)]';
     }
   }
 
