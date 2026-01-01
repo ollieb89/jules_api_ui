@@ -195,7 +195,11 @@
       </div>
       
       @if (activitiesExpanded()) {
-        <app-activity-timeline [sessionId]="sessionId()" [showPagination]="false"></app-activity-timeline>
+        <app-activity-timeline
+          [sessionId]="sessionId()"
+          [showPagination]="false"
+          (planStateChange)="onPlanStateChange($event)"
+        ></app-activity-timeline>
       }
     </div>
   }

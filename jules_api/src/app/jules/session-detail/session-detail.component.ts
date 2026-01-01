@@ -1,11 +1,12 @@
-import { Component, OnInit, signal, ChangeDetectionStrategy, inject, computed, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, signal, ChangeDetectionStrategy, inject, computed, ViewChild, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 // @ts-ignore: ignore missing types for ngx-markdown
 import { MarkdownComponent } from 'ngx-markdown';
 import { JulesService } from '../../services/jules.service';
-import { Session, SessionState } from '../../models/jules.model';
+import { AuthTokenService } from '../../services/auth-token.service';
+import { PlanState, Session, SessionState } from '../../models/jules.model';
 import { ActivityTimelineComponent } from '../activity-timeline/activity-timeline.component';
 import { CodeBlockStyleDirective } from '../../directives/code-block-style.directive';
 import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
@@ -23,13 +24,16 @@ interface PRInfo {
   templateUrl: './session-detail.component.html',
   styleUrl: './session-detail.component.css'
 })
-export class SessionDetailComponent implements OnInit {
+export class SessionDetailComponent implements OnInit, OnDestroy {
   private julesService = inject(JulesService);
+  private authTokenService = inject(AuthTokenService);
+  private platformId = inject(PLATFORM_ID);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private fb = inject(FormBuilder);
 
   @ViewChild('deleteDialog') deleteDialog!: ConfirmationDialogComponent;
+  @ViewChild(ActivityTimelineComponent) activityTimeline?: ActivityTimelineComponent;
 
   session = signal<Session | null>(null);
   loading = signal<boolean>(false);
@@ -42,8 +46,10 @@ export class SessionDetailComponent implements OnInit {
   // Collapsible sections state
   activitiesExpanded = signal<boolean>(true);
   
-  // WebSocket connection state (placeholder for future implementation)
-  websocketConnected = signal<boolean>(false);
+  // SSE connection state
+  streamConnected = signal<boolean>(false);
+
+  private eventSource: EventSource | null = null;
 
   messageForm: FormGroup = this.fb.group({
     message: ['', [Validators.required, Validators.minLength(1)]]
@@ -52,12 +58,11 @@ export class SessionDetailComponent implements OnInit {
   sendingMessage = signal<boolean>(false);
   approvingPlan = signal<boolean>(false);
   refreshing = signal<boolean>(false);
+  planStateFromActivities = signal<PlanState | null>(null);
 
   // Check if session has a pending plan
   hasPendingPlan = computed(() => {
-    // This would check activities for a pending plan
-    // For now, return false as placeholder
-    return false;
+    return this.planStateFromActivities() === 'PENDING';
   });
 
   ngOnInit(): void {
@@ -65,6 +70,7 @@ export class SessionDetailComponent implements OnInit {
     if (id) {
       this.sessionId.set(id);
       this.loadSession();
+      this.startLiveUpdates();
       
       // Check for action query param (e.g., ?action=message)
       this.route.queryParams.subscribe(params => {
@@ -75,9 +81,11 @@ export class SessionDetailComponent implements OnInit {
     } else {
       this.error.set('Session ID is required');
     }
-    
-    // Initialize WebSocket connection (placeholder)
-    // this.initializeWebSocket();
+  }
+
+  ngOnDestroy(): void {
+    this.eventSource?.close();
+    this.eventSource = null;
   }
 
   loadSession(): void {
@@ -166,18 +174,40 @@ export class SessionDetailComponent implements OnInit {
     this.activitiesExpanded.set(!this.activitiesExpanded());
   }
 
-  // Placeholder for WebSocket initialization
-  // private initializeWebSocket(): void {
-  //   // Future: Connect to django-channels WebSocket
-  //   // const ws = new WebSocket('ws://localhost:8444/ws/jules/sessions/' + this.sessionId());
-  //   // ws.onopen = () => this.websocketConnected.set(true);
-  //   // ws.onmessage = (event) => {
-  //   //   const data = JSON.parse(event.data);
-  //   //   if (data.type === 'session_update') {
-  //   //     this.loadSession();
-  //   //   }
-  //   // };
-  // }
+  onPlanStateChange(state: PlanState | null): void {
+    this.planStateFromActivities.set(state);
+  }
+
+  private startLiveUpdates(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
+    const token = this.authTokenService.getToken();
+    if (!token || this.eventSource) {
+      return;
+    }
+
+    const params = new URLSearchParams({ token, poll_interval: '5' });
+    const streamUrl = this.julesService.getSessionEventStreamUrl(this.sessionId(), params);
+    this.eventSource = new EventSource(streamUrl);
+
+    this.eventSource.addEventListener('session_update', event => {
+      const data = JSON.parse((event as MessageEvent).data) as Session;
+      this.session.set(data);
+      this.streamConnected.set(true);
+    });
+
+    this.eventSource.addEventListener('activity_update', () => {
+      this.activityTimeline?.loadActivities(null);
+    });
+
+    this.eventSource.addEventListener('error', () => {
+      this.streamConnected.set(false);
+      this.eventSource?.close();
+      this.eventSource = null;
+    });
+  }
 
   getStateLabel(state: SessionState): string {
     const labels: Record<SessionState, string> = {

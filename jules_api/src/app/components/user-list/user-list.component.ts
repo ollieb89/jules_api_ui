@@ -5,6 +5,7 @@ import { Router, RouterModule } from '@angular/router';
 import { UserService } from '../../services/user.service';
 import { User } from '../../models/user.model';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
+import { LoadingSpinnerComponent } from '../loading-spinner/loading-spinner.component';
 
 interface FormattedUser extends User {
   formattedDate: string;
@@ -12,7 +13,7 @@ interface FormattedUser extends User {
 
 @Component({
   selector: 'app-user-list',
-  imports: [CommonModule, RouterModule, ConfirmationDialogComponent],
+  imports: [CommonModule, RouterModule, ConfirmationDialogComponent, LoadingSpinnerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './user-list.component.html',
   styleUrl: './user-list.component.css'

@@ -7,7 +7,6 @@ serves as the Django REST API provider for the frontend system.
 
 - **`jules_backend/`**: Django project settings, URLs, and WSGI/ASGI entry points.
 - **`users/`, `jules/`**: Django apps that provide API endpoints and domain logic.
-- **`tests/`**: Pytest test suite.
 - **`pixi.toml`**: Dependency and environment configuration.
 
 ## Tech Stack
