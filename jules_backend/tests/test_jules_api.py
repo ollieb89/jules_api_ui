@@ -16,6 +16,11 @@ def api_client(db):
     return client
 
 
+@pytest.fixture
+def anon_client():
+    return APIClient()
+
+
 def test_sources_list_serializes_github_metadata(api_client, monkeypatch):
     class StubClient:
         def list_sources(self):
@@ -203,3 +208,15 @@ def test_settings_test_connection_success(api_client, monkeypatch):
     assert payload["status"] == "success"
     assert payload["api_key_configured"] is True
     assert payload["sources_count"] == 1
+
+
+def test_settings_requires_authentication(anon_client, db):
+    response = anon_client.get("/api/jules/settings/")
+
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+def test_sessions_require_authentication(anon_client, db):
+    response = anon_client.get("/api/jules/sessions/")
+
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
