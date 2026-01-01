@@ -83,7 +83,7 @@ interface DiffLine {
                   
                   @if (isBashOutputExpanded($index)) {
                     <div class="mt-2 relative">
-                      <pre class="bg-[var(--color-neutral-900)] text-[var(--color-success-300)] p-4 rounded-lg overflow-x-auto text-xs font-mono max-h-96 overflow-y-auto">{{ artifact.bash_output }}</pre>
+                      <pre class="bg-[var(--color-background-tertiary)] text-[var(--color-success-300)] p-4 rounded-lg overflow-x-auto text-xs font-mono max-h-96 overflow-y-auto">{{ artifact.bash_output }}</pre>
                       <button
                         (click)="copyToClipboard(artifact.bash_output || '')"
                         type="button"
