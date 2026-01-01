@@ -12,32 +12,30 @@ from django.utils import timezone
 @lru_cache(maxsize=1)
 def get_api_key_fernet():
     """
-    Get Fernet instance using JULES_API_KEY_ENCRYPTION_KEY.
+    Get Fernet instance using JULES_ENCRYPTION_KEY.
     Cached to avoid re-deriving key on every call.
 
-    WARNING: The encryption key is derived from settings.JULES_API_KEY_ENCRYPTION_KEY.
-    If JULES_API_KEY_ENCRYPTION_KEY is rotated, all encrypted API keys will become unreadable
+    WARNING: The encryption key is derived from settings.JULES_ENCRYPTION_KEY.
+    If JULES_ENCRYPTION_KEY is rotated, all encrypted API keys will become unreadable
     until re-encrypted.
     """
-    if not settings.JULES_API_KEY_ENCRYPTION_KEY:
-        raise ValidationError(
-            "JULES_API_KEY_ENCRYPTION_KEY must be set to encrypt API keys."
-        )
+    if not settings.JULES_ENCRYPTION_KEY:
+        raise ValidationError("JULES_ENCRYPTION_KEY must be set to encrypt API keys.")
 
-    # Ensure JULES_API_KEY_ENCRYPTION_KEY is 32 bytes for url-safe base64 encoding
+    # Ensure JULES_ENCRYPTION_KEY is 32 bytes for url-safe base64 encoding
     # We hash it to get 32 bytes, then base64 encode it to satisfy Fernet
-    key = hashlib.sha256(settings.JULES_API_KEY_ENCRYPTION_KEY.encode()).digest()
+    key = hashlib.sha256(settings.JULES_ENCRYPTION_KEY.encode()).digest()
     key_b64 = base64.urlsafe_b64encode(key)
     return Fernet(key_b64)
 
 
 @lru_cache(maxsize=1)
 def get_legacy_fernet():
-    """Get legacy Fernet instance using JULES_ENCRYPTION_KEY for fallback reads."""
-    if not settings.JULES_ENCRYPTION_KEY:
+    """Get legacy Fernet instance using JULES_API_KEY_ENCRYPTION_KEY for fallback reads."""
+    if not settings.JULES_API_KEY_ENCRYPTION_KEY:
         return None
 
-    key = hashlib.sha256(settings.JULES_ENCRYPTION_KEY.encode()).digest()
+    key = hashlib.sha256(settings.JULES_API_KEY_ENCRYPTION_KEY.encode()).digest()
     key_b64 = base64.urlsafe_b64encode(key)
     return Fernet(key_b64)
 
