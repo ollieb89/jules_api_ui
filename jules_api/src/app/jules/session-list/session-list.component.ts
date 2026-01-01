@@ -25,17 +25,17 @@ interface FormattedSession extends Session {
     <div class="container mx-auto px-4 py-8">
       <!-- Header -->
       <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Jules Sessions</h1>
+        <h1 class="text-3xl font-bold text-[var(--color-text-primary)]">Jules Sessions</h1>
         <div class="flex gap-3">
           <a
             routerLink="/dashboard"
-            class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-semibold rounded-lg transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
+            class="px-4 py-2 bg-[var(--color-surface-primary)] border border-[var(--color-border-default)] text-[var(--color-text-secondary)] font-semibold rounded-lg transition-colors hover:bg-[var(--color-surface-secondary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
           >
             Dashboard
           </a>
           <a
             routerLink="/jules/settings"
-            class="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-semibold rounded-lg transition-colors"
+            class="px-4 py-2 bg-[var(--color-background-secondary)] hover:bg-[var(--color-background-tertiary)] text-[var(--color-text-secondary)] font-semibold rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
           >
             ⚙️ Settings
           </a>
@@ -43,7 +43,7 @@ interface FormattedSession extends Session {
             (click)="themeService.toggle()"
             type="button"
             aria-label="Toggle theme"
-            class="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+            class="p-2 rounded-lg bg-[var(--color-background-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-background-tertiary)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
           >
             @if (themeService.getTheme() === 'dark') {
               ☀️
@@ -55,7 +55,7 @@ interface FormattedSession extends Session {
             (click)="createSession()"
             type="button"
             aria-label="Create new session"
-            class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+            class="bg-[var(--color-interactive-primary)] hover:bg-[var(--color-interactive-primary-hover)] active:bg-[var(--color-interactive-primary-active)] text-[var(--color-text-inverse)] font-semibold py-2 px-4 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
           >
             New Session
           </button>
@@ -63,11 +63,11 @@ interface FormattedSession extends Session {
       </div>
 
       <!-- Filter Bar -->
-      <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-4 mb-6">
+      <div class="bg-[var(--color-surface-primary)] shadow-md rounded-lg p-4 mb-6">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <!-- Search -->
           <div>
-            <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label for="search" class="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
               Search
             </label>
             <div class="relative">
@@ -77,14 +77,14 @@ interface FormattedSession extends Session {
                 [(ngModel)]="searchInput"
                 (ngModelChange)="onSearchChange($event)"
                 placeholder="Search by title or prompt..."
-                class="w-full pl-3 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                class="w-full pl-3 pr-10 py-2 border border-[var(--color-border-strong)] rounded-lg bg-[var(--color-surface-primary)] text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
               />
               @if (searchInput()) {
                 <button
                   (click)="onSearchChange('')"
                   type="button"
                   aria-label="Clear search"
-                  class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                  class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] rounded-full hover:bg-[var(--color-background-tertiary)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
                 >
                   <span aria-hidden="true">✕</span>
                 </button>
@@ -94,14 +94,14 @@ interface FormattedSession extends Session {
 
           <!-- Status Filter -->
           <div>
-            <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label for="status" class="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
               Status
             </label>
             <select
               id="status"
               [(ngModel)]="selectedStatus"
               (ngModelChange)="onStatusChange($event)"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              class="w-full px-3 py-2 border border-[var(--color-border-strong)] rounded-lg bg-[var(--color-surface-primary)] text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
             >
               <option [value]="null">All Statuses</option>
               <option value="ACTIVE">Active</option>
@@ -112,14 +112,14 @@ interface FormattedSession extends Session {
 
           <!-- Source Filter -->
           <div>
-            <label for="source" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label for="source" class="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
               Source
             </label>
             <select
               id="source"
               [(ngModel)]="selectedSource"
               (ngModelChange)="onSourceChange($event)"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              class="w-full px-3 py-2 border border-[var(--color-border-strong)] rounded-lg bg-[var(--color-surface-primary)] text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
             >
               <option [value]="null">All Sources</option>
               @for (source of cacheService.uniqueSources(); track source) {
@@ -130,7 +130,7 @@ interface FormattedSession extends Session {
 
           <!-- Sort -->
           <div>
-            <label for="sort" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label for="sort" class="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
               Sort By
             </label>
             <div class="flex gap-2">
@@ -138,7 +138,7 @@ interface FormattedSession extends Session {
                 id="sort"
                 [(ngModel)]="sortField"
                 (ngModelChange)="onSortFieldChange($event)"
-                class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                class="flex-1 px-3 py-2 border border-[var(--color-border-strong)] rounded-lg bg-[var(--color-surface-primary)] text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
               >
                 <option value="created_at">Created Date</option>
                 <option value="title">Title</option>
@@ -148,7 +148,7 @@ interface FormattedSession extends Session {
                 (click)="toggleSortDirection()"
                 type="button"
                 aria-label="Toggle sort direction"
-                class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                class="px-3 py-2 border border-[var(--color-border-default)] rounded-lg bg-[var(--color-surface-primary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-secondary)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
               >
                 @if (cacheService.sortDirection() === 'asc') {
                   ↑
@@ -166,7 +166,7 @@ interface FormattedSession extends Session {
             <button
               (click)="clearFilters()"
               type="button"
-              class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+              class="text-sm text-[var(--color-interactive-primary)] hover:text-[var(--color-interactive-primary-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
             >
               Clear all filters
             </button>
@@ -175,7 +175,7 @@ interface FormattedSession extends Session {
       </div>
 
       <!-- Results Count -->
-      <div class="mb-4 flex flex-col gap-1 text-sm text-gray-600 dark:text-gray-400">
+      <div class="mb-4 flex flex-col gap-1 text-sm text-[var(--color-text-secondary)]">
         <span>Showing {{ cacheService.filteredCount() }} of {{ cacheService.totalCount() }} sessions</span>
         <span>{{ lastUpdatedLabel() }}</span>
       </div>
@@ -183,14 +183,14 @@ interface FormattedSession extends Session {
       <!-- Loading State -->
       @if (cacheService.loading() && cacheService.totalCount() === 0) {
         <div class="flex justify-center items-center py-12" aria-busy="true" aria-live="polite">
-          <div class="text-gray-600 dark:text-gray-400">Loading sessions...</div>
+          <div class="text-[var(--color-text-secondary)]">Loading sessions...</div>
         </div>
       }
 
       <!-- Error State -->
       @if (cacheService.error()) {
         <div 
-          class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded mb-4"
+          class="bg-[var(--color-error-50)] border border-[var(--color-error-200)] text-[var(--color-error-700)] px-4 py-3 rounded mb-4"
           role="alert"
           aria-live="assertive"
         >
@@ -200,7 +200,7 @@ interface FormattedSession extends Session {
           (click)="cacheService.refresh()"
           type="button"
           aria-label="Retry loading sessions"
-          class="bg-gray-600 hover:bg-gray-700 dark:bg-gray-500 dark:hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+          class="bg-[var(--color-interactive-primary)] hover:bg-[var(--color-interactive-primary-hover)] text-[var(--color-text-inverse)] font-semibold py-2 px-4 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
         >
           Retry
         </button>
@@ -208,13 +208,13 @@ interface FormattedSession extends Session {
 
       <!-- Empty State -->
       @if (!cacheService.loading() && cacheService.filteredCount() === 0 && cacheService.totalCount() === 0) {
-        <div class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-8 text-center">
-          <p class="text-gray-600 dark:text-gray-400 mb-4">No sessions found.</p>
+        <div class="bg-[var(--color-surface-secondary)] border border-[var(--color-border-default)] rounded-lg p-8 text-center">
+          <p class="text-[var(--color-text-secondary)] mb-4">No sessions found.</p>
           <button
             (click)="createSession()"
             type="button"
             aria-label="Create first session"
-            class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+            class="bg-[var(--color-interactive-primary)] hover:bg-[var(--color-interactive-primary-hover)] text-[var(--color-text-inverse)] font-semibold py-2 px-4 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
           >
             Create First Session
           </button>
@@ -223,12 +223,12 @@ interface FormattedSession extends Session {
 
       <!-- No Results After Filtering -->
       @if (!cacheService.loading() && cacheService.filteredCount() === 0 && cacheService.totalCount() > 0) {
-        <div class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-8 text-center">
-          <p class="text-gray-600 dark:text-gray-400 mb-4">No sessions match your filters.</p>
+        <div class="bg-[var(--color-surface-secondary)] border border-[var(--color-border-default)] rounded-lg p-8 text-center">
+          <p class="text-[var(--color-text-secondary)] mb-4">No sessions match your filters.</p>
           <button
             (click)="clearFilters()"
             type="button"
-            class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+            class="text-[var(--color-interactive-primary)] hover:text-[var(--color-interactive-primary-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
           >
             Clear filters
           </button>
@@ -237,14 +237,14 @@ interface FormattedSession extends Session {
 
       <!-- Session Grid -->
       @if (cacheService.filteredCount() > 0) {
-        <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden">
+        <div class="bg-[var(--color-surface-primary)] shadow-md rounded-lg overflow-hidden">
           <div 
             class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 max-h-[600px] overflow-y-auto"
           >
             @for (session of formattedSessions(); track session.name) {
-              <div class="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:shadow-lg transition-shadow">
+              <div class="bg-[var(--color-surface-secondary)] border border-[var(--color-border-default)] rounded-lg p-4 hover:shadow-lg transition-shadow">
                 <div class="flex justify-between items-start mb-2">
-                  <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 flex-1">
+                  <h3 class="text-lg font-semibold text-[var(--color-text-primary)] flex-1">
                     {{ session.display_name }}
                   </h3>
                   <span 
@@ -254,11 +254,11 @@ interface FormattedSession extends Session {
                   </span>
                 </div>
                 
-                <p class="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
+                <p class="text-sm text-[var(--color-text-secondary)] mb-3 line-clamp-2">
                   {{ session.prompt }}
                 </p>
                 
-                <div class="flex flex-wrap gap-2 text-xs text-gray-500 dark:text-gray-500 mb-3">
+                <div class="flex flex-wrap gap-2 text-xs text-[var(--color-text-tertiary)] mb-3">
                   <span>Source: {{ session.source }}</span>
                   <span>Created: {{ session.formattedCreateTime }}</span>
                 </div>
@@ -268,7 +268,7 @@ interface FormattedSession extends Session {
                     (click)="viewSession(session.name)"
                     type="button"
                     [aria-label]="'View session ' + session.display_name"
-                    class="flex-1 text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 font-medium text-sm py-1 px-2 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                    class="flex-1 text-[var(--color-interactive-primary)] hover:text-[var(--color-interactive-primary-hover)] font-medium text-sm py-1 px-2 rounded hover:bg-[var(--color-info-50)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
                   >
                     View
                   </button>
@@ -277,7 +277,7 @@ interface FormattedSession extends Session {
                       (click)="sendMessage(session.name)"
                       type="button"
                       [aria-label]="'Send message to session ' + session.display_name"
-                      class="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 font-medium text-sm py-1 px-2 rounded hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
+                      class="text-[var(--color-success-700)] hover:text-[var(--color-success-800)] font-medium text-sm py-1 px-2 rounded hover:bg-[var(--color-success-50)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
                     >
                       Message
                     </button>
@@ -286,7 +286,7 @@ interface FormattedSession extends Session {
                     (click)="deleteSession(session.name)"
                     type="button"
                     [aria-label]="'Delete session ' + session.display_name"
-                    class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 font-medium text-sm py-1 px-2 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                    class="text-[var(--color-error-700)] hover:text-[var(--color-error-800)] font-medium text-sm py-1 px-2 rounded hover:bg-[var(--color-error-50)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
                   >
                     Delete
                   </button>
@@ -329,13 +329,13 @@ export class SessionListComponent implements OnInit {
       const createTime = new Date(session.create_time);
       const updateTime = new Date(session.update_time);
       
-      let stateBadgeClass = 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
+      let stateBadgeClass = 'bg-[var(--color-background-tertiary)] text-[var(--color-text-secondary)]';
       if (session.state === 'ACTIVE') {
-        stateBadgeClass = 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200';
+        stateBadgeClass = 'bg-[var(--color-info-50)] text-[var(--color-info-800)]';
       } else if (session.state === 'COMPLETED') {
-        stateBadgeClass = 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200';
+        stateBadgeClass = 'bg-[var(--color-success-50)] text-[var(--color-success-800)]';
       } else if (session.state === 'FAILED') {
-        stateBadgeClass = 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200';
+        stateBadgeClass = 'bg-[var(--color-error-50)] text-[var(--color-error-800)]';
       }
 
       return {

@@ -7,6 +7,7 @@ import { User } from '../../models/user.model';
 import { JulesApiError } from '../../models/jules.model';
 import { getApiErrorMessage } from '../../utils/api-error';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
+import { LoadingSpinnerComponent } from '../loading-spinner/loading-spinner.component';
 
 interface FormattedUser extends User {
   formattedDate: string;
@@ -14,7 +15,7 @@ interface FormattedUser extends User {
 
 @Component({
   selector: 'app-user-list',
-  imports: [CommonModule, RouterModule, ConfirmationDialogComponent],
+  imports: [CommonModule, RouterModule, ConfirmationDialogComponent, LoadingSpinnerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './user-list.component.html',
   styleUrl: './user-list.component.css'
