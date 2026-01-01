@@ -66,6 +66,48 @@ class SourceViewSet(JulesAuthenticatedViewSet):
 class SessionViewSet(JulesAuthenticatedViewSet):
     """ViewSet for managing Jules sessions."""
 
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="cached-events",
+        authentication_classes=[SessionAuthentication, JWTAuthentication, QueryParamJWTAuthentication],
+    )
+    def cached_session_events(self, request):
+        """Stream cached session list updates via SSE."""
+        poll_interval = float(request.query_params.get("poll_interval", 20))
+        last_update = request.query_params.get("last_update")
+
+        def event_stream():
+            nonlocal last_update
+            while True:
+                try:
+                    sessions = get_cached_sessions_payload()
+                    latest_update = max(
+                        (session.get("updateTime") for session in sessions if session.get("updateTime")),
+                        default=None,
+                    )
+                    if latest_update and latest_update != last_update:
+                        serializer = SessionSerializer(data=sessions, many=True)
+                        serializer.is_valid(raise_exception=True)
+                        yield "event: sessions_update\n"
+                        yield f"data: {json.dumps(serializer.data)}\n\n"
+                        last_update = latest_update
+
+                    yield "event: heartbeat\n"
+                    yield "data: {}\n\n"
+                except Exception as e:
+                    error_payload = {"message": str(e)}
+                    yield "event: error\n"
+                    yield f"data: {json.dumps(error_payload)}\n\n"
+                    break
+
+                time.sleep(poll_interval)
+
+        response = StreamingHttpResponse(event_stream(), content_type="text/event-stream")
+        response["Cache-Control"] = "no-cache"
+        response["X-Accel-Buffering"] = "no"
+        return response
+
     def create(self, request):
         """Create a new coding session."""
         serializer = SessionCreateSerializer(data=request.data)
@@ -256,6 +298,64 @@ class SessionViewSet(JulesAuthenticatedViewSet):
             )
         except Exception as e:
             return handle_api_exception(e, request=request)
+
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="cached-events",
+        authentication_classes=[SessionAuthentication, JWTAuthentication, QueryParamJWTAuthentication],
+    )
+    def cached_events(self, request, pk=None):  # noqa: ARG002
+        """Stream cached session/activity updates via SSE."""
+        poll_interval = float(request.query_params.get("poll_interval", 15))
+        session_name = normalize_session_name(pk)
+        last_update = request.query_params.get("last_update")
+        last_activity_id_param = request.query_params.get("last_activity_id")
+        last_activity_id = int(last_activity_id_param) if last_activity_id_param else None
+
+        def get_latest_activity_id() -> int | None:
+            latest_activity = (
+                JulesActivity.objects.filter(session__name=session_name).order_by("-id").first()
+            )
+            return latest_activity.id if latest_activity else None
+
+        def event_stream():
+            nonlocal last_update, last_activity_id
+            if last_activity_id is None:
+                last_activity_id = get_latest_activity_id()
+            while True:
+                try:
+                    session = JulesSession.objects.filter(name=session_name).first()
+                    if session:
+                        payload = session_to_api_dict(session)
+                        session_update_time = payload.get("updateTime")
+                        if session_update_time and session_update_time != last_update:
+                            serializer = SessionSerializer(data=payload)
+                            serializer.is_valid(raise_exception=True)
+                            yield "event: session_update\n"
+                            yield f"data: {json.dumps(serializer.data)}\n\n"
+                            last_update = session_update_time
+
+                    latest_activity_id = get_latest_activity_id()
+                    if latest_activity_id and latest_activity_id != last_activity_id:
+                        yield "event: activity_update\n"
+                        yield f"data: {json.dumps({'latest_activity_id': latest_activity_id})}\n\n"
+                        last_activity_id = latest_activity_id
+
+                    yield "event: heartbeat\n"
+                    yield "data: {}\n\n"
+                except Exception as e:
+                    error_payload = {"message": str(e)}
+                    yield "event: error\n"
+                    yield f"data: {json.dumps(error_payload)}\n\n"
+                    break
+
+                time.sleep(poll_interval)
+
+        response = StreamingHttpResponse(event_stream(), content_type="text/event-stream")
+        response["Cache-Control"] = "no-cache"
+        response["X-Accel-Buffering"] = "no"
+        return response
 
     @action(
         detail=True,

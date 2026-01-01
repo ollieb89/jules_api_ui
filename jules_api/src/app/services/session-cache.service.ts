@@ -4,12 +4,9 @@ import { JulesService } from './jules.service';
 import { SessionUtilsService } from './session-utils.service';
 import { AuthTokenService } from './auth-token.service';
 import { JulesStreamService } from './jules-stream.service';
-import { Session, SessionState } from '../models/jules.model';
-import {
-  getParserErrorMessage,
-  parseSessionsList,
-  parseSessionsResponse
-} from '../utils/api-parsers';
+import { JulesApiError, Session, SessionState } from '../models/jules.model';
+import { getApiErrorMessage } from '../utils/api-error';
+import { getParserErrorMessage, parseSessionsResponse } from '../utils/api-parsers';
 
 export interface SessionFilter {
   search?: string;
@@ -32,7 +29,7 @@ export class SessionCacheService {
   // Maximum number of sessions to fetch (configurable)
   private readonly MAX_SESSIONS = 1000;
 
-  private readonly ssePollIntervalSeconds = 10;
+  private readonly ssePollIntervalSeconds = 20;
   
   // Raw cached sessions
   private readonly sessions = signal<Session[]>([]);
@@ -205,9 +202,9 @@ export class SessionCacheService {
   /**
    * Start live SSE updates and fallback polling for session updates.
    * This initiates SSE streaming and only falls back to polling when the stream is not connected.
-   * @param intervalMs - Polling interval in milliseconds (default: 60000ms / 1 minute)
+   * @param intervalMs - Polling interval in milliseconds (default: 180000ms / 3 minutes)
    */
-  startAutoRefresh(intervalMs = 60000): void {
+  startAutoRefresh(intervalMs = 180000): void {
     this.startLiveUpdates();
     if (this.autoRefreshSubscription) {
       return;

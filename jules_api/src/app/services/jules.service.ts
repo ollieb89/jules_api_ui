@@ -23,11 +23,11 @@ export class JulesService {
   private wsUrl = `${environment.wsUrl}/jules`;
 
   getSessionsEventStreamUrl(params: URLSearchParams): string {
-    return `${this.getStreamBaseUrl()}/sessions/events/?${params.toString()}`;
+    return `${this.getStreamBaseUrl()}/sessions/cached-events/?${params.toString()}`;
   }
 
   getSessionEventStreamUrl(sessionId: string, params: URLSearchParams): string {
-    return `${this.getStreamBaseUrl()}/sessions/${sessionId}/events/?${params.toString()}`;
+    return `${this.getStreamBaseUrl()}/sessions/${sessionId}/cached-events/?${params.toString()}`;
   }
 
   // Sources

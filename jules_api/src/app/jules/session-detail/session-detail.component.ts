@@ -6,11 +6,13 @@ import { Subscription } from 'rxjs';
 // @ts-ignore: ignore missing types for ngx-markdown
 import { MarkdownComponent } from 'ngx-markdown';
 import { JulesService } from '../../services/jules.service';
-import { AuthTokenService } from '../../services/auth-token.service';
-import { PlanState, Session, SessionState } from '../../models/jules.model';
+import { JulesStreamService } from '../../services/jules-stream.service';
+import { JulesApiError, PlanState, Session, SessionState } from '../../models/jules.model';
 import { ActivityTimelineComponent } from '../activity-timeline/activity-timeline.component';
 import { CodeBlockStyleDirective } from '../../directives/code-block-style.directive';
 import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
+import { getApiErrorMessage } from '../../utils/api-error';
+import { getParserErrorMessage, parseSessionResponse } from '../../utils/api-parsers';
 
 interface PRInfo {
   url?: string;
@@ -202,7 +204,7 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
     }
 
     this.streamSubscription = this.streamService
-      .sessionStream(this.sessionId(), { pollIntervalSeconds: 5 })
+      .sessionStream(this.sessionId(), { pollIntervalSeconds: 15 })
       .subscribe({
         next: event => {
           if (event.type === 'open') {
