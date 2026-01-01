@@ -16,11 +16,70 @@ export type SessionStreamEvent =
   | { type: 'session_update'; session: Session }
   | { type: 'activity_update' };
 
+type StreamEventHandler<T> = {
+  eventType: string;
+  handler: (event: Event, observer: any) => void;
+};
+
 @Injectable({ providedIn: 'root' })
 export class JulesStreamService {
   private readonly authTokenService = inject(AuthTokenService);
   private readonly julesService = inject(JulesService);
   private readonly platformId = inject(PLATFORM_ID);
+
+  /**
+   * Create an SSE Observable with common event handling logic
+   * @param streamUrl - The SSE endpoint URL
+   * @param eventHandlers - Array of event type and handler pairs
+   * @returns Observable that emits stream events
+   */
+  private createEventSourceObservable<T>(
+    streamUrl: string,
+    eventHandlers: StreamEventHandler<T>[]
+  ): Observable<T> {
+    return new Observable<T>(observer => {
+      const eventSource = new EventSource(streamUrl);
+      const listeners: Array<{ type: string; handler: EventListener }> = [];
+
+      const handleOpen = () => {
+        observer.next({ type: 'open' } as T);
+      };
+
+      const handleError = () => {
+        observer.next({ type: 'error' } as T);
+        observer.complete();
+        eventSource.close();
+      };
+
+      // Register open and error handlers
+      eventSource.addEventListener('open', handleOpen);
+      eventSource.addEventListener('error', handleError);
+      listeners.push({ type: 'open', handler: handleOpen });
+      listeners.push({ type: 'error', handler: handleError });
+
+      // Register custom event handlers
+      eventHandlers.forEach(({ eventType, handler }) => {
+        const wrappedHandler = (event: Event) => {
+          try {
+            handler(event, observer);
+          } catch (error) {
+            console.error(`Failed to handle ${eventType} event`, error);
+            observer.next({ type: 'error' } as T);
+          }
+        };
+        eventSource.addEventListener(eventType, wrappedHandler);
+        listeners.push({ type: eventType, handler: wrappedHandler });
+      });
+
+      return () => {
+        // Clean up all event listeners
+        listeners.forEach(({ type, handler }) => {
+          eventSource.removeEventListener(type, handler);
+        });
+        eventSource.close();
+      };
+    });
+  }
 
   sessionsStream({
     pollIntervalSeconds = 10,
@@ -49,32 +108,15 @@ export class JulesStreamService {
 
     const streamUrl = this.julesService.getSessionsEventStreamUrl(params);
 
-    return new Observable<SessionsStreamEvent>(observer => {
-      const eventSource = new EventSource(streamUrl);
-
-      const handleOpen = () => {
-        observer.next({ type: 'open' });
-      };
-
-      const handleSessionsUpdate = (event: Event) => {
-        const data = JSON.parse((event as MessageEvent).data) as Session[];
-        observer.next({ type: 'sessions_update', sessions: data });
-      };
-
-      const handleError = () => {
-        observer.next({ type: 'error' });
-        observer.complete();
-        eventSource.close();
-      };
-
-      eventSource.addEventListener('open', handleOpen);
-      eventSource.addEventListener('sessions_update', handleSessionsUpdate);
-      eventSource.addEventListener('error', handleError);
-
-      return () => {
-        eventSource.close();
-      };
-    });
+    return this.createEventSourceObservable<SessionsStreamEvent>(streamUrl, [
+      {
+        eventType: 'sessions_update',
+        handler: (event: Event, observer) => {
+          const data = JSON.parse((event as MessageEvent).data) as Session[];
+          observer.next({ type: 'sessions_update', sessions: data });
+        }
+      }
+    ]);
   }
 
   sessionStream(
@@ -97,36 +139,20 @@ export class JulesStreamService {
 
     const streamUrl = this.julesService.getSessionEventStreamUrl(sessionId, params);
 
-    return new Observable<SessionStreamEvent>(observer => {
-      const eventSource = new EventSource(streamUrl);
-
-      const handleOpen = () => {
-        observer.next({ type: 'open' });
-      };
-
-      const handleSessionUpdate = (event: Event) => {
-        const data = JSON.parse((event as MessageEvent).data) as Session;
-        observer.next({ type: 'session_update', session: data });
-      };
-
-      const handleActivityUpdate = () => {
-        observer.next({ type: 'activity_update' });
-      };
-
-      const handleError = () => {
-        observer.next({ type: 'error' });
-        observer.complete();
-        eventSource.close();
-      };
-
-      eventSource.addEventListener('open', handleOpen);
-      eventSource.addEventListener('session_update', handleSessionUpdate);
-      eventSource.addEventListener('activity_update', handleActivityUpdate);
-      eventSource.addEventListener('error', handleError);
-
-      return () => {
-        eventSource.close();
-      };
-    });
+    return this.createEventSourceObservable<SessionStreamEvent>(streamUrl, [
+      {
+        eventType: 'session_update',
+        handler: (event: Event, observer) => {
+          const data = JSON.parse((event as MessageEvent).data) as Session;
+          observer.next({ type: 'session_update', session: data });
+        }
+      },
+      {
+        eventType: 'activity_update',
+        handler: (event: Event, observer) => {
+          observer.next({ type: 'activity_update' });
+        }
+      }
+    ]);
   }
 }
