@@ -543,7 +543,7 @@ class ApiKeyUpdateSerializer(serializers.Serializer):
 class JulesActivitySerializer(serializers.ModelSerializer):
     """Serializer for cached Jules activities."""
 
-    session_id = serializers.CharField(source="session.session_id")
+    session_id = serializers.CharField(source="session.name")
 
     class Meta:
         model = JulesActivity
@@ -554,5 +554,5 @@ class JulesActivitySerializer(serializers.ModelSerializer):
             "activity_type",
             "payload",
             "create_time",
-            "created_at",
+            "last_synced_at",
         ]

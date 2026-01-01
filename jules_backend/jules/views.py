@@ -20,7 +20,8 @@ from .serializers import (
     SessionSerializer,
     SourceSerializer,
 )
-from .models import JulesSession, JulesSettings
+from .authentication import QueryParamJWTAuthentication
+from .models import JulesActivity, JulesSession, JulesSettings
 from .services import JulesApiClient
 from .store import (
     get_cached_activities_payload,
@@ -317,13 +318,14 @@ class SessionViewSet(JulesAuthenticatedViewSet):
         if not last_event_id:
             last_event_id = request.query_params.get("last_event_id")
         heartbeat = int(request.query_params.get("heartbeat", 15))
+        session_name = normalize_session_name(pk)
 
         def event_generator():
             yield "retry: 5000\n\n"
             last_seen = int(last_event_id) if last_event_id and last_event_id.isdigit() else 0
             while True:
                 activities = (
-                    JulesActivity.objects.filter(session__session_id=pk, id__gt=last_seen)
+                    JulesActivity.objects.filter(session__name=session_name, id__gt=last_seen)
                     .order_by("id")[:100]
                 )
                 for activity in activities:
