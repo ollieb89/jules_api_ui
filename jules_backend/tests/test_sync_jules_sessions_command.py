@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 from io import StringIO
 from django.core.management import call_command
 from jules.models import JulesSession
