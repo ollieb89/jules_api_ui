@@ -5,6 +5,11 @@ import { SessionUtilsService } from './session-utils.service';
 import { AuthTokenService } from './auth-token.service';
 import { JulesStreamService } from './jules-stream.service';
 import { Session, SessionState } from '../models/jules.model';
+import {
+  getParserErrorMessage,
+  parseSessionsList,
+  parseSessionsResponse
+} from '../utils/api-parsers';
 
 export interface SessionFilter {
   search?: string;
@@ -163,12 +168,19 @@ export class SessionCacheService {
       
       this.julesService.getSessions(100, token).subscribe({
         next: (response) => {
-          allSessions.push(...response.sessions);
-          
-          if (response.next_page_token && allSessions.length < this.MAX_SESSIONS) {
-            fetchPage(response.next_page_token);
-          } else {
-            this.updateSessions(allSessions);
+          try {
+            const parsed = parseSessionsResponse(response);
+            allSessions.push(...parsed.sessions);
+
+            if (parsed.next_page_token && allSessions.length < this.MAX_SESSIONS) {
+              fetchPage(parsed.next_page_token);
+            } else {
+              this.updateSessions(allSessions);
+              this.loading.set(false);
+              hasMore = false;
+            }
+          } catch (error) {
+            this.error.set(getParserErrorMessage(error, 'Invalid sessions response.'));
             this.loading.set(false);
             hasMore = false;
           }

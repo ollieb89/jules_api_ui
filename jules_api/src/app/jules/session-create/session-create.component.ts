@@ -285,9 +285,14 @@ export class SessionCreateComponent {
     this.loadingSources.set(true);
     this.julesService.getSources().subscribe({
       next: (response) => {
-        console.log('Sources loaded:', response.sources);
-        this.sources.set(response.sources);
-        this.loadingSources.set(false);
+        try {
+          const parsed = parseSourcesResponse(response);
+          this.sources.set(parsed.sources);
+          this.loadingSources.set(false);
+        } catch (error) {
+          this.error.set(getParserErrorMessage(error, 'Invalid sources response.'));
+          this.loadingSources.set(false);
+        }
       },
       error: (err: JulesApiError) => {
         console.error('Error loading sources:', err);

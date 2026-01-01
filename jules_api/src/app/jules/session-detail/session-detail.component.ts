@@ -94,10 +94,16 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
 
     this.julesService.getSession(this.sessionId()).subscribe({
       next: (session) => {
-        this.session.set(session);
-        this.loading.set(false);
-        // Extract PR info from session if available (placeholder)
-        // this.extractPRInfo(session);
+        try {
+          const parsed = parseSessionResponse(session);
+          this.session.set(parsed);
+          this.loading.set(false);
+          // Extract PR info from session if available (placeholder)
+          // this.extractPRInfo(session);
+        } catch (error) {
+          this.error.set(getParserErrorMessage(error, 'Invalid session response.'));
+          this.loading.set(false);
+        }
       },
       error: (err: JulesApiError) => {
         this.error.set(getApiErrorMessage(err, 'Failed to load session'));
@@ -121,10 +127,16 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
       
       this.julesService.sendMessage(this.sessionId(), { message }).subscribe({
         next: (session) => {
-          this.session.set(session);
-          this.messageForm.reset();
-          this.sendingMessage.set(false);
-          this.refreshSession();
+          try {
+            const parsed = parseSessionResponse(session);
+            this.session.set(parsed);
+            this.messageForm.reset();
+            this.sendingMessage.set(false);
+            this.refreshSession();
+          } catch (error) {
+            this.error.set(getParserErrorMessage(error, 'Invalid session response.'));
+            this.sendingMessage.set(false);
+          }
         },
         error: (err: JulesApiError) => {
           this.error.set(getApiErrorMessage(err, 'Failed to send message'));
@@ -142,9 +154,15 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
 
     this.julesService.approvePlan(this.sessionId()).subscribe({
       next: (session) => {
-        this.session.set(session);
-        this.approvingPlan.set(false);
-        this.refreshSession();
+        try {
+          const parsed = parseSessionResponse(session);
+          this.session.set(parsed);
+          this.approvingPlan.set(false);
+          this.refreshSession();
+        } catch (error) {
+          this.error.set(getParserErrorMessage(error, 'Invalid session response.'));
+          this.approvingPlan.set(false);
+        }
       },
       error: (err: JulesApiError) => {
         this.error.set(getApiErrorMessage(err, 'Failed to approve plan'));

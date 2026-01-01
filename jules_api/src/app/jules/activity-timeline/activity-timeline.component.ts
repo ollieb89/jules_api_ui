@@ -195,12 +195,25 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
           if (nextToken) {
             this.paginator.length = 10000;
           } else {
-            this.paginator.length = (currentIndex + 1) * this.pageSize();
+            const newNexts = [...nexts];
+            newNexts[currentIndex] = nextToken;
+            this.nextTokens.set(newNexts);
           }
-          this.paginator.pageIndex = currentIndex;
+
+          if (this.paginator) {
+            if (nextToken) {
+              this.paginator.length = 10000;
+            } else {
+              this.paginator.length = (currentIndex + 1) * this.pageSize();
+            }
+            this.paginator.pageIndex = currentIndex;
+          }
+
+          this.loading.set(false);
+        } catch (error) {
+          this.error.set(getParserErrorMessage(error, 'Invalid activities response.'));
+          this.loading.set(false);
         }
-        
-        this.loading.set(false);
       },
       error: (err) => {
         this.error.set(err.message || 'Failed to load activities');
