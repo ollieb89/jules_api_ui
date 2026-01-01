@@ -173,8 +173,8 @@ export class SessionCacheService {
             hasMore = false;
           }
         },
-        error: (err) => {
-          this.error.set(err.message || 'Failed to load sessions');
+        error: (err: JulesApiError) => {
+          this.error.set(getApiErrorMessage(err, 'Failed to load sessions'));
           this.loading.set(false);
         }
       });

@@ -6,8 +6,8 @@ import { Subscription } from 'rxjs';
 // @ts-ignore: ignore missing types for ngx-markdown
 import { MarkdownComponent } from 'ngx-markdown';
 import { JulesService } from '../../services/jules.service';
-import { JulesStreamService } from '../../services/jules-stream.service';
-import { Session, SessionState } from '../../models/jules.model';
+import { AuthTokenService } from '../../services/auth-token.service';
+import { PlanState, Session, SessionState } from '../../models/jules.model';
 import { ActivityTimelineComponent } from '../activity-timeline/activity-timeline.component';
 import { CodeBlockStyleDirective } from '../../directives/code-block-style.directive';
 import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
@@ -58,12 +58,11 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
   sendingMessage = signal<boolean>(false);
   approvingPlan = signal<boolean>(false);
   refreshing = signal<boolean>(false);
+  planStateFromActivities = signal<PlanState | null>(null);
 
   // Check if session has a pending plan
   hasPendingPlan = computed(() => {
-    // This would check activities for a pending plan
-    // For now, return false as placeholder
-    return false;
+    return this.planStateFromActivities() === 'PENDING';
   });
 
   ngOnInit(): void {
@@ -100,8 +99,8 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
         // Extract PR info from session if available (placeholder)
         // this.extractPRInfo(session);
       },
-      error: (err) => {
-        this.error.set(err.message || 'Failed to load session');
+      error: (err: JulesApiError) => {
+        this.error.set(getApiErrorMessage(err, 'Failed to load session'));
         this.loading.set(false);
       }
     });
@@ -127,8 +126,8 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
           this.sendingMessage.set(false);
           this.refreshSession();
         },
-        error: (err) => {
-          this.error.set(err.message || 'Failed to send message');
+        error: (err: JulesApiError) => {
+          this.error.set(getApiErrorMessage(err, 'Failed to send message'));
           this.sendingMessage.set(false);
         }
       });
@@ -147,8 +146,8 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
         this.approvingPlan.set(false);
         this.refreshSession();
       },
-      error: (err) => {
-        this.error.set(err.message || 'Failed to approve plan');
+      error: (err: JulesApiError) => {
+        this.error.set(getApiErrorMessage(err, 'Failed to approve plan'));
         this.approvingPlan.set(false);
       }
     });
@@ -164,15 +163,19 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
         this.deleteDialog.reset();
         this.router.navigate(['/jules']);
       },
-      error: (err) => {
+      error: (err: JulesApiError) => {
         this.deleteDialog.reset();
-        this.error.set(err.message || 'Failed to delete session');
+        this.error.set(getApiErrorMessage(err, 'Failed to delete session'));
       }
     });
   }
 
   toggleActivities(): void {
     this.activitiesExpanded.set(!this.activitiesExpanded());
+  }
+
+  onPlanStateChange(state: PlanState | null): void {
+    this.planStateFromActivities.set(state);
   }
 
   private startLiveUpdates(): void {
@@ -219,25 +222,25 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
 
   getStateBadgeClass(state: SessionState): string {
     const classes: Record<SessionState, string> = {
-      'STATE_UNSPECIFIED': 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300',
-      'ACTIVE': 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200',
-      'COMPLETED': 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200',
-      'FAILED': 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200'
+      'STATE_UNSPECIFIED': 'bg-[var(--color-background-tertiary)] text-[var(--color-text-secondary)]',
+      'ACTIVE': 'bg-[var(--color-info-50)] text-[var(--color-info-800)]',
+      'COMPLETED': 'bg-[var(--color-success-50)] text-[var(--color-success-800)]',
+      'FAILED': 'bg-[var(--color-error-50)] text-[var(--color-error-800)]'
     };
-    return classes[state] || 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
+    return classes[state] || 'bg-[var(--color-background-tertiary)] text-[var(--color-text-secondary)]';
   }
 
   getPRStatusBadgeClass(status?: string): string {
-    if (!status) return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
+    if (!status) return 'bg-[var(--color-background-tertiary)] text-[var(--color-text-secondary)]';
     switch (status) {
       case 'open':
-        return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200';
+        return 'bg-[var(--color-success-50)] text-[var(--color-success-800)]';
       case 'merged':
-        return 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200';
+        return 'bg-[var(--color-secondary-50)] text-[var(--color-secondary-800)]';
       case 'closed':
-        return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200';
+        return 'bg-[var(--color-error-50)] text-[var(--color-error-800)]';
       default:
-        return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
+        return 'bg-[var(--color-background-tertiary)] text-[var(--color-text-secondary)]';
     }
   }
 

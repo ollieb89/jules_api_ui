@@ -14,7 +14,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { routes } from './app.routes';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { authInterceptor } from './interceptors/auth.interceptor';
-import { errorInterceptor } from './interceptors/error.interceptor';
+import { julesApiErrorInterceptor } from './interceptors/jules-api-error.interceptor';
 import { loggingInterceptor } from './interceptors/logging.interceptor';
 import { retryInterceptor } from './interceptors/retry.interceptor';
 import { GlobalErrorHandler } from './services/global-error-handler.service';
@@ -32,9 +32,9 @@ export const appConfig: ApplicationConfig = {
       withFetch(),
       withInterceptors([
         authInterceptor,
+        julesApiErrorInterceptor,
         loggingInterceptor,
-        retryInterceptor,
-        errorInterceptor
+        retryInterceptor
       ])
     ),
     provideMarkdown(),
