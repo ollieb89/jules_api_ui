@@ -21,34 +21,48 @@ body {
 
 /* Diff highlighting styles */
 .diff-container {
-  @apply rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 0.5rem;
+  overflow: hidden;
 }
 
 .diff-line {
-  @apply px-4 py-1 font-mono text-sm;
+  padding: 0.25rem 1rem;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 0.875rem;
   display: block;
 }
 
 .diff-line-add {
-  @apply bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200;
+  background-color: var(--color-success-50);
+  color: var(--color-success-800);
 }
 
 .diff-line-remove {
-  @apply bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200;
+  background-color: var(--color-error-50);
+  color: var(--color-error-800);
 }
 
 .diff-line-context {
-  @apply bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300;
+  background-color: var(--color-surface-secondary);
+  color: var(--color-text-secondary);
 }
 
 .diff-line-header {
-  @apply bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 font-semibold;
+  background-color: var(--color-info-50);
+  color: var(--color-info-800);
+  font-weight: 600;
 }
 
 /* GitHub-style code blocks */
 /* Inline code - keep inline styling */
 code:not(pre code):not([class*="language-"]) {
-  @apply bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-1.5 py-0.5 rounded text-sm font-mono;
+  background-color: var(--color-background-tertiary);
+  color: var(--color-text-primary);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
   display: inline;
 }
 
@@ -56,38 +70,30 @@ code:not(pre code):not([class*="language-"]) {
 pre,
 .prose pre,
 markdown pre {
-  @apply bg-gray-50 dark:bg-gray-900 rounded-lg;
+  background-color: var(--color-background-tertiary);
+  border-radius: 0.5rem;
   display: block !important;
   text-align: left !important;
   margin: 1em 0;
-  border: 1px solid rgba(0, 0, 0, 1) !important;
+  border: 1px solid var(--color-border-strong) !important;
   padding: 10px !important;
   overflow-x: auto;
   overflow-y: visible;
   white-space: pre;
 }
 
-.dark pre,
-.dark .prose pre,
-.dark markdown pre {
-  border-color: rgba(255, 255, 255, 0.2) !important;
-}
-
 /* Standalone code elements with language classes (should be wrapped in pre, but handle if not) */
 code[class*="language-"]:not(pre code) {
-  @apply bg-gray-50 dark:bg-gray-900 rounded-lg;
+  background-color: var(--color-background-tertiary);
+  border-radius: 0.5rem;
   display: block !important;
   text-align: left !important;
   margin: 1em 0;
-  border: 1px solid rgba(0, 0, 0, 1) !important;
+  border: 1px solid var(--color-border-strong) !important;
   padding: 10px !important;
   overflow-x: auto;
   white-space: pre;
   font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
-}
-
-.dark code[class*="language-"]:not(pre code) {
-  border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
 /* Code inside pre blocks - should NOT have border, padding, margin, or display: grid */
@@ -97,7 +103,8 @@ markdown pre code,
 pre code[class*="language-"],
 .prose pre code[class*="language-"],
 markdown pre code[class*="language-"] {
-  @apply bg-transparent text-gray-900 dark:text-gray-100;
+  background-color: transparent;
+  color: var(--color-text-primary);
   display: block !important;
   text-align: left !important;
   border: none !important;
