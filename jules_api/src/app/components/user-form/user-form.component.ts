@@ -4,7 +4,9 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractContro
 import { Router, ActivatedRoute } from '@angular/router';
 
 import { UserService } from '../../services/user.service';
-import { ApiError, HttpErrorWithFields } from '../../models/user.model';
+import { JulesApiError } from '../../models/jules.model';
+import { ApiError, hasFieldErrors } from '../../models/user.model';
+import { getApiErrorMessage } from '../../utils/api-error';
 
 @Component({
   selector: 'app-user-form',
@@ -53,8 +55,8 @@ export class UserFormComponent implements OnInit {
         });
         this.loading.set(false);
       },
-      error: (err) => {
-        this.error.set(err.message || 'Failed to load user');
+      error: (err: JulesApiError) => {
+        this.error.set(getApiErrorMessage(err, 'Failed to load user'));
         this.loading.set(false);
       }
     });
@@ -81,18 +83,18 @@ export class UserFormComponent implements OnInit {
       next: () => {
         this.router.navigate(['/users']);
       },
-      error: (err: HttpErrorWithFields) => {
+      error: (err: JulesApiError) => {
         this.loading.set(false);
-        this.error.set(err.message || 'Failed to save user');
+        this.error.set(getApiErrorMessage(err, 'Failed to save user'));
         
         // Handle field-specific errors if available
-        if (err.fieldErrors) {
-          this.fieldErrors.set(err.fieldErrors);
+        if (hasFieldErrors(err)) {
+          this.fieldErrors.set(err.fieldErrors ?? null);
           // Set field-specific errors on form controls
-          Object.keys(err.fieldErrors).forEach((field) => {
+          Object.keys(err.fieldErrors ?? {}).forEach((field) => {
             const control = this.userForm.get(field);
             if (control) {
-              control.setErrors({ serverError: err.fieldErrors![field][0] });
+              control.setErrors({ serverError: err.fieldErrors?.[field][0] });
               control.markAsTouched();
             }
           });

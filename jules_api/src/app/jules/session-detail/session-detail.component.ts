@@ -99,8 +99,8 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
         // Extract PR info from session if available (placeholder)
         // this.extractPRInfo(session);
       },
-      error: (err) => {
-        this.error.set(err.message || 'Failed to load session');
+      error: (err: JulesApiError) => {
+        this.error.set(getApiErrorMessage(err, 'Failed to load session'));
         this.loading.set(false);
       }
     });
@@ -126,8 +126,8 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
           this.sendingMessage.set(false);
           this.refreshSession();
         },
-        error: (err) => {
-          this.error.set(err.message || 'Failed to send message');
+        error: (err: JulesApiError) => {
+          this.error.set(getApiErrorMessage(err, 'Failed to send message'));
           this.sendingMessage.set(false);
         }
       });
@@ -146,8 +146,8 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
         this.approvingPlan.set(false);
         this.refreshSession();
       },
-      error: (err) => {
-        this.error.set(err.message || 'Failed to approve plan');
+      error: (err: JulesApiError) => {
+        this.error.set(getApiErrorMessage(err, 'Failed to approve plan'));
         this.approvingPlan.set(false);
       }
     });
@@ -163,9 +163,9 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
         this.deleteDialog.reset();
         this.router.navigate(['/jules']);
       },
-      error: (err) => {
+      error: (err: JulesApiError) => {
         this.deleteDialog.reset();
-        this.error.set(err.message || 'Failed to delete session');
+        this.error.set(getApiErrorMessage(err, 'Failed to delete session'));
       }
     });
   }
