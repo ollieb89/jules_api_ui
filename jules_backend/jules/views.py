@@ -130,6 +130,9 @@ class SessionViewSet(JulesAuthenticatedViewSet):
                     data = client.list_sessions(page_size=100)
                     sessions = data.get("sessions", [])
                     if sessions:
+                        for session_data in sessions:
+                            upsert_session_from_api(session_data)
+                        mark_sessions_synced()
                         latest_update = max(
                             (session.get("update_time") for session in sessions),
                             default=None,
@@ -272,6 +275,7 @@ class SessionViewSet(JulesAuthenticatedViewSet):
             while True:
                 try:
                     session_data = client.get_session(pk)
+                    session = upsert_session_from_api(session_data)
                     session_serializer = SessionSerializer(data=session_data)
                     session_serializer.is_valid(raise_exception=True)
                     session_payload = session_serializer.data
@@ -285,6 +289,9 @@ class SessionViewSet(JulesAuthenticatedViewSet):
                     activities_data = client.list_activities(session_id=pk, page_size=20)
                     activities = activities_data.get("activities", [])
                     if activities:
+                        for activity in activities:
+                            upsert_activity_from_api(session, activity)
+                        mark_activities_synced(normalize_session_name(pk))
                         latest_activity_time = max(
                             (activity.get("create_time") for activity in activities),
                             default=None,
