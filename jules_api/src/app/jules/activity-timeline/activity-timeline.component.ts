@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatPaginatorModule, MatPaginator, PageEvent } from '@angular/material/paginator';
 import { JulesService } from '../../services/jules.service';
-import { Activity } from '../../models/jules.model';
+import { Activity, JulesApiError } from '../../models/jules.model';
+import { getApiErrorMessage } from '../../utils/api-error';
 import { PlanApprovalComponent } from '../plan-approval/plan-approval.component';
 
 type ActivityOriginator = 'all' | 'agent' | 'user';
@@ -177,8 +178,8 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
         
         this.loading.set(false);
       },
-      error: (err) => {
-        this.error.set(err.message || 'Failed to load activities');
+      error: (err: JulesApiError) => {
+        this.error.set(getApiErrorMessage(err, 'Failed to load activities'));
         this.loading.set(false);
       }
     });

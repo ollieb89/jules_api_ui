@@ -4,7 +4,8 @@ import { Observable, Subscription, tap, timer } from 'rxjs';
 import { JulesService } from './jules.service';
 import { SessionUtilsService } from './session-utils.service';
 import { AuthTokenService } from './auth-token.service';
-import { Session, SessionState } from '../models/jules.model';
+import { JulesApiError, Session, SessionState } from '../models/jules.model';
+import { getApiErrorMessage } from '../utils/api-error';
 import { environment } from '../../environments/environment';
 
 export interface SessionFilter {
@@ -173,8 +174,8 @@ export class SessionCacheService {
             hasMore = false;
           }
         },
-        error: (err) => {
-          this.error.set(err.message || 'Failed to load sessions');
+        error: (err: JulesApiError) => {
+          this.error.set(getApiErrorMessage(err, 'Failed to load sessions'));
           this.loading.set(false);
         }
       });
