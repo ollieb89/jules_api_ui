@@ -118,7 +118,7 @@ class SessionViewSet(viewsets.ViewSet):
         client = JulesApiClient()
         try:
             client.delete_session(pk)
-            session_name = client._normalize_session_id(pk)
+            session_name = pk
             JulesSession.objects.filter(name=session_name).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
