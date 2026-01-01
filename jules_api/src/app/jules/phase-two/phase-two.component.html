@@ -2,27 +2,27 @@
   <div class="mb-8">
     <a
       routerLink="/dashboard"
-      class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mb-4 inline-block"
+      class="text-[var(--color-interactive-primary)] hover:text-[var(--color-interactive-primary-hover)] mb-4 inline-block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
     >
       ← Back to Dashboard
     </a>
-    <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Integrations & Code Review</h1>
-    <p class="text-gray-600 dark:text-gray-400">
+    <h1 class="text-3xl font-bold text-[var(--color-text-primary)]">Integrations & Code Review</h1>
+    <p class="text-[var(--color-text-secondary)]">
       Phase 2 capabilities: GitHub workflows, diff review, templates, scheduling, webhooks, and API access.
     </p>
   </div>
 
   <section class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-    <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 lg:col-span-2">
+    <div class="bg-[var(--color-surface-primary)] shadow-md rounded-lg p-6 lg:col-span-2">
       <div class="flex items-start justify-between">
         <div>
-          <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">GitHub Integration</h2>
-          <p class="text-sm text-gray-600 dark:text-gray-400">
+          <h2 class="text-xl font-semibold text-[var(--color-text-primary)]">GitHub Integration</h2>
+          <p class="text-sm text-[var(--color-text-secondary)]">
             Auto-create pull requests, sync reviewers, and track merge status.
           </p>
         </div>
         <span
-          [class]="'px-3 py-1 rounded-full text-xs font-semibold ' + (githubConnected() ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200' : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200')"
+          [class]="'px-3 py-1 rounded-full text-xs font-semibold ' + (githubConnected() ? 'bg-[var(--color-success-50)] text-[var(--color-success-800)]' : 'bg-[var(--color-error-50)] text-[var(--color-error-800)]')"
         >
           {{ githubConnected() ? 'Connected' : 'Disconnected' }}
         </span>
@@ -30,17 +30,17 @@
 
       <div class="mt-6 space-y-4">
         @for (pr of pullRequests(); track pr.id) {
-          <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+          <div class="border border-[var(--color-border-default)] rounded-lg p-4">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-sm text-gray-500 dark:text-gray-400">{{ pr.repository }} · {{ pr.branch }}</p>
-                <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100">{{ pr.title }}</h3>
+                <p class="text-sm text-[var(--color-text-tertiary)]">{{ pr.repository }} · {{ pr.branch }}</p>
+                <h3 class="text-base font-semibold text-[var(--color-text-primary)]">{{ pr.title }}</h3>
               </div>
               <span [class]="'px-2 py-1 rounded-full text-xs font-semibold ' + getStatusBadgeClass(pr.status)">
                 {{ pr.status }}
               </span>
             </div>
-            <div class="flex flex-wrap gap-3 text-xs text-gray-500 dark:text-gray-400 mt-2">
+            <div class="flex flex-wrap gap-3 text-xs text-[var(--color-text-tertiary)] mt-2">
               <span>Reviewers: {{ pr.reviewers.join(', ') }}</span>
               <span>Updated: {{ pr.updatedAt }}</span>
             </div>
@@ -49,45 +49,45 @@
       </div>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
-      <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Code Review Status</h2>
-      <p class="text-sm text-gray-600 dark:text-gray-400">
+    <div class="bg-[var(--color-surface-primary)] shadow-md rounded-lg p-6">
+      <h2 class="text-xl font-semibold text-[var(--color-text-primary)]">Code Review Status</h2>
+      <p class="text-sm text-[var(--color-text-secondary)]">
         Track review progress with an embedded diff preview.
       </p>
 
-      <div class="mt-4 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-        <p class="text-xs text-gray-500 dark:text-gray-400">Current review</p>
-        <p class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ getReviewStatusLabel() }}</p>
+      <div class="mt-4 rounded-lg border border-[var(--color-border-default)] p-4">
+        <p class="text-xs text-[var(--color-text-tertiary)]">Current review</p>
+        <p class="text-lg font-semibold text-[var(--color-text-primary)]">{{ getReviewStatusLabel() }}</p>
 
         <div class="flex gap-2 mt-4">
           <button
             type="button"
             (click)="setReviewStatus('approved')"
-            class="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg"
+            class="flex-1 px-3 py-2 bg-[var(--color-success-600)] hover:bg-[var(--color-success-700)] text-[var(--color-text-inverse)] text-sm font-semibold rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
           >
             Approve
           </button>
           <button
             type="button"
             (click)="setReviewStatus('changes_requested')"
-            class="flex-1 px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-lg"
+            class="flex-1 px-3 py-2 bg-[var(--color-error-600)] hover:bg-[var(--color-error-700)] text-[var(--color-text-inverse)] text-sm font-semibold rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
           >
             Request changes
           </button>
         </div>
       </div>
 
-      <div class="mt-6 text-xs text-gray-500 dark:text-gray-400">
+      <div class="mt-6 text-xs text-[var(--color-text-tertiary)]">
         Merge readiness updates in real time.
       </div>
     </div>
   </section>
 
-  <section class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-8">
+  <section class="bg-[var(--color-surface-primary)] shadow-md rounded-lg p-6 mb-8">
     <div class="flex items-center justify-between mb-4">
       <div>
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Diff Preview</h2>
-        <p class="text-sm text-gray-600 dark:text-gray-400">
+        <h2 class="text-xl font-semibold text-[var(--color-text-primary)]">Diff Preview</h2>
+        <p class="text-sm text-[var(--color-text-secondary)]">
           Side-by-side preview of planned changes for approval.
         </p>
       </div>
@@ -99,28 +99,28 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 text-sm">
-      <div class="bg-gray-50 dark:bg-gray-900/30 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-        <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-3">Before</p>
+      <div class="bg-[var(--color-surface-secondary)] rounded-lg p-4 border border-[var(--color-border-default)]">
+        <p class="text-xs uppercase tracking-wide text-[var(--color-text-tertiary)] mb-3">Before</p>
         <div class="space-y-2">
           @for (line of diffLines(); track line.line) {
             <div
-              [class]="'flex gap-3 font-mono text-xs px-2 py-1 rounded ' + (line.type === 'removed' || line.type === 'modified' ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300' : 'text-gray-600 dark:text-gray-300')"
+              [class]="'flex gap-3 font-mono text-xs px-2 py-1 rounded ' + (line.type === 'removed' || line.type === 'modified' ? 'bg-[var(--color-error-50)] text-[var(--color-error-700)]' : 'text-[var(--color-text-secondary)]')"
             >
-              <span class="w-8 text-right text-gray-400 dark:text-gray-500">{{ line.line }}</span>
+              <span class="w-8 text-right text-[var(--color-text-tertiary)]">{{ line.line }}</span>
               <span class="flex-1">{{ line.before || ' ' }}</span>
             </div>
           }
         </div>
       </div>
 
-      <div class="bg-gray-50 dark:bg-gray-900/30 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-        <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-3">After</p>
+      <div class="bg-[var(--color-surface-secondary)] rounded-lg p-4 border border-[var(--color-border-default)]">
+        <p class="text-xs uppercase tracking-wide text-[var(--color-text-tertiary)] mb-3">After</p>
         <div class="space-y-2">
           @for (line of diffLines(); track line.line) {
             <div
-              [class]="'flex gap-3 font-mono text-xs px-2 py-1 rounded ' + (line.type === 'added' || line.type === 'modified' ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300' : 'text-gray-600 dark:text-gray-300')"
+              [class]="'flex gap-3 font-mono text-xs px-2 py-1 rounded ' + (line.type === 'added' || line.type === 'modified' ? 'bg-[var(--color-success-50)] text-[var(--color-success-700)]' : 'text-[var(--color-text-secondary)]')"
             >
-              <span class="w-8 text-right text-gray-400 dark:text-gray-500">{{ line.line }}</span>
+              <span class="w-8 text-right text-[var(--color-text-tertiary)]">{{ line.line }}</span>
               <span class="flex-1">{{ line.after || ' ' }}</span>
             </div>
           }
@@ -130,46 +130,46 @@
   </section>
 
   <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-    <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
+    <div class="bg-[var(--color-surface-primary)] shadow-md rounded-lg p-6">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Task Templates</h2>
+        <h2 class="text-xl font-semibold text-[var(--color-text-primary)]">Task Templates</h2>
         <button
           type="button"
-          class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg"
+          class="px-3 py-2 bg-[var(--color-interactive-primary)] hover:bg-[var(--color-interactive-primary-hover)] text-[var(--color-text-inverse)] text-sm font-semibold rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
         >
           New Template
         </button>
       </div>
       <div class="space-y-4">
         @for (template of templates(); track template.id) {
-          <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+          <div class="border border-[var(--color-border-default)] rounded-lg p-4">
             <div class="flex items-start justify-between">
               <div>
-                <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100">{{ template.name }}</h3>
-                <p class="text-sm text-gray-600 dark:text-gray-400">{{ template.description }}</p>
+                <h3 class="text-base font-semibold text-[var(--color-text-primary)]">{{ template.name }}</h3>
+                <p class="text-sm text-[var(--color-text-secondary)]">{{ template.description }}</p>
               </div>
-              <span class="text-xs text-gray-500 dark:text-gray-400">{{ template.lastUsed }}</span>
+              <span class="text-xs text-[var(--color-text-tertiary)]">{{ template.lastUsed }}</span>
             </div>
             <div class="flex flex-wrap gap-2 mt-3">
               @for (tag of template.tags; track tag) {
-                <span class="px-2 py-1 rounded-full text-xs font-semibold bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                <span class="px-2 py-1 rounded-full text-xs font-semibold bg-[var(--color-background-tertiary)] text-[var(--color-text-secondary)]">
                   {{ tag }}
                 </span>
               }
-              <span class="px-2 py-1 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
+              <span class="px-2 py-1 rounded-full text-xs font-semibold bg-[var(--color-info-50)] text-[var(--color-info-700)]">
                 {{ template.language }}
               </span>
             </div>
             <div class="flex gap-3 mt-4">
               <button
                 type="button"
-                class="px-3 py-2 text-sm font-semibold text-blue-600 dark:text-blue-300 hover:text-blue-800"
+                class="px-3 py-2 text-sm font-semibold text-[var(--color-interactive-primary)] hover:text-[var(--color-interactive-primary-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
               >
                 Use template
               </button>
               <button
                 type="button"
-                class="px-3 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-gray-800"
+                class="px-3 py-2 text-sm font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
               >
                 Clone
               </button>
@@ -179,31 +179,31 @@
       </div>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
+    <div class="bg-[var(--color-surface-primary)] shadow-md rounded-lg p-6">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Scheduled Tasks</h2>
+        <h2 class="text-xl font-semibold text-[var(--color-text-primary)]">Scheduled Tasks</h2>
         <button
           type="button"
-          class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg"
+          class="px-3 py-2 bg-[var(--color-interactive-primary)] hover:bg-[var(--color-interactive-primary-hover)] text-[var(--color-text-inverse)] text-sm font-semibold rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
         >
           Schedule Task
         </button>
       </div>
       <div class="space-y-4">
         @for (task of scheduledTasks(); track task.id) {
-          <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+          <div class="border border-[var(--color-border-default)] rounded-lg p-4">
             <div class="flex items-center justify-between">
               <div>
-                <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100">{{ task.name }}</h3>
-                <p class="text-sm text-gray-600 dark:text-gray-400">{{ task.schedule }}</p>
+                <h3 class="text-base font-semibold text-[var(--color-text-primary)]">{{ task.name }}</h3>
+                <p class="text-sm text-[var(--color-text-secondary)]">{{ task.schedule }}</p>
               </div>
               <span [class]="'px-2 py-1 rounded-full text-xs font-semibold ' + getStatusBadgeClass(task.status)">
                 {{ task.status }}
               </span>
             </div>
-            <div class="flex items-center justify-between mt-3 text-xs text-gray-500 dark:text-gray-400">
+            <div class="flex items-center justify-between mt-3 text-xs text-[var(--color-text-tertiary)]">
               <span>Next run: {{ task.nextRun }}</span>
-              <button type="button" class="text-blue-600 dark:text-blue-300 font-semibold">
+              <button type="button" class="text-[var(--color-interactive-primary)] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]">
                 Edit
               </button>
             </div>
@@ -214,32 +214,32 @@
   </section>
 
   <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-    <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
-      <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Webhook Configuration</h2>
+    <div class="bg-[var(--color-surface-primary)] shadow-md rounded-lg p-6">
+      <h2 class="text-xl font-semibold text-[var(--color-text-primary)] mb-4">Webhook Configuration</h2>
       <div class="space-y-4">
         @for (hook of webhooks(); track hook.id) {
-          <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+          <div class="border border-[var(--color-border-default)] rounded-lg p-4">
             <div class="flex items-start justify-between gap-4">
               <div>
-                <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100">{{ hook.name }}</h3>
-                <p class="text-xs text-gray-500 dark:text-gray-400 break-all">{{ hook.url }}</p>
+                <h3 class="text-base font-semibold text-[var(--color-text-primary)]">{{ hook.name }}</h3>
+                <p class="text-xs text-[var(--color-text-tertiary)] break-all">{{ hook.url }}</p>
               </div>
               <button
                 type="button"
                 (click)="toggleWebhook(hook.id)"
-                [class]="'px-3 py-1 rounded-full text-xs font-semibold ' + (hook.enabled ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300')"
+                [class]="'px-3 py-1 rounded-full text-xs font-semibold ' + (hook.enabled ? 'bg-[var(--color-success-50)] text-[var(--color-success-800)]' : 'bg-[var(--color-background-tertiary)] text-[var(--color-text-secondary)]')"
               >
                 {{ hook.enabled ? 'Enabled' : 'Disabled' }}
               </button>
             </div>
             <div class="flex flex-wrap gap-2 mt-3">
               @for (event of hook.events; track event) {
-                <span class="px-2 py-1 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
+                <span class="px-2 py-1 rounded-full text-xs font-semibold bg-[var(--color-info-50)] text-[var(--color-info-700)]">
                   {{ event }}
                 </span>
               }
             </div>
-            <div class="flex items-center justify-between mt-3 text-xs text-gray-500 dark:text-gray-400">
+            <div class="flex items-center justify-between mt-3 text-xs text-[var(--color-text-tertiary)]">
               <span>Last delivery: {{ hook.lastDelivery }}</span>
               <span [class]="'px-2 py-1 rounded-full text-xs font-semibold ' + getStatusBadgeClass(hook.status)">
                 {{ hook.status }}
@@ -250,30 +250,30 @@
       </div>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
+    <div class="bg-[var(--color-surface-primary)] shadow-md rounded-lg p-6">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">API Access</h2>
+        <h2 class="text-xl font-semibold text-[var(--color-text-primary)]">API Access</h2>
         <button
           type="button"
           (click)="addApiKey()"
-          class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg"
+          class="px-3 py-2 bg-[var(--color-interactive-primary)] hover:bg-[var(--color-interactive-primary-hover)] text-[var(--color-text-inverse)] text-sm font-semibold rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
         >
           Generate Key
         </button>
       </div>
       <div class="space-y-4">
         @for (key of apiKeys(); track key.id) {
-          <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+          <div class="border border-[var(--color-border-default)] rounded-lg p-4">
             <div class="flex items-start justify-between">
               <div>
-                <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100">{{ key.name }}</h3>
-                <p class="text-xs text-gray-500 dark:text-gray-400">{{ key.prefix }}····</p>
+                <h3 class="text-base font-semibold text-[var(--color-text-primary)]">{{ key.name }}</h3>
+                <p class="text-xs text-[var(--color-text-tertiary)]">{{ key.prefix }}····</p>
               </div>
               <span [class]="'px-2 py-1 rounded-full text-xs font-semibold ' + getStatusBadgeClass(key.status)">
                 {{ key.status }}
               </span>
             </div>
-            <div class="flex items-center justify-between mt-3 text-xs text-gray-500 dark:text-gray-400">
+            <div class="flex items-center justify-between mt-3 text-xs text-[var(--color-text-tertiary)]">
               <span>Created: {{ key.createdAt }}</span>
               <span>Last used: {{ key.lastUsed }}</span>
             </div>
@@ -282,7 +282,7 @@
                 type="button"
                 (click)="revokeApiKey(key.id)"
                 [disabled]="key.status === 'revoked'"
-                class="px-3 py-2 text-sm font-semibold text-red-600 dark:text-red-300 disabled:text-gray-400"
+                class="px-3 py-2 text-sm font-semibold text-[var(--color-error-700)] disabled:text-[var(--color-text-disabled)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
               >
                 Revoke
               </button>
@@ -293,15 +293,15 @@
     </div>
   </section>
 
-  <section class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
+  <section class="bg-[var(--color-surface-primary)] shadow-md rounded-lg p-6">
     <div class="flex items-center justify-between mb-4">
       <div>
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Task History</h2>
-        <p class="text-sm text-gray-600 dark:text-gray-400">
+        <h2 class="text-xl font-semibold text-[var(--color-text-primary)]">Task History</h2>
+        <p class="text-sm text-[var(--color-text-secondary)]">
           Search and filter past tasks across templates, schedules, and manual runs.
         </p>
       </div>
-      <button type="button" class="px-3 py-2 text-sm font-semibold text-blue-600 dark:text-blue-300">
+      <button type="button" class="px-3 py-2 text-sm font-semibold text-[var(--color-interactive-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]">
         Export
       </button>
     </div>
@@ -311,11 +311,11 @@
         type="text"
         placeholder="Search tasks"
         (input)="onHistoryQueryChange($event)"
-        class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+        class="flex-1 px-3 py-2 border border-[var(--color-border-strong)] rounded-lg bg-[var(--color-surface-primary)] text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
       />
       <select
         (change)="onHistoryStatusChange($event)"
-        class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+        class="px-3 py-2 border border-[var(--color-border-strong)] rounded-lg bg-[var(--color-surface-primary)] text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
       >
         <option value="all">All statuses</option>
         <option value="completed">Completed</option>
@@ -326,17 +326,17 @@
 
     <div class="space-y-3">
       @for (item of filteredHistory(); track item.id) {
-        <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+        <div class="border border-[var(--color-border-default)] rounded-lg p-4">
           <div class="flex items-start justify-between">
             <div>
-              <p class="text-xs text-gray-500 dark:text-gray-400">{{ item.type }} · {{ item.source }}</p>
-              <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100">{{ item.title }}</h3>
+              <p class="text-xs text-[var(--color-text-tertiary)]">{{ item.type }} · {{ item.source }}</p>
+              <h3 class="text-base font-semibold text-[var(--color-text-primary)]">{{ item.title }}</h3>
             </div>
             <span [class]="'px-2 py-1 rounded-full text-xs font-semibold ' + getStatusBadgeClass(item.status)">
               {{ item.status }}
             </span>
           </div>
-          <div class="flex flex-wrap gap-4 text-xs text-gray-500 dark:text-gray-400 mt-2">
+          <div class="flex flex-wrap gap-4 text-xs text-[var(--color-text-tertiary)] mt-2">
             <span>Duration: {{ item.duration }}</span>
             <span>Created: {{ item.createdAt }}</span>
           </div>

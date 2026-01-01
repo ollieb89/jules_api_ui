@@ -1,25 +1,33 @@
-from django.db import models
-from django.core.exceptions import ValidationError
-from django.conf import settings
 import base64
-from cryptography.fernet import Fernet
 import hashlib
 from functools import lru_cache
+
+from cryptography.fernet import Fernet
+from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.db import models
+from django.utils import timezone
+
 
 @lru_cache(maxsize=1)
 def get_fernet():
     """
-    Get Fernet instance using SECRET_KEY.
+    Get Fernet instance using JULES_ENCRYPTION_KEY.
     Cached to avoid re-deriving key on every call.
 
-    WARNING: The encryption key is derived from settings.SECRET_KEY.
-    If SECRET_KEY is rotated, all encrypted API keys will become unreadable.
+    WARNING: The encryption key is derived from settings.JULES_ENCRYPTION_KEY.
+    If JULES_ENCRYPTION_KEY is rotated, all encrypted API keys will become unreadable
+    until re-encrypted.
     """
-    # Ensure SECRET_KEY is 32 bytes for url-safe base64 encoding
+    if not settings.JULES_ENCRYPTION_KEY:
+        raise ValidationError("JULES_ENCRYPTION_KEY must be set to encrypt API keys.")
+
+    # Ensure JULES_ENCRYPTION_KEY is 32 bytes for url-safe base64 encoding
     # We hash it to get 32 bytes, then base64 encode it to satisfy Fernet
-    key = hashlib.sha256(settings.SECRET_KEY.encode()).digest()
+    key = hashlib.sha256(settings.JULES_ENCRYPTION_KEY.encode()).digest()
     key_b64 = base64.urlsafe_b64encode(key)
     return Fernet(key_b64)
+
 
 class JulesSettings(models.Model):
     """Settings for Jules API configuration."""
@@ -101,3 +109,65 @@ class JulesSettings(models.Model):
         """Get or create the singleton settings instance."""
         settings, _ = cls.objects.get_or_create(pk=1)
         return settings
+
+
+class JulesSession(models.Model):
+    """Locally cached Jules session data."""
+
+    name = models.CharField(max_length=255, unique=True)
+    display_name = models.CharField(max_length=255, blank=True)
+    state = models.CharField(max_length=32, default="STATE_UNSPECIFIED", blank=True)
+    prompt = models.TextField(blank=True)
+    source = models.TextField(blank=True)
+    create_time = models.DateTimeField(blank=True, null=True)
+    update_time = models.DateTimeField(blank=True, null=True)
+    last_synced_at = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        db_table = "jules_sessions"
+
+    def __str__(self) -> str:
+        return self.display_name or self.name
+
+
+class JulesActivity(models.Model):
+    """Locally cached Jules activity data."""
+
+    TYPE_PLAN_GENERATED = "plan_generated"
+    TYPE_PLAN_APPROVED = "plan_approved"
+    TYPE_PROGRESS_UPDATED = "progress_updated"
+    TYPE_SESSION_COMPLETED = "session_completed"
+    TYPE_UNKNOWN = "unknown"
+
+    TYPE_CHOICES = [
+        (TYPE_PLAN_GENERATED, "Plan Generated"),
+        (TYPE_PLAN_APPROVED, "Plan Approved"),
+        (TYPE_PROGRESS_UPDATED, "Progress Updated"),
+        (TYPE_SESSION_COMPLETED, "Session Completed"),
+        (TYPE_UNKNOWN, "Unknown"),
+    ]
+
+    session = models.ForeignKey(
+        JulesSession,
+        on_delete=models.CASCADE,
+        related_name="activities",
+    )
+    name = models.CharField(max_length=255, unique=True)
+    activity_type = models.CharField(
+        max_length=32,
+        choices=TYPE_CHOICES,
+        default=TYPE_UNKNOWN,
+    )
+    payload = models.JSONField(default=dict, blank=True)
+    create_time = models.DateTimeField(blank=True, null=True)
+    last_synced_at = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        db_table = "jules_activities"
+        indexes = [
+            models.Index(fields=["session", "create_time"]),
+            models.Index(fields=["activity_type"]),
+        ]
+
+    def __str__(self) -> str:
+        return self.name
