@@ -25,6 +25,25 @@ JULES_API_KEY_ENCRYPTION_KEY = os.getenv(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
+# Security Headers
+if not DEBUG:
+    # Force HTTPS
+    # Use SECURE_SSL_REDIRECT = True in production, but we need to disable it for tests running without HTTPS
+    # or ensure tests override it.
+    if os.getenv("TESTING") != "true":
+        SECURE_SSL_REDIRECT = True
+    # Secure cookies
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    # HSTS settings
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    # Content type security
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    # Referrer policy
+    SECURE_REFERRER_POLICY = "same-origin"
+
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
 # Application definition
