@@ -155,6 +155,20 @@ class SessionSerializer(serializers.Serializer):
         return super().to_internal_value(data)
 
 
+CONTROL_CHAR_PATTERN = re.compile(r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]")
+
+
+def sanitize_text(value: str, field_name: str) -> str:
+    """Trim whitespace and strip control characters from text inputs."""
+    if not isinstance(value, str):
+        raise serializers.ValidationError(f"{field_name} must be a string.")
+
+    sanitized = CONTROL_CHAR_PATTERN.sub("", value.strip())
+    if not sanitized:
+        raise serializers.ValidationError(f"{field_name} cannot be blank.")
+    return sanitized
+
+
 class SessionCreateSerializer(serializers.Serializer):
     """Serializer for creating a new session."""
 

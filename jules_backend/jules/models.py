@@ -10,20 +10,33 @@ from django.utils import timezone
 
 
 @lru_cache(maxsize=1)
-def get_fernet():
+def get_api_key_fernet():
     """
-    Get Fernet instance using JULES_ENCRYPTION_KEY.
+    Get Fernet instance using JULES_API_KEY_ENCRYPTION_KEY.
     Cached to avoid re-deriving key on every call.
 
-    WARNING: The encryption key is derived from settings.JULES_ENCRYPTION_KEY.
-    If JULES_ENCRYPTION_KEY is rotated, all encrypted API keys will become unreadable
+    WARNING: The encryption key is derived from settings.JULES_API_KEY_ENCRYPTION_KEY.
+    If JULES_API_KEY_ENCRYPTION_KEY is rotated, all encrypted API keys will become unreadable
     until re-encrypted.
     """
-    if not settings.JULES_ENCRYPTION_KEY:
-        raise ValidationError("JULES_ENCRYPTION_KEY must be set to encrypt API keys.")
+    if not settings.JULES_API_KEY_ENCRYPTION_KEY:
+        raise ValidationError(
+            "JULES_API_KEY_ENCRYPTION_KEY must be set to encrypt API keys."
+        )
 
-    # Ensure JULES_ENCRYPTION_KEY is 32 bytes for url-safe base64 encoding
+    # Ensure JULES_API_KEY_ENCRYPTION_KEY is 32 bytes for url-safe base64 encoding
     # We hash it to get 32 bytes, then base64 encode it to satisfy Fernet
+    key = hashlib.sha256(settings.JULES_API_KEY_ENCRYPTION_KEY.encode()).digest()
+    key_b64 = base64.urlsafe_b64encode(key)
+    return Fernet(key_b64)
+
+
+@lru_cache(maxsize=1)
+def get_legacy_fernet():
+    """Get legacy Fernet instance using JULES_ENCRYPTION_KEY for fallback reads."""
+    if not settings.JULES_ENCRYPTION_KEY:
+        return None
+
     key = hashlib.sha256(settings.JULES_ENCRYPTION_KEY.encode()).digest()
     key_b64 = base64.urlsafe_b64encode(key)
     return Fernet(key_b64)
@@ -55,9 +68,9 @@ class JulesSettings(models.Model):
         if not api_key:
             self._encrypted_api_key = None
             return
-        
+
         try:
-            f = get_fernet()
+            f = get_api_key_fernet()
             encrypted = f.encrypt(api_key.encode()).decode()
             self._encrypted_api_key = encrypted
         except Exception as e:
@@ -67,13 +80,22 @@ class JulesSettings(models.Model):
         """Decrypt and return API key."""
         if not self._encrypted_api_key:
             return None
-        
+
         try:
-            f = get_fernet()
-            # Try to decrypt assuming it's Fernet encrypted
+            f = get_api_key_fernet()
             decrypted = f.decrypt(self._encrypted_api_key.encode()).decode()
             return decrypted
         except Exception:
+            legacy_fernet = get_legacy_fernet()
+            if legacy_fernet:
+                try:
+                    decrypted = legacy_fernet.decrypt(
+                        self._encrypted_api_key.encode()
+                    ).decode()
+                    return decrypted
+                except Exception:
+                    pass
+
             # Fallback for migration: check if it's the old base64 format
             try:
                 # Basic base64 check - if it decodes and looks reasonable
