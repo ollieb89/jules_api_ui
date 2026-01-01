@@ -191,7 +191,9 @@ export class SessionCacheService {
   }
 
   /**
-   * Start polling for session updates
+   * Start live SSE updates and fallback polling for session updates.
+   * This initiates SSE streaming and only falls back to polling when the stream is not connected.
+   * @param intervalMs - Polling interval in milliseconds (default: 60000ms / 1 minute)
    */
   startAutoRefresh(intervalMs = 60000): void {
     this.startLiveUpdates();
@@ -199,13 +201,19 @@ export class SessionCacheService {
       return;
     }
 
-    this.autoRefreshSubscription = timer(0, intervalMs).subscribe(() => {
+    // Start timer with delay to allow stream to connect first
+    this.autoRefreshSubscription = timer(intervalMs, intervalMs).subscribe(() => {
       if (!this.streamConnected()) {
         this.loadAllSessions();
       }
     });
   }
 
+  /**
+   * Start live SSE updates for session changes.
+   * Establishes a Server-Sent Events connection to receive real-time session updates.
+   * Updates the streamConnected signal to track connection state.
+   */
   startLiveUpdates(): void {
     if (!this.authTokenService.getToken() || this.streamSubscription) {
       return;
@@ -245,6 +253,7 @@ export class SessionCacheService {
     this.autoRefreshSubscription = null;
     this.streamSubscription?.unsubscribe();
     this.streamSubscription = null;
+    this.streamConnected.set(false);
   }
 
   /**
