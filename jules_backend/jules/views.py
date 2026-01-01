@@ -15,8 +15,9 @@ from .serializers import (
     SessionSerializer,
     SourceSerializer,
 )
-from .models import JulesSettings
+from .models import JulesSession, JulesSettings
 from .services import JulesApiClient
+from .sync import upsert_activities, upsert_session
 from .utils import handle_api_exception
 
 
@@ -55,6 +56,7 @@ class SessionViewSet(viewsets.ViewSet):
                 prompt=serializer.validated_data["prompt"],
                 source=serializer.validated_data["source"],
             )
+            upsert_session(data)
             session_serializer = SessionSerializer(data=data)
             session_serializer.is_valid(raise_exception=True)
             return Response(session_serializer.data, status=status.HTTP_201_CREATED)
@@ -69,6 +71,8 @@ class SessionViewSet(viewsets.ViewSet):
         try:
             data = client.list_sessions(page_size=page_size, page_token=page_token)
             sessions = data.get("sessions", [])
+            for session_data in sessions:
+                upsert_session(session_data)
             serializer = SessionSerializer(data=sessions, many=True)
             serializer.is_valid(raise_exception=True)
             return Response(
@@ -85,6 +89,7 @@ class SessionViewSet(viewsets.ViewSet):
         client = JulesApiClient()
         try:
             data = client.get_session(pk)
+            upsert_session(data)
             serializer = SessionSerializer(data=data)
             serializer.is_valid(raise_exception=True)
             return Response(serializer.data)
@@ -96,6 +101,8 @@ class SessionViewSet(viewsets.ViewSet):
         client = JulesApiClient()
         try:
             client.delete_session(pk)
+            session_name = pk if pk.startswith("sessions/") else f"sessions/{pk}"
+            JulesSession.objects.filter(name=session_name).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
             return handle_api_exception(e)
@@ -108,6 +115,7 @@ class SessionViewSet(viewsets.ViewSet):
         client = JulesApiClient()
         try:
             data = client.approve_plan(pk)
+            upsert_session(data)
             session_serializer = SessionSerializer(data=data)
             session_serializer.is_valid(raise_exception=True)
             return Response(session_serializer.data)
@@ -122,6 +130,7 @@ class SessionViewSet(viewsets.ViewSet):
         client = JulesApiClient()
         try:
             data = client.send_message(pk, serializer.validated_data["message"])
+            upsert_session(data)
             session_serializer = SessionSerializer(data=data)
             session_serializer.is_valid(raise_exception=True)
             return Response(session_serializer.data)
@@ -139,6 +148,18 @@ class SessionViewSet(viewsets.ViewSet):
                 session_id=pk, page_size=page_size, page_token=page_token
             )
             activities = data.get("activities", [])
+            session_name = pk if pk.startswith("sessions/") else f"sessions/{pk}"
+            session, _ = JulesSession.objects.get_or_create(
+                name=session_name,
+                defaults={
+                    "display_name": session_name,
+                    "state": "STATE_UNSPECIFIED",
+                    "prompt": "",
+                    "source": "",
+                    "raw_payload": {},
+                },
+            )
+            upsert_activities(session, activities)
             serializer = ActivitySerializer(data=activities, many=True)
             serializer.is_valid(raise_exception=True)
             return Response(

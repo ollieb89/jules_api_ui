@@ -101,3 +101,47 @@ class JulesSettings(models.Model):
         """Get or create the singleton settings instance."""
         settings, _ = cls.objects.get_or_create(pk=1)
         return settings
+
+
+class JulesSession(models.Model):
+    """Persisted Jules session data."""
+
+    name = models.CharField(max_length=255, unique=True)
+    display_name = models.CharField(max_length=255, blank=True)
+    state = models.CharField(max_length=32)
+    prompt = models.TextField(blank=True)
+    source = models.CharField(max_length=255, blank=True)
+    create_time = models.DateTimeField(null=True, blank=True)
+    update_time = models.DateTimeField(null=True, blank=True)
+    raw_payload = models.JSONField(default=dict, blank=True)
+    last_synced_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "jules_sessions"
+
+    def __str__(self) -> str:
+        return self.display_name or self.name
+
+
+class JulesActivity(models.Model):
+    """Persisted activity entries for a session."""
+
+    session = models.ForeignKey(
+        JulesSession, related_name="activities", on_delete=models.CASCADE
+    )
+    name = models.CharField(max_length=255)
+    activity_type = models.CharField(max_length=64, blank=True)
+    create_time = models.DateTimeField(null=True, blank=True)
+    payload = models.JSONField(default=dict, blank=True)
+    last_synced_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "jules_activities"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["session", "name"], name="unique_jules_activity"
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.session_id}:{self.name}"
