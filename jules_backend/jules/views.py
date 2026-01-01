@@ -179,7 +179,12 @@ class SessionViewSet(viewsets.ViewSet):
             try:
                 session_data = client.get_session(pk)
                 session = upsert_session(session_data)
-            except Exception:
+            except Exception as e:
+                logger.warning(
+                    "Failed to fetch or upsert session '%s'; using placeholder session instead.",
+                    pk,
+                    exc_info=True,
+                )
                 # If session fetch fails, create minimal placeholder
                 session, _ = JulesSession.objects.get_or_create(
                     name=session_name,
