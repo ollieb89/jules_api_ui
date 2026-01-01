@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+import time
+
 from django.core.management.base import BaseCommand
 
-from jules.services import JulesApiClient
-from jules.sync import upsert_activities, upsert_session
+from jules.tasks import poll_sessions_and_activities
 
 
 class Command(BaseCommand):
@@ -11,46 +12,35 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser) -> None:
         parser.add_argument(
-            "--page-size",
+            "--interval",
             type=int,
-            default=100,
-            help="Page size for fetching sessions and activities.",
+            default=0,
+            help=(
+                "Seconds between sync cycles. Use 0 to run once. "
+                "Recommended for periodic reconciliation."
+            ),
+        )
+        parser.add_argument(
+            "--force-refresh",
+            action="store_true",
+            help="Force refresh sessions and activities even if cache is fresh.",
         )
 
     def handle(self, *args, **options) -> None:
-        client = JulesApiClient()
-        page_size = options["page_size"]
-        page_token = None
-        synced_sessions = 0
-        synced_activities = 0
+        interval = options["interval"]
+        force_refresh = options["force_refresh"]
 
         while True:
-            data = client.list_sessions(page_size=page_size, page_token=page_token)
-            sessions = data.get("sessions", [])
-            for session_data in sessions:
-                session = upsert_session(session_data)
-                synced_sessions += 1
-
-                activity_token = None
-                while True:
-                    activities_payload = client.list_activities(
-                        session_id=session.name,
-                        page_size=page_size,
-                        page_token=activity_token,
+            result = poll_sessions_and_activities(force_refresh=force_refresh)
+            self.stdout.write(
+                self.style.SUCCESS(
+                    "Synced {sessions} sessions and {new_activities} activities.".format(
+                        **result
                     )
-                    activities = activities_payload.get("activities", [])
-                    upsert_activities(session, activities)
-                    synced_activities += len(activities)
-                    activity_token = activities_payload.get("nextPageToken")
-                    if not activity_token:
-                        break
+                )
+            )
 
-            page_token = data.get("nextPageToken")
-            if not page_token:
+            if interval <= 0:
                 break
 
-        self.stdout.write(
-            self.style.SUCCESS(
-                f"Synced {synced_sessions} sessions and {synced_activities} activities."
-            )
-        )
+            time.sleep(interval)
