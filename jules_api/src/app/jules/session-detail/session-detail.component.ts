@@ -7,6 +7,10 @@ import { MarkdownComponent } from 'ngx-markdown';
 import { JulesService } from '../../services/jules.service';
 import { AuthTokenService } from '../../services/auth-token.service';
 import { Session, SessionState } from '../../models/jules.model';
+import {
+  getParserErrorMessage,
+  parseSessionResponse
+} from '../../utils/api-parsers';
 import { ActivityTimelineComponent } from '../activity-timeline/activity-timeline.component';
 import { CodeBlockStyleDirective } from '../../directives/code-block-style.directive';
 import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
@@ -95,10 +99,16 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
 
     this.julesService.getSession(this.sessionId()).subscribe({
       next: (session) => {
-        this.session.set(session);
-        this.loading.set(false);
-        // Extract PR info from session if available (placeholder)
-        // this.extractPRInfo(session);
+        try {
+          const parsed = parseSessionResponse(session);
+          this.session.set(parsed);
+          this.loading.set(false);
+          // Extract PR info from session if available (placeholder)
+          // this.extractPRInfo(session);
+        } catch (error) {
+          this.error.set(getParserErrorMessage(error, 'Invalid session response.'));
+          this.loading.set(false);
+        }
       },
       error: (err) => {
         this.error.set(err.message || 'Failed to load session');
@@ -122,10 +132,16 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
       
       this.julesService.sendMessage(this.sessionId(), { message }).subscribe({
         next: (session) => {
-          this.session.set(session);
-          this.messageForm.reset();
-          this.sendingMessage.set(false);
-          this.refreshSession();
+          try {
+            const parsed = parseSessionResponse(session);
+            this.session.set(parsed);
+            this.messageForm.reset();
+            this.sendingMessage.set(false);
+            this.refreshSession();
+          } catch (error) {
+            this.error.set(getParserErrorMessage(error, 'Invalid session response.'));
+            this.sendingMessage.set(false);
+          }
         },
         error: (err) => {
           this.error.set(err.message || 'Failed to send message');
@@ -143,9 +159,15 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
 
     this.julesService.approvePlan(this.sessionId()).subscribe({
       next: (session) => {
-        this.session.set(session);
-        this.approvingPlan.set(false);
-        this.refreshSession();
+        try {
+          const parsed = parseSessionResponse(session);
+          this.session.set(parsed);
+          this.approvingPlan.set(false);
+          this.refreshSession();
+        } catch (error) {
+          this.error.set(getParserErrorMessage(error, 'Invalid session response.'));
+          this.approvingPlan.set(false);
+        }
       },
       error: (err) => {
         this.error.set(err.message || 'Failed to approve plan');
@@ -190,9 +212,14 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
     this.eventSource = new EventSource(streamUrl);
 
     this.eventSource.addEventListener('session_update', event => {
-      const data = JSON.parse((event as MessageEvent).data) as Session;
-      this.session.set(data);
-      this.streamConnected.set(true);
+      try {
+        const data = JSON.parse((event as MessageEvent).data) as unknown;
+        this.session.set(parseSessionResponse(data));
+        this.streamConnected.set(true);
+      } catch (error) {
+        this.error.set(getParserErrorMessage(error, 'Invalid session stream payload.'));
+        this.streamConnected.set(false);
+      }
     });
 
     this.eventSource.addEventListener('activity_update', () => {

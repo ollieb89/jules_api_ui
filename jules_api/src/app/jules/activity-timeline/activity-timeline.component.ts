@@ -4,6 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { MatPaginatorModule, MatPaginator, PageEvent } from '@angular/material/paginator';
 import { JulesService } from '../../services/jules.service';
 import { Activity } from '../../models/jules.model';
+import {
+  getParserErrorMessage,
+  parseActivitiesResponse
+} from '../../utils/api-parsers';
 import { PlanApprovalComponent } from '../plan-approval/plan-approval.component';
 
 type ActivityOriginator = 'all' | 'agent' | 'user';
@@ -139,43 +143,49 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
 
     this.julesService.getActivities(this.sessionId, this.pageSize(), pageToken || null).subscribe({
       next: (response) => {
-        this.activities.set(response.activities);
-        this.currentPageActivities.set(response.activities);
-        const nextToken = response.next_page_token || null;
-        this.nextPageToken.set(nextToken);
-        
-        const currentIndex = this.currentPageIndex();
-        const tokens = this.pageTokens();
-        const nexts = this.nextTokens();
-        
-        // Store the token used for this page and the next token from this page
-        if (tokens.length <= currentIndex) {
-          const newTokens = [...tokens];
-          const newNexts = [...nexts];
-          while (newTokens.length <= currentIndex) {
-            newTokens.push(null);
-            newNexts.push(null);
-          }
-          newTokens[currentIndex] = pageToken || null;
-          newNexts[currentIndex] = nextToken;
-          this.pageTokens.set(newTokens);
-          this.nextTokens.set(newNexts);
-        } else {
-          const newNexts = [...nexts];
-          newNexts[currentIndex] = nextToken;
-          this.nextTokens.set(newNexts);
-        }
-        
-        if (this.paginator) {
-          if (nextToken) {
-            this.paginator.length = 10000;
+        try {
+          const parsed = parseActivitiesResponse(response);
+          this.activities.set(parsed.activities);
+          this.currentPageActivities.set(parsed.activities);
+          const nextToken = parsed.next_page_token || null;
+          this.nextPageToken.set(nextToken);
+
+          const currentIndex = this.currentPageIndex();
+          const tokens = this.pageTokens();
+          const nexts = this.nextTokens();
+
+          // Store the token used for this page and the next token from this page
+          if (tokens.length <= currentIndex) {
+            const newTokens = [...tokens];
+            const newNexts = [...nexts];
+            while (newTokens.length <= currentIndex) {
+              newTokens.push(null);
+              newNexts.push(null);
+            }
+            newTokens[currentIndex] = pageToken || null;
+            newNexts[currentIndex] = nextToken;
+            this.pageTokens.set(newTokens);
+            this.nextTokens.set(newNexts);
           } else {
-            this.paginator.length = (currentIndex + 1) * this.pageSize();
+            const newNexts = [...nexts];
+            newNexts[currentIndex] = nextToken;
+            this.nextTokens.set(newNexts);
           }
-          this.paginator.pageIndex = currentIndex;
+
+          if (this.paginator) {
+            if (nextToken) {
+              this.paginator.length = 10000;
+            } else {
+              this.paginator.length = (currentIndex + 1) * this.pageSize();
+            }
+            this.paginator.pageIndex = currentIndex;
+          }
+
+          this.loading.set(false);
+        } catch (error) {
+          this.error.set(getParserErrorMessage(error, 'Invalid activities response.'));
+          this.loading.set(false);
         }
-        
-        this.loading.set(false);
       },
       error: (err) => {
         this.error.set(err.message || 'Failed to load activities');

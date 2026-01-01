@@ -3,21 +3,18 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { JulesService } from '../../services/jules.service';
+import {
+  getParserErrorMessage,
+  parseSettingsResponse,
+  parseTestConnectionResponse,
+  parseUpdateApiKeyResponse
+} from '../../utils/api-parsers';
 
 interface SettingsResponse {
   api_key_configured: boolean;
   masked_api_key?: string | null;
   created_at: string;
   updated_at: string;
-}
-
-interface ConnectionTestResponse {
-  status: string;
-  message: string;
-  api_key_configured: boolean;
-  api_connectivity?: string;
-  sources_count?: number;
-  error?: string;
 }
 
 @Component({
@@ -186,9 +183,15 @@ export class SettingsComponent implements OnInit {
     // Note: This endpoint needs to be added to JulesService
     this.julesService.getSettings().subscribe({
       next: (response) => {
-        this.settings.set(response);
-        this.updateConnectionStatus(response.api_key_configured);
-        this.loading.set(false);
+        try {
+          const parsed = parseSettingsResponse(response);
+          this.settings.set(parsed);
+          this.updateConnectionStatus(parsed.api_key_configured);
+          this.loading.set(false);
+        } catch (error) {
+          this.error.set(getParserErrorMessage(error, 'Invalid settings response.'));
+          this.loading.set(false);
+        }
       },
       error: (err) => {
         this.error.set(err.message || 'Failed to load settings');
@@ -206,10 +209,16 @@ export class SettingsComponent implements OnInit {
       const apiKey = this.apiKeyForm.get('apiKey')?.value;
       this.julesService.updateApiKey(apiKey).subscribe({
         next: (response) => {
-          this.successMessage.set(response.message || 'API key saved successfully');
-          this.apiKeyForm.reset();
-          this.loadSettings();
-          this.saving.set(false);
+          try {
+            const parsed = parseUpdateApiKeyResponse(response);
+            this.successMessage.set(parsed.message || 'API key saved successfully');
+            this.apiKeyForm.reset();
+            this.loadSettings();
+            this.saving.set(false);
+          } catch (error) {
+            this.error.set(getParserErrorMessage(error, 'Invalid update response.'));
+            this.saving.set(false);
+          }
         },
         error: (err) => {
           this.error.set(err.message || 'Failed to save API key');
@@ -226,14 +235,21 @@ export class SettingsComponent implements OnInit {
     
     this.julesService.testConnection().subscribe({
       next: (response) => {
-        if (response.status === 'success') {
-          this.successMessage.set(response.message || 'Connection successful!');
-          this.connectionStatus.set('connected');
-        } else {
-          this.error.set(response.message || 'Connection failed');
+        try {
+          const parsed = parseTestConnectionResponse(response);
+          if (parsed.status === 'success') {
+            this.successMessage.set(parsed.message || 'Connection successful!');
+            this.connectionStatus.set('connected');
+          } else {
+            this.error.set(parsed.message || 'Connection failed');
+            this.connectionStatus.set('error');
+          }
+          this.testing.set(false);
+        } catch (error) {
+          this.error.set(getParserErrorMessage(error, 'Invalid test response.'));
           this.connectionStatus.set('error');
+          this.testing.set(false);
         }
-        this.testing.set(false);
       },
       error: (err) => {
         this.error.set(err.message || 'Failed to test connection');
@@ -266,4 +282,3 @@ export class SettingsComponent implements OnInit {
     return this.apiKeyForm.get('apiKey');
   }
 }
-

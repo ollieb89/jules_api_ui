@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { JulesService } from '../../services/jules.service';
 import { Source, CreateSession } from '../../models/jules.model';
+import { getParserErrorMessage, parseSourcesResponse } from '../../utils/api-parsers';
 
 type WizardStep = 1 | 2 | 3;
 
@@ -284,9 +285,14 @@ export class SessionCreateComponent {
     this.loadingSources.set(true);
     this.julesService.getSources().subscribe({
       next: (response) => {
-        console.log('Sources loaded:', response.sources);
-        this.sources.set(response.sources);
-        this.loadingSources.set(false);
+        try {
+          const parsed = parseSourcesResponse(response);
+          this.sources.set(parsed.sources);
+          this.loadingSources.set(false);
+        } catch (error) {
+          this.error.set(getParserErrorMessage(error, 'Invalid sources response.'));
+          this.loadingSources.set(false);
+        }
       },
       error: (err) => {
         console.error('Error loading sources:', err);
