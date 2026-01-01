@@ -13,7 +13,7 @@ const runtimeEnv =
   (globalThis as typeof globalThis & { __JULES_ENV__?: RuntimeEnvironment }).__JULES_ENV__;
 
 export const environment = {
-  production: false,
-  apiUrl: runtimeEnv?.apiUrl ?? 'http://localhost:8444/api',
-  wsUrl: runtimeEnv?.wsUrl ?? 'ws://localhost:8444/ws'
+  production: true,
+  apiUrl: runtimeEnv?.apiUrl ?? 'https://api.jules.ai/api',
+  wsUrl: runtimeEnv?.wsUrl ?? 'wss://api.jules.ai/ws'
 };

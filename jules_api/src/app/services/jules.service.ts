@@ -20,6 +20,15 @@ import {
 export class JulesService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/jules`;
+  private wsUrl = `${environment.wsUrl}/jules`;
+
+  getSessionsEventStreamUrl(params: URLSearchParams): string {
+    return `${this.getStreamBaseUrl()}/sessions/events/?${params.toString()}`;
+  }
+
+  getSessionEventStreamUrl(sessionId: string, params: URLSearchParams): string {
+    return `${this.getStreamBaseUrl()}/sessions/${sessionId}/events/?${params.toString()}`;
+  }
 
   // Sources
   getSources(): Observable<PaginatedSourcesResponse> {
@@ -94,5 +103,9 @@ export class JulesService {
       `${this.apiUrl}/settings/test/`,
       {}
     );
+  }
+
+  private getStreamBaseUrl(): string {
+    return this.wsUrl.replace(/^ws/, 'http');
   }
 }

@@ -38,10 +38,8 @@ jules_api_ui/
 │   └── package.json   # Frontend dependencies
 │
 ├── jules_backend/      # Django backend (Pixi)
-│   ├── migrations/    # Shared/project-level migrations (most migrations live in each app's migrations/ dir)
 │   ├── users/         # Users Django app (includes users/migrations/)
 │   ├── jules/         # Jules Django app (includes jules/migrations/)
-│   ├── tests/         # Backend tests
 │   ├── pixi.toml      # Python dependencies and tasks
 │   └── manage.py      # Django management script
 │
@@ -161,8 +159,8 @@ export const environment = {
 
 ## 🔧 Backend Setup
 
-The backend uses Django with Pixi for environment management. A legacy FastAPI prototype has been
-archived and is not part of the current runtime.
+The backend uses Django with Pixi for environment management. The earlier FastAPI prototype has
+been removed from the repository and is not part of the runtime or deployment workflow.
 
 ### Installation
 

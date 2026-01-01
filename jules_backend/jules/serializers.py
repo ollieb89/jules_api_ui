@@ -2,6 +2,8 @@ import re
 
 from rest_framework import serializers
 
+from .models import JulesActivity
+
 
 class GitHubSourceMetadataSerializer(serializers.Serializer):
     """Serializer for GitHub source metadata."""
@@ -347,3 +349,21 @@ class ApiKeyUpdateSerializer(serializers.Serializer):
     """Serializer for updating API key."""
 
     api_key = serializers.CharField(required=True, min_length=1)
+
+
+class JulesActivitySerializer(serializers.ModelSerializer):
+    """Serializer for cached Jules activities."""
+
+    session_id = serializers.CharField(source="session.session_id")
+
+    class Meta:
+        model = JulesActivity
+        fields = [
+            "id",
+            "session_id",
+            "name",
+            "activity_type",
+            "payload",
+            "create_time",
+            "created_at",
+        ]
