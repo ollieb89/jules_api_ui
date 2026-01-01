@@ -66,11 +66,18 @@ def handle_api_exception(e: Exception, request: Request | None = None) -> Respon
     In production, return a generic error message.
     """
     correlation_id = get_correlation_id(request)
-    status_code = getattr(e, "status_code", None) or status.HTTP_500_INTERNAL_SERVER_ERROR
+    status_code = getattr(e, "status_code", None)
+    details = getattr(e, "details", None)
+    if status_code is None and isinstance(details, dict):
+        status_code = details.get("upstream_status")
+    if status_code is None:
+        status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
 
     log_extra: dict[str, Any] = {"status_code": status_code}
     if correlation_id:
         log_extra["correlation_id"] = correlation_id
+    if isinstance(details, dict) and details.get("upstream_status"):
+        log_extra["upstream_status"] = details["upstream_status"]
 
     logger.error("API Error: %s", str(e), exc_info=True, extra=log_extra)
 
@@ -97,7 +104,6 @@ def handle_api_exception(e: Exception, request: Request | None = None) -> Respon
     if retry_after is not None:
         payload["retry_after_seconds"] = retry_after
 
-    details = getattr(e, "details", None)
     if details and settings.DEBUG:
         payload["details"] = details
 
