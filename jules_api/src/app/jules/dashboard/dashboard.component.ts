@@ -105,7 +105,7 @@ import { ThemeService } from '../../services/theme.service';
           <div class="flex flex-col gap-3 text-sm">
             <a
               routerLink="/jules/create"
-              class="px-4 py-2 rounded-lg bg-[var(--color-info-50)] text-[var(--color-info-700)] font-semibold hover:bg-[var(--color-info-100)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+              class="px-4 py-2 rounded-lg bg-[var(--color-info-50)] text-[var(--color-info-700)] font-semibold hover:bg-[var(--color-info-200)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
             >
               Create a new Jules task
             </a>
