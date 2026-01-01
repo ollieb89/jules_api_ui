@@ -6,7 +6,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { MarkdownComponent } from 'ngx-markdown';
 import { JulesService } from '../../services/jules.service';
 import { AuthTokenService } from '../../services/auth-token.service';
-import { Session, SessionState } from '../../models/jules.model';
+import { PlanState, Session, SessionState } from '../../models/jules.model';
 import { ActivityTimelineComponent } from '../activity-timeline/activity-timeline.component';
 import { CodeBlockStyleDirective } from '../../directives/code-block-style.directive';
 import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
@@ -58,12 +58,11 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
   sendingMessage = signal<boolean>(false);
   approvingPlan = signal<boolean>(false);
   refreshing = signal<boolean>(false);
+  planStateFromActivities = signal<PlanState | null>(null);
 
   // Check if session has a pending plan
   hasPendingPlan = computed(() => {
-    // This would check activities for a pending plan
-    // For now, return false as placeholder
-    return false;
+    return this.planStateFromActivities() === 'PENDING';
   });
 
   ngOnInit(): void {
@@ -173,6 +172,10 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
 
   toggleActivities(): void {
     this.activitiesExpanded.set(!this.activitiesExpanded());
+  }
+
+  onPlanStateChange(state: PlanState | null): void {
+    this.planStateFromActivities.set(state);
   }
 
   private startLiveUpdates(): void {

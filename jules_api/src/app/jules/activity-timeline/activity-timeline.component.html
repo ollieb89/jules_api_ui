@@ -81,8 +81,8 @@
               </div>
               <p class="text-sm text-[var(--color-text-secondary)]">{{ activity.description }}</p>
               
-              @if (activity.plan_generated) {
-                <app-plan-approval [plan]="activity.plan_generated.plan" [sessionId]="sessionId"></app-plan-approval>
+              @if (activity.plan_generated && activity.plan) {
+                <app-plan-approval [plan]="activity.plan" [sessionId]="sessionId"></app-plan-approval>
               }
             </div>
           </div>
