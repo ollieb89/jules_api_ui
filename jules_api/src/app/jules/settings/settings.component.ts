@@ -3,21 +3,14 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { JulesService } from '../../services/jules.service';
+import { JulesApiError } from '../../models/jules.model';
+import { getApiErrorMessage } from '../../utils/api-error';
 
 interface SettingsResponse {
   api_key_configured: boolean;
   masked_api_key?: string | null;
   created_at: string;
   updated_at: string;
-}
-
-interface ConnectionTestResponse {
-  status: string;
-  message: string;
-  api_key_configured: boolean;
-  api_connectivity?: string;
-  sources_count?: number;
-  error?: string;
 }
 
 @Component({
@@ -29,28 +22,28 @@ interface ConnectionTestResponse {
       <div class="mb-6">
         <a
           routerLink="/jules"
-          class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mb-4 inline-block"
+          class="text-[var(--color-interactive-primary)] hover:text-[var(--color-interactive-primary-hover)] mb-4 inline-block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
         >
           ← Back to Sessions
         </a>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Jules Settings</h1>
-        <p class="text-gray-600 dark:text-gray-400">Configure your Jules API key and connection settings</p>
+        <h1 class="text-3xl font-bold text-[var(--color-text-primary)] mb-2">Jules Settings</h1>
+        <p class="text-[var(--color-text-secondary)]">Configure your Jules API key and connection settings</p>
       </div>
 
       <!-- Connection Status -->
-      <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-6">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Connection Status</h2>
+      <div class="bg-[var(--color-surface-primary)] shadow-md rounded-lg p-6 mb-6">
+        <h2 class="text-xl font-semibold text-[var(--color-text-primary)] mb-4">Connection Status</h2>
         <div class="flex items-center gap-3">
           <div 
-            [class]="'w-3 h-3 rounded-full ' + (connectionStatus() === 'connected' ? 'bg-green-500' : connectionStatus() === 'error' ? 'bg-red-500' : 'bg-yellow-500')"
+            [class]="'w-3 h-3 rounded-full ' + (connectionStatus() === 'connected' ? 'bg-[var(--color-success-500)]' : connectionStatus() === 'error' ? 'bg-[var(--color-error-500)]' : 'bg-[var(--color-warning-500)]')"
             [title]="getConnectionStatusText()"
           ></div>
-          <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <span class="text-sm font-medium text-[var(--color-text-secondary)]">
             {{ getConnectionStatusText() }}
           </span>
         </div>
         @if (settings()) {
-          <div class="mt-4 text-sm text-gray-600 dark:text-gray-400">
+          <div class="mt-4 text-sm text-[var(--color-text-secondary)]">
             @if (settings()!.api_key_configured) {
               <p>API Key: {{ settings()!.masked_api_key || 'Configured' }}</p>
             } @else {
@@ -61,12 +54,12 @@ interface ConnectionTestResponse {
       </div>
 
       <!-- API Key Configuration -->
-      <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-6">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">API Key Configuration</h2>
+      <div class="bg-[var(--color-surface-primary)] shadow-md rounded-lg p-6 mb-6">
+        <h2 class="text-xl font-semibold text-[var(--color-text-primary)] mb-4">API Key Configuration</h2>
         
         @if (error()) {
           <div 
-            class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded mb-4"
+            class="bg-[var(--color-error-50)] border border-[var(--color-error-200)] text-[var(--color-error-700)] px-4 py-3 rounded mb-4"
             role="alert"
             aria-live="assertive"
           >
@@ -76,7 +69,7 @@ interface ConnectionTestResponse {
         
         @if (successMessage()) {
           <div 
-            class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-3 rounded mb-4"
+            class="bg-[var(--color-success-50)] border border-[var(--color-success-200)] text-[var(--color-success-700)] px-4 py-3 rounded mb-4"
             role="alert"
             aria-live="polite"
           >
@@ -86,7 +79,7 @@ interface ConnectionTestResponse {
 
         <form [formGroup]="apiKeyForm" (ngSubmit)="saveApiKey()">
           <div class="mb-4">
-            <label for="api-key" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label for="api-key" class="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
               Jules API Key
             </label>
             <input
@@ -94,10 +87,10 @@ interface ConnectionTestResponse {
               type="password"
               formControlName="apiKey"
               placeholder="Enter your Jules API key"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              [class.border-red-500]="apiKey?.invalid && apiKey?.touched"
+              class="w-full px-3 py-2 border border-[var(--color-border-strong)] rounded-lg bg-[var(--color-surface-primary)] text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+              [style.borderColor]="apiKey?.invalid && apiKey?.touched ? 'var(--color-error-500)' : null"
             />
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            <p class="mt-1 text-xs text-[var(--color-text-tertiary)]">
               Your API key is stored securely and never displayed in plaintext.
             </p>
           </div>
@@ -106,7 +99,7 @@ interface ConnectionTestResponse {
             <button
               type="submit"
               [disabled]="apiKeyForm.invalid || saving()"
-              class="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white font-semibold rounded-lg transition-colors"
+              class="px-4 py-2 bg-[var(--color-interactive-primary)] hover:bg-[var(--color-interactive-primary-hover)] disabled:bg-[var(--color-interactive-primary-disabled)] text-[var(--color-text-inverse)] font-semibold rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
             >
               @if (saving()) {
                 Saving...
@@ -118,7 +111,7 @@ interface ConnectionTestResponse {
               type="button"
               (click)="testConnection()"
               [disabled]="testing() || !settings()?.api_key_configured"
-              class="px-4 py-2 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white font-semibold rounded-lg transition-colors"
+              class="px-4 py-2 bg-[var(--color-success-600)] hover:bg-[var(--color-success-700)] disabled:bg-[var(--color-interactive-primary-disabled)] text-[var(--color-text-inverse)] font-semibold rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
             >
               @if (testing()) {
                 Testing...
@@ -131,15 +124,15 @@ interface ConnectionTestResponse {
       </div>
 
       <!-- Additional Resources -->
-      <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Resources</h2>
-        <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+      <div class="bg-[var(--color-surface-primary)] shadow-md rounded-lg p-6">
+        <h2 class="text-xl font-semibold text-[var(--color-text-primary)] mb-4">Resources</h2>
+        <ul class="space-y-2 text-sm text-[var(--color-text-secondary)]">
           <li>
             <a
               href="https://jules.google.com/settings"
               target="_blank"
               rel="noopener noreferrer"
-              class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300"
+              class="text-[var(--color-interactive-primary)] hover:text-[var(--color-interactive-primary-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
             >
               → Jules Settings Page
             </a>
@@ -149,7 +142,7 @@ interface ConnectionTestResponse {
               href="https://jules.google.com/docs"
               target="_blank"
               rel="noopener noreferrer"
-              class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300"
+              class="text-[var(--color-interactive-primary)] hover:text-[var(--color-interactive-primary-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
             >
               → Documentation
             </a>
@@ -186,12 +179,18 @@ export class SettingsComponent implements OnInit {
     // Note: This endpoint needs to be added to JulesService
     this.julesService.getSettings().subscribe({
       next: (response) => {
-        this.settings.set(response);
-        this.updateConnectionStatus(response.api_key_configured);
-        this.loading.set(false);
+        try {
+          const parsed = parseSettingsResponse(response);
+          this.settings.set(parsed);
+          this.updateConnectionStatus(parsed.api_key_configured);
+          this.loading.set(false);
+        } catch (error) {
+          this.error.set(getParserErrorMessage(error, 'Invalid settings response.'));
+          this.loading.set(false);
+        }
       },
-      error: (err) => {
-        this.error.set(err.message || 'Failed to load settings');
+      error: (err: JulesApiError) => {
+        this.error.set(getApiErrorMessage(err, 'Failed to load settings'));
         this.loading.set(false);
       }
     });
@@ -206,13 +205,19 @@ export class SettingsComponent implements OnInit {
       const apiKey = this.apiKeyForm.get('apiKey')?.value;
       this.julesService.updateApiKey(apiKey).subscribe({
         next: (response) => {
-          this.successMessage.set(response.message || 'API key saved successfully');
-          this.apiKeyForm.reset();
-          this.loadSettings();
-          this.saving.set(false);
+          try {
+            const parsed = parseUpdateApiKeyResponse(response);
+            this.successMessage.set(parsed.message || 'API key saved successfully');
+            this.apiKeyForm.reset();
+            this.loadSettings();
+            this.saving.set(false);
+          } catch (error) {
+            this.error.set(getParserErrorMessage(error, 'Invalid update response.'));
+            this.saving.set(false);
+          }
         },
-        error: (err) => {
-          this.error.set(err.message || 'Failed to save API key');
+        error: (err: JulesApiError) => {
+          this.error.set(getApiErrorMessage(err, 'Failed to save API key'));
           this.saving.set(false);
         }
       });
@@ -226,17 +231,24 @@ export class SettingsComponent implements OnInit {
     
     this.julesService.testConnection().subscribe({
       next: (response) => {
-        if (response.status === 'success') {
-          this.successMessage.set(response.message || 'Connection successful!');
-          this.connectionStatus.set('connected');
-        } else {
-          this.error.set(response.message || 'Connection failed');
+        try {
+          const parsed = parseTestConnectionResponse(response);
+          if (parsed.status === 'success') {
+            this.successMessage.set(parsed.message || 'Connection successful!');
+            this.connectionStatus.set('connected');
+          } else {
+            this.error.set(parsed.message || 'Connection failed');
+            this.connectionStatus.set('error');
+          }
+          this.testing.set(false);
+        } catch (error) {
+          this.error.set(getParserErrorMessage(error, 'Invalid test response.'));
           this.connectionStatus.set('error');
+          this.testing.set(false);
         }
-        this.testing.set(false);
       },
-      error: (err) => {
-        this.error.set(err.message || 'Failed to test connection');
+      error: (err: JulesApiError) => {
+        this.error.set(getApiErrorMessage(err, 'Failed to test connection'));
         this.connectionStatus.set('error');
         this.testing.set(false);
       }
@@ -266,4 +278,3 @@ export class SettingsComponent implements OnInit {
     return this.apiKeyForm.get('apiKey');
   }
 }
-

@@ -1,11 +1,11 @@
 <div class="container mx-auto px-4 py-8">
   <div class="flex justify-between items-center mb-6">
-    <h1 class="text-3xl font-bold text-gray-900">Jules Sessions</h1>
+    <h1 class="text-3xl font-bold text-[var(--color-text-primary)]">Jules Sessions</h1>
     <button
       (click)="createSession()"
       type="button"
       aria-label="Create new session"
-      class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+      class="bg-[var(--color-interactive-primary)] hover:bg-[var(--color-interactive-primary-hover)] text-[var(--color-text-inverse)] font-semibold py-2 px-4 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
     >
       New Session
     </button>
@@ -13,11 +13,11 @@
 
   @if (loading() && sessions().length === 0) {
     <div class="flex justify-center items-center py-12" aria-busy="true" aria-live="polite">
-      <div class="text-gray-600">Loading sessions...</div>
+      <div class="text-[var(--color-text-secondary)]">Loading sessions...</div>
     </div>
   } @else if (error()) {
     <div 
-      class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4"
+      class="bg-[var(--color-error-50)] border border-[var(--color-error-200)] text-[var(--color-error-700)] px-4 py-3 rounded mb-4"
       role="alert"
       aria-live="assertive"
     >
@@ -27,18 +27,18 @@
       (click)="loadSessions()"
       type="button"
       aria-label="Retry loading sessions"
-      class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+      class="bg-[var(--color-interactive-primary)] hover:bg-[var(--color-interactive-primary-hover)] text-[var(--color-text-inverse)] font-semibold py-2 px-4 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
     >
       Retry
     </button>
   } @else if (sessions().length === 0) {
-    <div class="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
-      <p class="text-gray-600 mb-4">No sessions found.</p>
+    <div class="bg-[var(--color-surface-secondary)] border border-[var(--color-border-default)] rounded-lg p-8 text-center">
+      <p class="text-[var(--color-text-secondary)] mb-4">No sessions found.</p>
       <button
         (click)="createSession()"
         type="button"
         aria-label="Create first session"
-        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+        class="bg-[var(--color-interactive-primary)] hover:bg-[var(--color-interactive-primary-hover)] text-[var(--color-text-inverse)] font-semibold py-2 px-4 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
       >
         Create First Session
       </button>
@@ -47,19 +47,19 @@
     <div class="bg-white shadow-md rounded-lg overflow-hidden">
       <div class="divide-y divide-gray-200">
         @for (session of formattedSessions(); track session.name) {
-          <div class="p-6 hover:bg-gray-50 transition-colors">
+          <div class="p-6 hover:bg-[var(--color-surface-secondary)] transition-colors">
             <div class="flex justify-between items-start">
               <div class="flex-1">
                 <div class="flex items-center gap-3 mb-2">
-                  <h3 class="text-lg font-semibold text-gray-900">{{ session.display_name }}</h3>
+                  <h3 class="text-lg font-semibold text-[var(--color-text-primary)]">{{ session.display_name }}</h3>
                   <span 
                     [class]="'px-2 py-1 rounded-full text-xs font-medium ' + session.stateBadgeClass"
                   >
                     {{ getStateLabel(session.state) }}
                   </span>
                 </div>
-                <p class="text-sm text-gray-600 mb-2">{{ session.prompt }}</p>
-                <div class="flex gap-4 text-xs text-gray-500">
+                <p class="text-sm text-[var(--color-text-secondary)] mb-2">{{ session.prompt }}</p>
+                <div class="flex gap-4 text-xs text-[var(--color-text-tertiary)]">
                   <span>Source: {{ session.source }}</span>
                   <span>Created: {{ session.formattedCreateTime }}</span>
                   <span>Updated: {{ session.formattedUpdateTime }}</span>
@@ -70,7 +70,7 @@
                   (click)="viewSession(session.name)"
                   type="button"
                   [aria-label]="'View session ' + session.display_name"
-                  class="text-blue-600 hover:text-blue-900 font-medium text-sm"
+                  class="text-[var(--color-interactive-primary)] hover:text-[var(--color-interactive-primary-hover)] font-medium text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
                 >
                   View
                 </button>
@@ -78,7 +78,7 @@
                   (click)="deleteSession(session.name)"
                   type="button"
                   [aria-label]="'Delete session ' + session.display_name"
-                  class="text-red-600 hover:text-red-900 font-medium text-sm"
+                  class="text-[var(--color-error-700)] hover:text-[var(--color-error-800)] font-medium text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
                 >
                   Delete
                 </button>
@@ -88,7 +88,7 @@
         }
       </div>
       
-      <div class="p-4 border-t border-gray-200">
+      <div class="p-4 border-t border-[var(--color-border-default)]">
         <mat-paginator
           [pageSize]="pageSize()"
           [pageIndex]="currentPageIndex()"
@@ -104,4 +104,3 @@
     </div>
   }
 </div>
-

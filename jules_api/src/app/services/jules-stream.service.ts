@@ -1,0 +1,163 @@
+import { Injectable, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { Observable, EMPTY, Observer } from 'rxjs';
+import { AuthTokenService } from './auth-token.service';
+import { JulesService } from './jules.service';
+import { Session } from '../models/jules.model';
+
+export type SessionsStreamEvent =
+  | { type: 'open' }
+  | { type: 'error' }
+  | { type: 'sessions_update'; sessions: Session[] };
+
+export type SessionStreamEvent =
+  | { type: 'open' }
+  | { type: 'error' }
+  | { type: 'session_update'; session: Session }
+  | { type: 'activity_update' };
+
+type StreamEventHandler<T> = {
+  eventType: string;
+  handler: (event: Event, observer: Observer<T>) => void;
+};
+
+@Injectable({ providedIn: 'root' })
+export class JulesStreamService {
+  private readonly authTokenService = inject(AuthTokenService);
+  private readonly julesService = inject(JulesService);
+  private readonly platformId = inject(PLATFORM_ID);
+
+  /**
+   * Create an SSE Observable with common event handling logic
+   * @param streamUrl - The SSE endpoint URL
+   * @param eventHandlers - Array of event type and handler pairs
+   * @returns Observable that emits stream events
+   */
+  private createEventSourceObservable<T>(
+    streamUrl: string,
+    eventHandlers: StreamEventHandler<T>[]
+  ): Observable<T> {
+    return new Observable<T>(observer => {
+      const eventSource = new EventSource(streamUrl);
+      const listeners: Array<{ type: string; handler: EventListener }> = [];
+
+      const handleOpen = () => {
+        observer.next({ type: 'open' } as T);
+      };
+
+      const handleError = () => {
+        observer.next({ type: 'error' } as T);
+        observer.complete();
+        eventSource.close();
+      };
+
+      // Register open and error handlers
+      eventSource.addEventListener('open', handleOpen);
+      eventSource.addEventListener('error', handleError);
+      listeners.push({ type: 'open', handler: handleOpen });
+      listeners.push({ type: 'error', handler: handleError });
+
+      // Register custom event handlers
+      eventHandlers.forEach(({ eventType, handler }) => {
+        const wrappedHandler = (event: Event) => {
+          try {
+            handler(event, observer);
+          } catch (error) {
+            console.error(
+              `Failed to handle ${eventType} event:`,
+              error,
+              'Event data:',
+              (event as MessageEvent).data
+            );
+            observer.next({ type: 'error' } as T);
+          }
+        };
+        eventSource.addEventListener(eventType, wrappedHandler);
+        listeners.push({ type: eventType, handler: wrappedHandler });
+      });
+
+      return () => {
+        // Clean up all event listeners
+        listeners.forEach(({ type, handler }) => {
+          eventSource.removeEventListener(type, handler);
+        });
+        eventSource.close();
+      };
+    });
+  }
+
+  sessionsStream({
+    pollIntervalSeconds = 10,
+    lastUpdate
+  }: {
+    pollIntervalSeconds?: number;
+    lastUpdate?: string | null;
+  } = {}): Observable<SessionsStreamEvent> {
+    if (!isPlatformBrowser(this.platformId)) {
+      return EMPTY;
+    }
+
+    const token = this.authTokenService.getToken();
+    if (!token) {
+      return EMPTY;
+    }
+
+    const params = new URLSearchParams({
+      token,
+      poll_interval: pollIntervalSeconds.toString()
+    });
+
+    if (lastUpdate) {
+      params.set('last_update', lastUpdate);
+    }
+
+    const streamUrl = this.julesService.getSessionsEventStreamUrl(params);
+
+    return this.createEventSourceObservable<SessionsStreamEvent>(streamUrl, [
+      {
+        eventType: 'sessions_update',
+        handler: (event: Event, observer) => {
+          const data = JSON.parse((event as MessageEvent).data) as Session[];
+          observer.next({ type: 'sessions_update', sessions: data });
+        }
+      }
+    ]);
+  }
+
+  sessionStream(
+    sessionId: string,
+    { pollIntervalSeconds = 5 }: { pollIntervalSeconds?: number } = {}
+  ): Observable<SessionStreamEvent> {
+    if (!isPlatformBrowser(this.platformId)) {
+      return EMPTY;
+    }
+
+    const token = this.authTokenService.getToken();
+    if (!token) {
+      return EMPTY;
+    }
+
+    const params = new URLSearchParams({
+      token,
+      poll_interval: pollIntervalSeconds.toString()
+    });
+
+    const streamUrl = this.julesService.getSessionEventStreamUrl(sessionId, params);
+
+    return this.createEventSourceObservable<SessionStreamEvent>(streamUrl, [
+      {
+        eventType: 'session_update',
+        handler: (event: Event, observer) => {
+          const data = JSON.parse((event as MessageEvent).data) as Session;
+          observer.next({ type: 'session_update', session: data });
+        }
+      },
+      {
+        eventType: 'activity_update',
+        handler: (event: Event, observer) => {
+          observer.next({ type: 'activity_update' });
+        }
+      }
+    ]);
+  }
+}
