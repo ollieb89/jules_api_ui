@@ -18,6 +18,7 @@ from .serializers import (
     SendMessageSerializer,
     SessionCreateSerializer,
     SessionSerializer,
+    SyncStatusSerializer,
     SourceSerializer,
 )
 from .authentication import QueryParamJWTAuthentication
@@ -30,6 +31,7 @@ from .store import (
     is_activities_cache_fresh,
     is_session_fresh,
     is_sessions_cache_fresh,
+    get_sync_status,
     mark_activities_synced,
     mark_sessions_synced,
     normalize_session_name,
@@ -583,3 +585,55 @@ class SettingsViewSet(JulesAuthenticatedViewSet):
                 },
                 status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
+
+
+class SyncStatusViewSet(JulesAuthenticatedViewSet):
+    """ViewSet for background sync status."""
+
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request):  # noqa: ARG002
+        """Return the latest background sync status."""
+        status_payload = get_sync_status()
+        serializer = SyncStatusSerializer(data=status_payload)
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.data)
+
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="events",
+        authentication_classes=[SessionAuthentication, JWTAuthentication, QueryParamJWTAuthentication],
+    )
+    def events(self, request):
+        """Stream background sync status updates via SSE."""
+        poll_interval = float(request.query_params.get("poll_interval", 5))
+        last_update = request.query_params.get("last_update")
+
+        def event_stream():
+            nonlocal last_update
+            while True:
+                try:
+                    status_payload = get_sync_status()
+                    updated_at = status_payload.get("updated_at")
+                    if updated_at and updated_at != last_update:
+                        serializer = SyncStatusSerializer(data=status_payload)
+                        serializer.is_valid(raise_exception=True)
+                        yield "event: sync_status\n"
+                        yield f"data: {json.dumps(serializer.data)}\n\n"
+                        last_update = updated_at
+
+                    yield "event: heartbeat\n"
+                    yield "data: {}\n\n"
+                except Exception as e:
+                    error_payload = {"message": str(e)}
+                    yield "event: error\n"
+                    yield f"data: {json.dumps(error_payload)}\n\n"
+                    break
+
+                time.sleep(poll_interval)
+
+        response = StreamingHttpResponse(event_stream(), content_type="text/event-stream")
+        response["Cache-Control"] = "no-cache"
+        response["X-Accel-Buffering"] = "no"
+        return response
