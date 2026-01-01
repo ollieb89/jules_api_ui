@@ -13,6 +13,7 @@ describe('JulesStreamService', () => {
     getSessionEventStreamUrl: ReturnType<typeof vi.fn>;
   };
   let mockEventSource: any;
+  let OriginalEventSource: any;
 
   beforeEach(() => {
     // Mock AuthTokenService
@@ -33,8 +34,9 @@ describe('JulesStreamService', () => {
       close: vi.fn()
     };
 
-    // @ts-ignore
-    global.EventSource = vi.fn(() => mockEventSource);
+    // Store original EventSource and replace with mock
+    OriginalEventSource = (global as any).EventSource;
+    (global as any).EventSource = vi.fn(() => mockEventSource);
 
     TestBed.configureTestingModule({
       providers: [
@@ -50,18 +52,20 @@ describe('JulesStreamService', () => {
 
   afterEach(() => {
     vi.clearAllMocks();
+    // Restore original EventSource
+    if (OriginalEventSource) {
+      (global as any).EventSource = OriginalEventSource;
+    }
   });
 
   describe('sessionsStream', () => {
     it('should return EMPTY when not in browser platform', (done) => {
       // Create a new service instance with server platform
       const serverService = new JulesStreamService();
-      // @ts-ignore - accessing private property for testing
-      serverService['platformId'] = 'server';
-      // @ts-ignore
-      serverService['authTokenService'] = mockAuthTokenService;
-      // @ts-ignore
-      serverService['julesService'] = mockJulesService;
+      const servicePrivate = serverService as any;
+      servicePrivate.platformId = 'server';
+      servicePrivate.authTokenService = mockAuthTokenService;
+      servicePrivate.julesService = mockJulesService;
 
       const observable = serverService.sessionsStream();
       
@@ -223,12 +227,10 @@ describe('JulesStreamService', () => {
     it('should return EMPTY when not in browser platform', (done) => {
       // Create a new service instance with server platform
       const serverService = new JulesStreamService();
-      // @ts-ignore - accessing private property for testing
-      serverService['platformId'] = 'server';
-      // @ts-ignore
-      serverService['authTokenService'] = mockAuthTokenService;
-      // @ts-ignore
-      serverService['julesService'] = mockJulesService;
+      const servicePrivate = serverService as any;
+      servicePrivate.platformId = 'server';
+      servicePrivate.authTokenService = mockAuthTokenService;
+      servicePrivate.julesService = mockJulesService;
 
       const observable = serverService.sessionStream('test-session-id');
       

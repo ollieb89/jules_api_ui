@@ -1,6 +1,6 @@
 import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { Observable, EMPTY } from 'rxjs';
+import { Observable, EMPTY, Observer } from 'rxjs';
 import { AuthTokenService } from './auth-token.service';
 import { JulesService } from './jules.service';
 import { Session } from '../models/jules.model';
@@ -18,7 +18,7 @@ export type SessionStreamEvent =
 
 type StreamEventHandler<T> = {
   eventType: string;
-  handler: (event: Event, observer: any) => void;
+  handler: (event: Event, observer: Observer<T>) => void;
 };
 
 @Injectable({ providedIn: 'root' })
@@ -63,7 +63,12 @@ export class JulesStreamService {
           try {
             handler(event, observer);
           } catch (error) {
-            console.error(`Failed to handle ${eventType} event`, error);
+            console.error(
+              `Failed to handle ${eventType} event:`,
+              error,
+              'Event data:',
+              (event as MessageEvent).data
+            );
             observer.next({ type: 'error' } as T);
           }
         };
