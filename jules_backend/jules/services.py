@@ -18,22 +18,30 @@ class ApiRequestError(Exception):
         *,
         status_code: int | None = None,
         details: dict[str, Any] | None = None,
+        user_message: str | None = None,
+        retry_after: float | None = None,
     ) -> None:
         super().__init__(message)
         self.status_code = status_code
         self.details = details or {}
+        self.user_message = user_message or message
+        self.retry_after = retry_after
 
 
 class SharedHttpClient:
     """Shared HTTP client with retry, backoff, and timeout policies."""
 
-    RETRY_STATUS_CODES = {502, 503, 504}
-    MAX_RETRIES = 2
-    BACKOFF_SECONDS = 0.5
-    TIMEOUT_POLICIES = {
-        "default": httpx.Timeout(30.0, connect=5.0),
-        "long": httpx.Timeout(60.0, connect=10.0),
-    }
+    RETRY_STATUS_CODES = set(getattr(settings, "JULES_API_RETRY_STATUS_CODES", {429, 502, 503, 504}))
+    MAX_RETRIES = int(getattr(settings, "JULES_API_MAX_RETRIES", 2))
+    BACKOFF_SECONDS = float(getattr(settings, "JULES_API_BACKOFF_SECONDS", 0.5))
+    TIMEOUT_POLICIES = getattr(
+        settings,
+        "JULES_API_TIMEOUT_POLICIES",
+        {
+            "default": httpx.Timeout(30.0, connect=5.0),
+            "long": httpx.Timeout(60.0, connect=10.0),
+        },
+    )
 
     def __init__(self, headers: dict[str, str]) -> None:
         self._client = httpx.Client(headers=headers)
@@ -70,7 +78,7 @@ class SharedHttpClient:
                 if status_code in self.RETRY_STATUS_CODES and attempt < self.MAX_RETRIES:
                     self._sleep_backoff(attempt, url, status_code)
                     continue
-                raise self._map_http_status_error(exc) from exc
+                raise self._map_http_status_error(exc, attempt) from exc
             except httpx.RequestError as exc:
                 if attempt < self.MAX_RETRIES:
                     self._sleep_backoff(attempt, url, None)
@@ -78,13 +86,24 @@ class SharedHttpClient:
                 raise ApiRequestError(
                     "Upstream request failed.",
                     status_code=503,
-                    details={"error_type": exc.__class__.__name__, "url": str(exc.request.url)},
+                    details={
+                        "error_type": exc.__class__.__name__,
+                        "url": str(exc.request.url),
+                        "retryable": True,
+                    },
+                    user_message="Upstream service is unavailable. Please try again shortly.",
+                    retry_after=self._calculate_backoff(attempt),
                 ) from exc
 
-        raise ApiRequestError("Upstream request failed.", status_code=503)
+        raise ApiRequestError(
+            "Upstream request failed.",
+            status_code=503,
+            user_message="Upstream service is unavailable. Please try again shortly.",
+            retry_after=self._calculate_backoff(self.MAX_RETRIES),
+        )
 
     def _sleep_backoff(self, attempt: int, url: str, status_code: int | None) -> None:
-        delay = self.BACKOFF_SECONDS * (2**attempt)
+        delay = self._calculate_backoff(attempt)
         logger.warning(
             "Retrying Jules API request",
             extra={
@@ -96,9 +115,26 @@ class SharedHttpClient:
         )
         time.sleep(delay)
 
-    def _map_http_status_error(self, exc: httpx.HTTPStatusError) -> ApiRequestError:
+    def _calculate_backoff(self, attempt: int) -> float:
+        return self.BACKOFF_SECONDS * (2**attempt)
+
+    def _parse_retry_after(self, response: httpx.Response) -> float | None:
+        retry_after = response.headers.get("Retry-After")
+        if not retry_after:
+            return None
+        try:
+            return float(retry_after)
+        except ValueError:
+            return None
+
+    def _map_http_status_error(
+        self,
+        exc: httpx.HTTPStatusError,
+        attempt: int,
+    ) -> ApiRequestError:
         response = exc.response
         message = response.text.strip() or response.reason_phrase
+        retry_after = self._parse_retry_after(response)
         details: dict[str, Any] = {"upstream_status": response.status_code}
 
         try:
@@ -117,7 +153,20 @@ class SharedHttpClient:
                 message = payload.get("message", message)
                 details["error_payload"] = payload
 
-        return ApiRequestError(message, status_code=response.status_code, details=details)
+        if response.status_code in self.RETRY_STATUS_CODES:
+            details["retryable"] = True
+            details["retry_after_seconds"] = retry_after or self._calculate_backoff(attempt)
+            user_message = "Upstream service is busy. Please retry shortly."
+        else:
+            user_message = message
+
+        return ApiRequestError(
+            message,
+            status_code=response.status_code,
+            details=details,
+            user_message=user_message,
+            retry_after=details.get("retry_after_seconds"),
+        )
 
     def close(self) -> None:
         self._client.close()
