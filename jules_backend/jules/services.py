@@ -1,3 +1,4 @@
+import atexit
 import logging
 import time
 from typing import Any, Mapping
@@ -8,6 +9,26 @@ from django.conf import settings
 from .utils import get_correlation_id, log_jules_api_call
 
 logger = logging.getLogger(__name__)
+
+_shared_httpx_client: httpx.Client | None = None
+
+
+def get_shared_httpx_client() -> httpx.Client:
+    global _shared_httpx_client
+    if _shared_httpx_client is None:
+        _shared_httpx_client = httpx.Client()
+    return _shared_httpx_client
+
+
+def close_shared_httpx_client() -> None:
+    global _shared_httpx_client
+    if _shared_httpx_client is None:
+        return
+    _shared_httpx_client.close()
+    _shared_httpx_client = None
+
+
+atexit.register(close_shared_httpx_client)
 
 
 class ApiRequestError(Exception):
@@ -47,7 +68,8 @@ class SharedHttpClient:
     )
 
     def __init__(self, headers: dict[str, str]) -> None:
-        self._client = httpx.Client(headers=headers)
+        self._client = get_shared_httpx_client()
+        self._default_headers = headers
 
     def request(
         self,
@@ -61,6 +83,7 @@ class SharedHttpClient:
         headers: dict[str, str] | None = None,
     ) -> httpx.Response:
         timeout = self._resolve_timeout(timeout_policy)
+        request_headers = {**self._default_headers, **(headers or {})}
 
         for attempt in range(self.MAX_RETRIES + 1):
             start_time = time.monotonic()
@@ -71,7 +94,7 @@ class SharedHttpClient:
                     json=json,
                     params=params,
                     data=data,
-                    headers=headers,
+                    headers=request_headers,
                     timeout=timeout,
                 )
 
@@ -238,7 +261,7 @@ class SharedHttpClient:
         )
 
     def close(self) -> None:
-        self._client.close()
+        close_shared_httpx_client()
 
 
 class JulesApiClient:

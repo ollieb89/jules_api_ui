@@ -4,11 +4,14 @@ from contextvars import ContextVar, Token
 from typing import Any
 
 from django.conf import settings
+import httpx
 from rest_framework import status
 from rest_framework.exceptions import Throttled
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import exception_handler as drf_exception_handler
+
+from .services import ApiRequestError
 
 logger = logging.getLogger(__name__)
 
@@ -59,6 +62,22 @@ def log_jules_api_call(
     logger.info("Jules API request metadata", extra=log_extra)
 
 
+def _extract_upstream_error(response: httpx.Response) -> dict[str, Any]:
+    try:
+        payload = response.json()
+        if isinstance(payload, dict):
+            return payload
+        return {"detail": payload}
+    except (ValueError, json.JSONDecodeError, httpx.ResponseNotRead):
+        try:
+            text = response.text
+        except httpx.ResponseNotRead:
+            text = None
+        if not text:
+            return {"detail": "Upstream service error."}
+        return {"detail": text}
+
+
 def handle_api_exception(e: Exception, request: Request | None = None) -> Response:
     """
     Log the exception and return a secure error response.
@@ -68,8 +87,32 @@ def handle_api_exception(e: Exception, request: Request | None = None) -> Respon
     correlation_id = get_correlation_id(request)
     status_code = getattr(e, "status_code", None)
     details = getattr(e, "details", None)
-    if status_code is None and isinstance(details, dict):
-        status_code = details.get("upstream_status")
+    error_detail: dict[str, Any] | None = None
+    message: str | None = None
+
+    if isinstance(e, httpx.HTTPStatusError):
+        status_code = e.response.status_code
+        error_detail = _extract_upstream_error(e.response)
+        message = "Upstream service error"
+    elif isinstance(e, httpx.TimeoutException):
+        status_code = status.HTTP_504_GATEWAY_TIMEOUT
+        error_detail = {"detail": str(e)}
+        message = "Upstream request timed out"
+    elif isinstance(e, httpx.RequestError):
+        status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+        error_detail = {"detail": str(e)}
+        message = "Upstream request failed"
+    elif isinstance(e, ApiRequestError):
+        if status_code is None and isinstance(details, dict):
+            status_code = details.get("upstream_status")
+        if details:
+            error_detail = details
+        message = getattr(e, "user_message", None) or str(e)
+    elif isinstance(e, Throttled):
+        status_code = e.status_code
+        error_detail = {"detail": str(e)}
+        message = str(e) or "Request rate limit exceeded. Please retry shortly."
+
     if status_code is None:
         status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
 
@@ -84,28 +127,32 @@ def handle_api_exception(e: Exception, request: Request | None = None) -> Respon
     retry_after = getattr(e, "retry_after", None)
     user_message = getattr(e, "user_message", None)
 
-    if isinstance(e, Throttled):
-        retry_after = e.wait
-        user_message = str(e) or "Request rate limit exceeded. Please retry shortly."
-
     if settings.DEBUG:
-        error_msg = str(e)
+        error_msg = str(e) if message is None else message
     else:
-        if user_message:
+        if message:
+            error_msg = message
+        elif user_message:
             error_msg = user_message
         elif status_code and 400 <= status_code < 500:
             error_msg = str(e)
         else:
             error_msg = "An internal server error occurred."
 
-    payload: dict[str, Any] = {"error": error_msg}
+    payload: dict[str, Any] = {"error": {"message": error_msg}}
     if correlation_id:
         payload["correlation_id"] = correlation_id
     if retry_after is not None:
         payload["retry_after_seconds"] = retry_after
 
-    if details and settings.DEBUG:
-        payload["details"] = details
+    if isinstance(e, Throttled):
+        retry_after = e.wait
+        payload["retry_after_seconds"] = retry_after
+
+    if error_detail is not None:
+        payload["error"]["detail"] = error_detail
+    elif details and settings.DEBUG:
+        payload["error"]["detail"] = details
 
     return Response(payload, status=status_code)
 
