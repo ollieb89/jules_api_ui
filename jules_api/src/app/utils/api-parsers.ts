@@ -106,7 +106,8 @@ const parseStep = (value: unknown): Step => {
   }
 
   const stateValue = value['state'];
-  if (!isString(stateValue) || !stepStates.has(stateValue as StepState)) {
+  const state = stateValue === undefined || stateValue === null ? 'STATE_UNSPECIFIED' : stateValue;
+  if (!isString(state) || !stepStates.has(state as StepState)) {
     throw new Error('step.state must be a valid state string.');
   }
 
@@ -115,7 +116,7 @@ const parseStep = (value: unknown): Step => {
     index: asOptionalNumber(value['index'], 'step.index') ?? null,
     title: asNullableString(value['title'], 'step.title') ?? undefined,
     description: asNullableString(value['description'], 'step.description') ?? undefined,
-    state: stateValue as StepState,
+    state: state as StepState,
     artifacts: value['artifacts'] ? asArray(value['artifacts'], 'step.artifacts', parseArtifact) : null
   };
 };
@@ -127,14 +128,15 @@ const parsePlan = (value: unknown): Plan => {
 
   const steps = value['steps'] ? asArray(value['steps'], 'plan.steps', parseStep) : [];
   const stateValue = value['state'];
+  const state = stateValue === undefined || stateValue === null ? 'STATE_UNSPECIFIED' : stateValue;
 
-  if (!isString(stateValue) || !planStates.has(stateValue as PlanState)) {
+  if (!isString(state) || !planStates.has(state as PlanState)) {
     throw new Error('plan.state must be a valid state string.');
   }
 
   return {
     steps,
-    state: stateValue as PlanState
+    state: state as PlanState
   };
 };
 
@@ -176,14 +178,15 @@ const parseSession = (value: unknown): Session => {
   }
 
   const stateValue = value['state'];
-  if (!isString(stateValue) || !sessionStates.has(stateValue as SessionState)) {
+  const state = stateValue === undefined || stateValue === null ? 'STATE_UNSPECIFIED' : stateValue;
+  if (!isString(state) || !sessionStates.has(state as SessionState)) {
     throw new Error('session.state must be a valid state string.');
   }
 
   return {
     name: asString(value['name'], 'session.name'),
     display_name: asString(value['display_name'], 'session.display_name'),
-    state: stateValue as SessionState,
+    state: state as SessionState,
     prompt: asString(value['prompt'], 'session.prompt'),
     source: asString(value['source'], 'session.source'),
     create_time: asString(value['create_time'], 'session.create_time'),
