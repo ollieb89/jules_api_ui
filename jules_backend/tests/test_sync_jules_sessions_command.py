@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import Mock, patch, MagicMock
 from io import StringIO
 from django.core.management import call_command
-from jules.models import JulesSession, JulesActivity
+from jules.models import JulesSession
 
 
 @pytest.mark.django_db
