@@ -5,6 +5,22 @@ import { JulesApiError } from '../models/jules.model';
 
 @Injectable({ providedIn: 'root' })
 export class ApiErrorService {
+  normalizeError(error: unknown): JulesApiError {
+    if (error instanceof HttpErrorResponse) {
+      return this.createJulesApiError(error);
+    }
+
+    if (this.isJulesApiError(error)) {
+      return error;
+    }
+
+    if (error instanceof Error) {
+      return { error: error.message };
+    }
+
+    return { error: 'An unknown error occurred' };
+  }
+
   createJulesApiError(error: HttpErrorResponse): JulesApiError {
     let errorMessage = 'An unknown error occurred';
     let fieldErrors: ApiError | null = null;
@@ -39,5 +55,14 @@ export class ApiErrorService {
       error: errorMessage,
       fieldErrors: fieldErrors ?? undefined
     };
+  }
+
+  private isJulesApiError(error: unknown): error is JulesApiError {
+    return (
+      typeof error === 'object' &&
+      error !== null &&
+      'error' in error &&
+      typeof (error as { error?: unknown }).error === 'string'
+    );
   }
 }

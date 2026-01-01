@@ -1,10 +1,25 @@
-import { Component, Input, signal, ChangeDetectionStrategy, inject, computed, OnInit, ViewChild, AfterViewInit, OnChanges, SimpleChanges, output } from '@angular/core';
+import {
+  Component,
+  Input,
+  signal,
+  ChangeDetectionStrategy,
+  inject,
+  computed,
+  OnInit,
+  ViewChild,
+  AfterViewInit,
+  OnChanges,
+  SimpleChanges,
+  output
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatPaginatorModule, MatPaginator, PageEvent } from '@angular/material/paginator';
 import { JulesService } from '../../services/jules.service';
-import { Activity, Plan, PlanState } from '../../models/jules.model';
+import { Activity, JulesApiError, Plan, PlanState } from '../../models/jules.model';
 import { PlanApprovalComponent } from '../plan-approval/plan-approval.component';
+import { getApiErrorMessage } from '../../utils/api-error';
+import { getParserErrorMessage } from '../../utils/api-parsers';
 
 type ActivityOriginator = 'all' | 'agent' | 'user';
 
@@ -215,8 +230,8 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
           this.loading.set(false);
         }
       },
-      error: (err) => {
-        this.error.set(err.message || 'Failed to load activities');
+      error: (err: JulesApiError) => {
+        this.error.set(getApiErrorMessage(err, 'Failed to load activities'));
         this.planSnapshot.set(null);
         this.planStateChange.emit(null);
         this.loading.set(false);
