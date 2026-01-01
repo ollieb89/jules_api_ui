@@ -76,11 +76,31 @@ class SessionSerializer(serializers.Serializer):
         return super().to_internal_value(data)
 
 
+CONTROL_CHAR_PATTERN = re.compile(r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]")
+
+
+def sanitize_text(value: str, field_name: str) -> str:
+    """Trim whitespace and strip control characters from text inputs."""
+    if not isinstance(value, str):
+        raise serializers.ValidationError(f"{field_name} must be a string.")
+
+    sanitized = CONTROL_CHAR_PATTERN.sub("", value.strip())
+    if not sanitized:
+        raise serializers.ValidationError(f"{field_name} cannot be blank.")
+    return sanitized
+
+
 class SessionCreateSerializer(serializers.Serializer):
     """Serializer for creating a new session."""
 
-    prompt = serializers.CharField(required=True)
-    source = serializers.CharField(required=True)
+    prompt = serializers.CharField(required=True, max_length=4000)
+    source = serializers.CharField(required=True, max_length=255)
+
+    def validate_prompt(self, value: str) -> str:
+        return sanitize_text(value, "prompt")
+
+    def validate_source(self, value: str) -> str:
+        return sanitize_text(value, "source")
 
 
 class ArtifactSerializer(serializers.Serializer):
@@ -333,7 +353,10 @@ class ApprovePlanSerializer(serializers.Serializer):
 class SendMessageSerializer(serializers.Serializer):
     """Serializer for sending a message to the agent."""
 
-    message = serializers.CharField(required=True)
+    message = serializers.CharField(required=True, max_length=4000)
+
+    def validate_message(self, value: str) -> str:
+        return sanitize_text(value, "message")
 
 
 class JulesSettingsSerializer(serializers.Serializer):
