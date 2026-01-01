@@ -14,6 +14,9 @@ ACTIVITY_SYNC_TTL_SECONDS = 30
 
 SESSION_SYNC_CACHE_KEY = "jules:sessions:last_sync"
 ACTIVITY_SYNC_CACHE_KEY_TEMPLATE = "jules:sessions:{session_id}:activities:last_sync"
+SYNC_STATUS_CACHE_KEY = "jules:sync:status"
+
+SYNC_STATUS_TTL_SECONDS = 3600
 
 
 def normalize_session_name(session_id: str) -> str:
@@ -38,6 +41,84 @@ def is_activities_cache_fresh(session_id: str) -> bool:
 def mark_activities_synced(session_id: str) -> None:
     cache_key = ACTIVITY_SYNC_CACHE_KEY_TEMPLATE.format(session_id=session_id)
     cache.set(cache_key, timezone.now().isoformat(), ACTIVITY_SYNC_TTL_SECONDS)
+
+
+def _default_sync_status() -> dict[str, Any]:
+    return {
+        "state": "idle",
+        "started_at": None,
+        "finished_at": None,
+        "sessions": 0,
+        "new_activities": 0,
+        "skipped": False,
+        "error": None,
+        "updated_at": None,
+    }
+
+
+def get_sync_status() -> dict[str, Any]:
+    cached = cache.get(SYNC_STATUS_CACHE_KEY)
+    if cached:
+        return cached
+    return _default_sync_status()
+
+
+def _set_sync_status(payload: dict[str, Any]) -> dict[str, Any]:
+    cache.set(SYNC_STATUS_CACHE_KEY, payload, SYNC_STATUS_TTL_SECONDS)
+    return payload
+
+
+def mark_sync_running() -> dict[str, Any]:
+    now = timezone.now().isoformat()
+    status = _default_sync_status()
+    status.update(
+        {
+            "state": "running",
+            "started_at": now,
+            "updated_at": now,
+        }
+    )
+    return _set_sync_status(status)
+
+
+def mark_sync_complete(
+    sessions: int,
+    new_activities: int,
+    skipped: bool = False,
+) -> dict[str, Any]:
+    now = timezone.now().isoformat()
+    status = get_sync_status()
+    started_at = status.get("started_at")
+    status = _default_sync_status()
+    status.update(
+        {
+            "state": "completed" if not skipped else "skipped",
+            "started_at": started_at,
+            "finished_at": now,
+            "sessions": sessions,
+            "new_activities": new_activities,
+            "skipped": skipped,
+            "updated_at": now,
+        }
+    )
+    return _set_sync_status(status)
+
+
+def mark_sync_failed(error: str) -> dict[str, Any]:
+    now = timezone.now().isoformat()
+    status = get_sync_status()
+    started_at = status.get("started_at")
+    status = _default_sync_status()
+    status.update(
+        {
+            "state": "error",
+            "started_at": started_at,
+            "finished_at": now,
+            "error": error,
+            "updated_at": now,
+        }
+    )
+    return _set_sync_status(status)
 
 
 def is_session_fresh(session: JulesSession) -> bool:

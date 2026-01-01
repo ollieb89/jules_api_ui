@@ -5,6 +5,7 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from jules.models import JulesSettings
+from jules.store import mark_sync_running
 
 
 @pytest.fixture
@@ -208,6 +209,18 @@ def test_settings_test_connection_success(api_client, monkeypatch):
     assert payload["status"] == "success"
     assert payload["api_key_configured"] is True
     assert payload["sources_count"] == 1
+
+
+def test_sync_status_list(api_client):
+    mark_sync_running()
+
+    response = api_client.get("/api/jules/sync/")
+
+    assert response.status_code == status.HTTP_200_OK
+    payload = response.json()
+    assert payload["state"] == "running"
+    assert payload["sessions"] == 0
+    assert payload["new_activities"] == 0
 
 
 def test_settings_requires_authentication(anon_client, db):

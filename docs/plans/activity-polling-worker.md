@@ -8,6 +8,7 @@ expose a status stream endpoint the frontend can subscribe to.
 - Add Django-Q worker configuration and a scheduled polling task.
 - Cache sessions and activities in new Django models.
 - Provide a Server-Sent Events (SSE) endpoint for activity updates.
+- Provide a Server-Sent Events (SSE) endpoint for background sync status updates.
 - Document configuration for the worker and polling cadence.
 
 ## Non-goals

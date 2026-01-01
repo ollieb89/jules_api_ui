@@ -540,6 +540,19 @@ class ApiKeyUpdateSerializer(serializers.Serializer):
     )
 
 
+class SyncStatusSerializer(serializers.Serializer):
+    """Serializer for polling sync status payloads."""
+
+    state = serializers.CharField()
+    started_at = serializers.CharField(allow_null=True, required=False)
+    finished_at = serializers.CharField(allow_null=True, required=False)
+    sessions = serializers.IntegerField()
+    new_activities = serializers.IntegerField()
+    skipped = serializers.BooleanField()
+    error = serializers.CharField(allow_null=True, required=False)
+    updated_at = serializers.CharField(allow_null=True, required=False)
+
+
 class JulesActivitySerializer(serializers.ModelSerializer):
     """Serializer for cached Jules activities."""
 
