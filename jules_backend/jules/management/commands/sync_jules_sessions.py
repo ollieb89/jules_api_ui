@@ -6,7 +6,6 @@ import logging
 from jules.services import JulesApiClient
 from jules.sync import upsert_activities, upsert_session
 
-
 logger = logging.getLogger(__name__)
 
 
