@@ -195,6 +195,8 @@ CORS_ALLOW_HEADERS = [
 ]
 
 # Jules API Configuration
+JULES_API_BASE_URL = os.getenv("JULES_API_BASE_URL", "https://jules.googleapis.com")
+JULES_API_VERSION = os.getenv("JULES_API_VERSION", "v1alpha")
 JULES_API_KEY = os.getenv("JULES_API_KEY", "")
 
 Q_CLUSTER = {
