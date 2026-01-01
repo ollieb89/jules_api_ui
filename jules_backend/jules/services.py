@@ -1,5 +1,4 @@
 import logging
-import os
 import time
 from typing import Any, Mapping
 
@@ -256,7 +255,7 @@ class JulesApiClient:
             self.api_key = None
 
         if not self.api_key:
-            self.api_key = getattr(settings, "JULES_API_KEY", os.getenv("JULES_API_KEY"))
+            self.api_key = settings.JULES_API_KEY
 
         if not self.api_key:
             raise ValueError("JULES_API_KEY must be set in settings or environment")
