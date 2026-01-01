@@ -17,18 +17,18 @@ interface DiffLine {
   imports: [CommonModule, MatChipsModule, MatButtonModule, MatIconModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm">
+    <div class="bg-[var(--color-surface-primary)] border border-[var(--color-border-default)] rounded-lg p-4 shadow-sm">
       <div class="flex justify-between items-start mb-3">
         <div class="flex items-center gap-2">
-          <h3 class="text-lg font-semibold m-0 text-gray-900 dark:text-gray-100">{{ getActivityTitle() }}</h3>
+          <h3 class="text-lg font-semibold m-0 text-[var(--color-text-primary)]">{{ getActivityTitle() }}</h3>
           <mat-chip color="accent">
             {{ getOriginator() === 'agent' ? 'Agent' : 'User' }}
           </mat-chip>
         </div>
-        <span class="text-xs text-gray-500 dark:text-gray-400">{{ getFormattedTime() }}</span>
+        <span class="text-xs text-[var(--color-text-tertiary)]">{{ getFormattedTime() }}</span>
       </div>
       
-      <p class="text-sm text-gray-600 dark:text-gray-400 mb-3 leading-relaxed">{{ getDescription() }}</p>
+      <p class="text-sm text-[var(--color-text-secondary)] mb-3 leading-relaxed">{{ getDescription() }}</p>
       
       <!-- Plan Generated -->
       @if (activity().plan_generated) {
@@ -36,7 +36,7 @@ interface DiffLine {
           <button
             (click)="togglePlanExpanded()"
             type="button"
-            class="flex items-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300"
+            class="flex items-center gap-2 text-sm font-medium text-[var(--color-interactive-primary)] hover:text-[var(--color-interactive-primary-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
           >
             @if (planExpanded()) {
               ▼
@@ -47,9 +47,9 @@ interface DiffLine {
           </button>
           
           @if (planExpanded()) {
-            <ol class="list-decimal list-inside space-y-2 mt-3 pl-4 border-l-2 border-gray-200 dark:border-gray-700">
+            <ol class="list-decimal list-inside space-y-2 mt-3 pl-4 border-l-2 border-[var(--color-border-default)]">
               @for (step of activity()!.plan_generated!.plan.steps; track $index) {
-                <li class="text-base text-gray-900 dark:text-gray-100 leading-relaxed">
+                <li class="text-base text-[var(--color-text-primary)] leading-relaxed">
                   <span class="inline-block mr-2">{{ step.title || step.description || 'Step ' + ($index + 1) }}</span>
                   <mat-chip [color]="getStepStateColor(step.state)" class="!ml-2">
                     {{ getStepStateLabel(step.state) }}
@@ -71,7 +71,7 @@ interface DiffLine {
                   <button
                     (click)="toggleBashOutput($index)"
                     type="button"
-                    class="flex items-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300"
+                    class="flex items-center gap-2 text-sm font-medium text-[var(--color-interactive-primary)] hover:text-[var(--color-interactive-primary-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
                   >
                     @if (isBashOutputExpanded($index)) {
                       ▼
@@ -83,11 +83,11 @@ interface DiffLine {
                   
                   @if (isBashOutputExpanded($index)) {
                     <div class="mt-2 relative">
-                      <pre class="bg-gray-900 dark:bg-gray-950 text-green-400 p-4 rounded-lg overflow-x-auto text-xs font-mono max-h-96 overflow-y-auto">{{ artifact.bash_output }}</pre>
+                      <pre class="bg-[var(--color-background-tertiary)] text-[var(--color-success-300)] p-4 rounded-lg overflow-x-auto text-xs font-mono max-h-96 overflow-y-auto">{{ artifact.bash_output }}</pre>
                       <button
                         (click)="copyToClipboard(artifact.bash_output || '')"
                         type="button"
-                        class="absolute top-2 right-2 px-2 py-1 bg-gray-700 hover:bg-gray-600 text-white text-xs rounded transition-colors"
+                        class="absolute top-2 right-2 px-2 py-1 bg-[var(--color-background-tertiary)] hover:bg-[var(--color-background-secondary)] text-[var(--color-text-primary)] text-xs rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
                         title="Copy to clipboard"
                       >
                         📋 Copy
@@ -102,7 +102,7 @@ interface DiffLine {
                   <button
                     (click)="toggleDiffExpanded($index)"
                     type="button"
-                    class="flex items-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300"
+                    class="flex items-center gap-2 text-sm font-medium text-[var(--color-interactive-primary)] hover:text-[var(--color-interactive-primary-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
                   >
                     @if (isDiffExpanded($index)) {
                       ▼
@@ -126,7 +126,7 @@ interface DiffLine {
                       <button
                         (click)="copyToClipboard(artifact.git_patch || '')"
                         type="button"
-                        class="absolute top-2 right-2 px-2 py-1 bg-gray-700 hover:bg-gray-600 text-white text-xs rounded transition-colors"
+                        class="absolute top-2 right-2 px-2 py-1 bg-[var(--color-background-tertiary)] hover:bg-[var(--color-background-secondary)] text-[var(--color-text-primary)] text-xs rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
                         title="Copy to clipboard"
                       >
                         📋 Copy
@@ -142,8 +142,8 @@ interface DiffLine {
       
       <!-- Message (if we add message activity type in future) -->
       @if (activity().plan_approved || activity().session_completed) {
-        <div class="mt-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-          <p class="text-sm text-gray-700 dark:text-gray-300">
+        <div class="mt-3 p-3 bg-[var(--color-surface-secondary)] rounded-lg">
+          <p class="text-sm text-[var(--color-text-secondary)]">
             @if (activity().plan_approved) {
               Plan has been approved and execution can proceed.
             } @else if (activity().session_completed) {
@@ -211,9 +211,9 @@ export class ActivityCardComponent {
 
   getOriginatorBadgeClass(): string {
     if (this.getOriginator() === 'agent') {
-      return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200';
+      return 'bg-[var(--color-info-50)] text-[var(--color-info-800)]';
     }
-    return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200';
+    return 'bg-[var(--color-success-50)] text-[var(--color-success-800)]';
   }
 
   getFormattedTime(): string {
@@ -301,4 +301,3 @@ export class ActivityCardComponent {
     }
   }
 }
-

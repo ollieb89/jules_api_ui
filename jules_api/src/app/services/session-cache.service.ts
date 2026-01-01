@@ -1,10 +1,15 @@
-import { Injectable, signal, computed, inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { Observable, Subscription, tap, timer } from 'rxjs';
 import { JulesService } from './jules.service';
 import { SessionUtilsService } from './session-utils.service';
 import { AuthTokenService } from './auth-token.service';
+import { JulesStreamService } from './jules-stream.service';
 import { Session, SessionState } from '../models/jules.model';
+import {
+  getParserErrorMessage,
+  parseSessionsList,
+  parseSessionsResponse
+} from '../utils/api-parsers';
 
 export interface SessionFilter {
   search?: string;
@@ -22,7 +27,7 @@ export class SessionCacheService {
   private readonly julesService = inject(JulesService);
   private readonly sessionUtils = inject(SessionUtilsService);
   private readonly authTokenService = inject(AuthTokenService);
-  private readonly platformId = inject(PLATFORM_ID);
+  private readonly streamService = inject(JulesStreamService);
   
   // Maximum number of sessions to fetch (configurable)
   private readonly MAX_SESSIONS = 1000;
@@ -135,8 +140,9 @@ export class SessionCacheService {
   readonly failedCount = computed(() => this.sessions().filter(session => session.state === 'FAILED').length);
 
   private autoRefreshSubscription: Subscription | null = null;
-  private eventSource: EventSource | null = null;
+  private streamSubscription: Subscription | null = null;
   private lastSessionUpdateTime: string | null = null;
+  private streamConnected = signal<boolean>(false);
   
   /**
    * Load all sessions from the API (up to MAX_SESSIONS)
@@ -162,18 +168,25 @@ export class SessionCacheService {
       
       this.julesService.getSessions(100, token).subscribe({
         next: (response) => {
-          allSessions.push(...response.sessions);
-          
-          if (response.next_page_token && allSessions.length < this.MAX_SESSIONS) {
-            fetchPage(response.next_page_token);
-          } else {
-            this.updateSessions(allSessions);
+          try {
+            const parsed = parseSessionsResponse(response);
+            allSessions.push(...parsed.sessions);
+
+            if (parsed.next_page_token && allSessions.length < this.MAX_SESSIONS) {
+              fetchPage(parsed.next_page_token);
+            } else {
+              this.updateSessions(allSessions);
+              this.loading.set(false);
+              hasMore = false;
+            }
+          } catch (error) {
+            this.error.set(getParserErrorMessage(error, 'Invalid sessions response.'));
             this.loading.set(false);
             hasMore = false;
           }
         },
-        error: (err) => {
-          this.error.set(err.message || 'Failed to load sessions');
+        error: (err: JulesApiError) => {
+          this.error.set(getApiErrorMessage(err, 'Failed to load sessions'));
           this.loading.set(false);
         }
       });
@@ -190,50 +203,58 @@ export class SessionCacheService {
   }
 
   /**
-   * Start polling for session updates
+   * Start live SSE updates and fallback polling for session updates.
+   * This initiates SSE streaming and only falls back to polling when the stream is not connected.
+   * @param intervalMs - Polling interval in milliseconds (default: 60000ms / 1 minute)
    */
-  startAutoRefresh(intervalMs = 15000): void {
+  startAutoRefresh(intervalMs = 60000): void {
     this.startLiveUpdates();
     if (this.autoRefreshSubscription) {
       return;
     }
 
-    this.autoRefreshSubscription = timer(0, intervalMs).subscribe(() => {
-      this.loadAllSessions();
+    // Start timer with delay to allow stream to connect first
+    this.autoRefreshSubscription = timer(intervalMs, intervalMs).subscribe(() => {
+      if (!this.streamConnected()) {
+        this.loadAllSessions();
+      }
     });
   }
 
+  /**
+   * Start live SSE updates for session changes.
+   * Establishes a Server-Sent Events connection to receive real-time session updates.
+   * Updates the streamConnected signal to track connection state.
+   */
   startLiveUpdates(): void {
-    if (!isPlatformBrowser(this.platformId)) {
+    if (!this.authTokenService.getToken() || this.streamSubscription) {
       return;
     }
 
-    const token = this.authTokenService.getToken();
-    if (!token || this.eventSource) {
-      return;
-    }
-
-    const params = new URLSearchParams({
-      token,
-      poll_interval: this.ssePollIntervalSeconds.toString()
-    });
-
-    if (this.lastSessionUpdateTime) {
-      params.set('last_update', this.lastSessionUpdateTime);
-    }
-
-    const streamUrl = this.julesService.getSessionsEventStreamUrl(params);
-    this.eventSource = new EventSource(streamUrl);
-
-    this.eventSource.addEventListener('sessions_update', event => {
-      const data = JSON.parse((event as MessageEvent).data) as Session[];
-      this.updateSessions(data);
-    });
-
-    this.eventSource.addEventListener('error', () => {
-      this.eventSource?.close();
-      this.eventSource = null;
-    });
+    this.streamSubscription = this.streamService
+      .sessionsStream({
+        pollIntervalSeconds: this.ssePollIntervalSeconds,
+        lastUpdate: this.lastSessionUpdateTime
+      })
+      .subscribe({
+        next: event => {
+          if (event.type === 'open') {
+            this.streamConnected.set(true);
+            return;
+          }
+          if (event.type === 'error') {
+            this.streamConnected.set(false);
+            return;
+          }
+          if (event.type === 'sessions_update') {
+            this.updateSessions(event.sessions);
+          }
+        },
+        complete: () => {
+          this.streamConnected.set(false);
+          this.streamSubscription = null;
+        }
+      });
   }
 
   /**
@@ -242,8 +263,9 @@ export class SessionCacheService {
   stopAutoRefresh(): void {
     this.autoRefreshSubscription?.unsubscribe();
     this.autoRefreshSubscription = null;
-    this.eventSource?.close();
-    this.eventSource = null;
+    this.streamSubscription?.unsubscribe();
+    this.streamSubscription = null;
+    this.streamConnected.set(false);
   }
 
   /**

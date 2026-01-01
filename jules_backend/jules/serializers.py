@@ -8,9 +8,24 @@ from .models import JulesActivity
 class GitHubSourceMetadataSerializer(serializers.Serializer):
     """Serializer for GitHub source metadata."""
 
-    repository = serializers.CharField()
-    branch = serializers.CharField(required=False, allow_null=True)
-    commit = serializers.CharField(required=False, allow_null=True)
+    repository = serializers.CharField(
+        min_length=1,
+        error_messages={
+            "required": "Repository is required.",
+            "blank": "Repository cannot be blank.",
+            "min_length": "Repository must be at least 1 character.",
+        },
+    )
+    branch = serializers.CharField(
+        required=False,
+        allow_null=True,
+        error_messages={"blank": "Branch cannot be blank."},
+    )
+    commit = serializers.CharField(
+        required=False,
+        allow_null=True,
+        error_messages={"blank": "Commit cannot be blank."},
+    )
 
     def to_internal_value(self, data):
         """Handle camelCase from API."""
@@ -26,8 +41,23 @@ class GitHubSourceMetadataSerializer(serializers.Serializer):
 class SourceSerializer(serializers.Serializer):
     """Serializer for Source (GitHub repository)."""
 
-    name = serializers.CharField()
-    display_name = serializers.CharField(source="displayName")
+    name = serializers.CharField(
+        min_length=1,
+        error_messages={
+            "required": "Source name is required.",
+            "blank": "Source name cannot be blank.",
+            "min_length": "Source name must be at least 1 character.",
+        },
+    )
+    display_name = serializers.CharField(
+        source="displayName",
+        min_length=1,
+        error_messages={
+            "required": "Display name is required.",
+            "blank": "Display name cannot be blank.",
+            "min_length": "Display name must be at least 1 character.",
+        },
+    )
     github_metadata = GitHubSourceMetadataSerializer(
         source="githubMetadata", required=False, allow_null=True
     )
@@ -49,15 +79,64 @@ class SourceSerializer(serializers.Serializer):
 class SessionSerializer(serializers.Serializer):
     """Serializer for Session."""
 
-    name = serializers.CharField()
-    display_name = serializers.CharField(source="displayName")
-    state = serializers.ChoiceField(
-        choices=["STATE_UNSPECIFIED", "ACTIVE", "COMPLETED", "FAILED"]
+    name = serializers.CharField(
+        min_length=1,
+        error_messages={
+            "required": "Session name is required.",
+            "blank": "Session name cannot be blank.",
+            "min_length": "Session name must be at least 1 character.",
+        },
     )
-    prompt = serializers.CharField()
-    source = serializers.CharField()
-    create_time = serializers.CharField(source="createTime")
-    update_time = serializers.CharField(source="updateTime")
+    display_name = serializers.CharField(
+        source="displayName",
+        min_length=1,
+        error_messages={
+            "required": "Display name is required.",
+            "blank": "Display name cannot be blank.",
+            "min_length": "Display name must be at least 1 character.",
+        },
+    )
+    state = serializers.ChoiceField(
+        choices=["STATE_UNSPECIFIED", "ACTIVE", "COMPLETED", "FAILED"],
+        error_messages={
+            "required": "Session state is required.",
+            "invalid_choice": "Session state is invalid.",
+        },
+    )
+    prompt = serializers.CharField(
+        min_length=1,
+        error_messages={
+            "required": "Prompt is required.",
+            "blank": "Prompt cannot be blank.",
+            "min_length": "Prompt must be at least 1 character.",
+        },
+    )
+    source = serializers.CharField(
+        min_length=1,
+        error_messages={
+            "required": "Source is required.",
+            "blank": "Source cannot be blank.",
+            "min_length": "Source must be at least 1 character.",
+        },
+    )
+    create_time = serializers.CharField(
+        source="createTime",
+        min_length=1,
+        error_messages={
+            "required": "Create time is required.",
+            "blank": "Create time cannot be blank.",
+            "min_length": "Create time must be at least 1 character.",
+        },
+    )
+    update_time = serializers.CharField(
+        source="updateTime",
+        min_length=1,
+        error_messages={
+            "required": "Update time is required.",
+            "blank": "Update time cannot be blank.",
+            "min_length": "Update time must be at least 1 character.",
+        },
+    )
 
     def to_internal_value(self, data):
         """Handle camelCase from API response."""
@@ -93,27 +172,46 @@ def sanitize_text(value: str, field_name: str) -> str:
 class SessionCreateSerializer(serializers.Serializer):
     """Serializer for creating a new session."""
 
-    prompt = serializers.CharField(required=True, max_length=4000)
-    source = serializers.CharField(required=True, max_length=255)
-
-    def validate_prompt(self, value: str) -> str:
-        return sanitize_text(value, "prompt")
-
-    def validate_source(self, value: str) -> str:
-        return sanitize_text(value, "source")
+    prompt = serializers.CharField(
+        required=True,
+        min_length=1,
+        error_messages={
+            "required": "Prompt is required.",
+            "blank": "Prompt cannot be blank.",
+            "min_length": "Prompt must be at least 1 character.",
+        },
+    )
+    source = serializers.CharField(
+        required=True,
+        min_length=1,
+        error_messages={
+            "required": "Source is required.",
+            "blank": "Source cannot be blank.",
+            "min_length": "Source must be at least 1 character.",
+        },
+    )
 
 
 class ArtifactSerializer(serializers.Serializer):
     """Serializer for Artifact."""
 
     change_set = serializers.DictField(
-        source="changeSet", required=False, allow_null=True
+        source="changeSet",
+        required=False,
+        allow_null=True,
+        error_messages={"invalid": "Change set must be an object."},
     )
     bash_output = serializers.CharField(
-        source="bashOutput", required=False, allow_null=True
+        source="bashOutput",
+        required=False,
+        allow_null=True,
+        error_messages={"blank": "Bash output cannot be blank."},
     )
     git_patch = serializers.CharField(
-        source="gitPatch", required=False, allow_null=True
+        source="gitPatch",
+        required=False,
+        allow_null=True,
+        error_messages={"blank": "Git patch cannot be blank."},
     )
 
     def to_representation(self, instance):
@@ -130,16 +228,38 @@ class ArtifactSerializer(serializers.Serializer):
 class StepSerializer(serializers.Serializer):
     """Serializer for Step matching Jules API structure."""
 
-    id = serializers.CharField(required=False, allow_blank=True)
-    index = serializers.IntegerField(required=False, allow_null=True)
-    title = serializers.CharField(required=False, allow_blank=True)
-    description = serializers.CharField(required=False, allow_blank=True)
+    id = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        error_messages={"blank": "Step ID cannot be blank."},
+    )
+    index = serializers.IntegerField(
+        required=False,
+        allow_null=True,
+        error_messages={"invalid": "Step index must be an integer."},
+    )
+    title = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        error_messages={"blank": "Step title cannot be blank."},
+    )
+    description = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        error_messages={"blank": "Step description cannot be blank."},
+    )
     state = serializers.ChoiceField(
         choices=["STATE_UNSPECIFIED", "PENDING", "IN_PROGRESS", "COMPLETED", "FAILED"],
         required=False,
         allow_null=True,
+        error_messages={"invalid_choice": "Step state is invalid."},
     )
-    artifacts = ArtifactSerializer(many=True, required=False, allow_null=True)
+    artifacts = ArtifactSerializer(
+        many=True,
+        required=False,
+        allow_null=True,
+        error_messages={"invalid": "Artifacts must be a list of artifacts."},
+    )
 
     def to_internal_value(self, data):
         """Handle camelCase from API response and provide defaults for missing fields."""
@@ -199,11 +319,16 @@ class StepSerializer(serializers.Serializer):
 class PlanSerializer(serializers.Serializer):
     """Serializer for Plan."""
 
-    steps = StepSerializer(many=True, required=False)
+    steps = StepSerializer(
+        many=True,
+        required=False,
+        error_messages={"invalid": "Steps must be a list of step objects."},
+    )
     state = serializers.ChoiceField(
         choices=["STATE_UNSPECIFIED", "PENDING", "APPROVED", "REJECTED"],
         required=False,
         allow_null=True,
+        error_messages={"invalid_choice": "Plan state is invalid."},
     )
 
     def to_internal_value(self, data):
@@ -275,9 +400,22 @@ class PlanApprovedActivitySerializer(serializers.Serializer):
 class ProgressUpdatedActivitySerializer(serializers.Serializer):
     """Serializer for progressUpdated activity matching Jules API structure."""
 
-    title = serializers.CharField(required=False, allow_blank=True)
-    description = serializers.CharField(required=False, allow_blank=True)
-    artifacts = ArtifactSerializer(many=True, required=False, allow_null=True)
+    title = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        error_messages={"blank": "Progress title cannot be blank."},
+    )
+    description = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        error_messages={"blank": "Progress description cannot be blank."},
+    )
+    artifacts = ArtifactSerializer(
+        many=True,
+        required=False,
+        allow_null=True,
+        error_messages={"invalid": "Artifacts must be a list of artifacts."},
+    )
 
     def to_internal_value(self, data):
         """Handle camelCase from API response and provide defaults for missing fields."""
@@ -310,7 +448,14 @@ class SessionCompletedActivitySerializer(serializers.Serializer):
 class ActivitySerializer(serializers.Serializer):
     """Serializer for Activity."""
 
-    name = serializers.CharField()
+    name = serializers.CharField(
+        min_length=1,
+        error_messages={
+            "required": "Activity name is required.",
+            "blank": "Activity name cannot be blank.",
+            "min_length": "Activity name must be at least 1 character.",
+        },
+    )
     plan_generated = PlanGeneratedActivitySerializer(
         source="planGenerated", required=False, allow_null=True
     )
@@ -323,7 +468,15 @@ class ActivitySerializer(serializers.Serializer):
     session_completed = SessionCompletedActivitySerializer(
         source="sessionCompleted", required=False, allow_null=True
     )
-    create_time = serializers.CharField(source="createTime")
+    create_time = serializers.CharField(
+        source="createTime",
+        min_length=1,
+        error_messages={
+            "required": "Create time is required.",
+            "blank": "Create time cannot be blank.",
+            "min_length": "Create time must be at least 1 character.",
+        },
+    )
 
     def to_internal_value(self, data):
         """Handle camelCase from API response."""
@@ -353,10 +506,15 @@ class ApprovePlanSerializer(serializers.Serializer):
 class SendMessageSerializer(serializers.Serializer):
     """Serializer for sending a message to the agent."""
 
-    message = serializers.CharField(required=True, max_length=4000)
-
-    def validate_message(self, value: str) -> str:
-        return sanitize_text(value, "message")
+    message = serializers.CharField(
+        required=True,
+        min_length=1,
+        error_messages={
+            "required": "Message is required.",
+            "blank": "Message cannot be blank.",
+            "min_length": "Message must be at least 1 character.",
+        },
+    )
 
 
 class JulesSettingsSerializer(serializers.Serializer):
@@ -371,7 +529,15 @@ class JulesSettingsSerializer(serializers.Serializer):
 class ApiKeyUpdateSerializer(serializers.Serializer):
     """Serializer for updating API key."""
 
-    api_key = serializers.CharField(required=True, min_length=1)
+    api_key = serializers.CharField(
+        required=True,
+        min_length=1,
+        error_messages={
+            "required": "API key is required.",
+            "blank": "API key cannot be blank.",
+            "min_length": "API key must be at least 1 character.",
+        },
+    )
 
 
 class JulesActivitySerializer(serializers.ModelSerializer):

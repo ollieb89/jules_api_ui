@@ -1,15 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import {
-  ApiError,
-  HttpErrorWithFields,
-  normalizeApiError
-} from '../models/user.model';
+import { ApiError, normalizeApiError } from '../models/user.model';
 import { JulesApiError } from '../models/jules.model';
 
 @Injectable({ providedIn: 'root' })
 export class ApiErrorService {
-  createHttpError(error: HttpErrorResponse): HttpErrorWithFields {
+  createJulesApiError(error: HttpErrorResponse): JulesApiError {
     let errorMessage = 'An unknown error occurred';
     let fieldErrors: ApiError | null = null;
 
@@ -32,15 +28,16 @@ export class ApiErrorService {
     } else if (error.status >= 500) {
       const apiError = error.error as JulesApiError | undefined;
       errorMessage = apiError?.error || 'Server error. Please try again later.';
+    } else if (typeof error.error === 'object' && error.error) {
+      const apiError = error.error as JulesApiError;
+      errorMessage = apiError.error || errorMessage;
     } else {
       errorMessage = `Error: ${error.status} ${error.statusText}`;
     }
 
-    const customError = new Error(errorMessage) as HttpErrorWithFields;
-    if (fieldErrors) {
-      customError.fieldErrors = fieldErrors;
-    }
-
-    return customError;
+    return {
+      error: errorMessage,
+      fieldErrors: fieldErrors ?? undefined
+    };
   }
 }
