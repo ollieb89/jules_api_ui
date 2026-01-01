@@ -1,7 +1,8 @@
-import { Component, OnInit, OnDestroy, signal, ChangeDetectionStrategy, inject, computed, ViewChild, PLATFORM_ID } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Component, OnInit, OnDestroy, signal, ChangeDetectionStrategy, inject, computed, ViewChild } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Subscription } from 'rxjs';
 // @ts-ignore: ignore missing types for ngx-markdown
 import { MarkdownComponent } from 'ngx-markdown';
 import { JulesService } from '../../services/jules.service';
@@ -26,8 +27,7 @@ interface PRInfo {
 })
 export class SessionDetailComponent implements OnInit, OnDestroy {
   private julesService = inject(JulesService);
-  private authTokenService = inject(AuthTokenService);
-  private platformId = inject(PLATFORM_ID);
+  private streamService = inject(JulesStreamService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private fb = inject(FormBuilder);
@@ -49,7 +49,7 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
   // SSE connection state
   streamConnected = signal<boolean>(false);
 
-  private eventSource: EventSource | null = null;
+  private streamSubscription: Subscription | null = null;
 
   messageForm: FormGroup = this.fb.group({
     message: ['', [Validators.required, Validators.minLength(1)]]
@@ -84,8 +84,8 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.eventSource?.close();
-    this.eventSource = null;
+    this.streamSubscription?.unsubscribe();
+    this.streamSubscription = null;
   }
 
   loadSession(): void {
@@ -179,34 +179,35 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
   }
 
   private startLiveUpdates(): void {
-    if (!isPlatformBrowser(this.platformId)) {
+    if (this.streamSubscription) {
       return;
     }
 
-    const token = this.authTokenService.getToken();
-    if (!token || this.eventSource) {
-      return;
-    }
-
-    const params = new URLSearchParams({ token, poll_interval: '5' });
-    const streamUrl = this.julesService.getSessionEventStreamUrl(this.sessionId(), params);
-    this.eventSource = new EventSource(streamUrl);
-
-    this.eventSource.addEventListener('session_update', event => {
-      const data = JSON.parse((event as MessageEvent).data) as Session;
-      this.session.set(data);
-      this.streamConnected.set(true);
-    });
-
-    this.eventSource.addEventListener('activity_update', () => {
-      this.activityTimeline?.loadActivities(null);
-    });
-
-    this.eventSource.addEventListener('error', () => {
-      this.streamConnected.set(false);
-      this.eventSource?.close();
-      this.eventSource = null;
-    });
+    this.streamSubscription = this.streamService
+      .sessionStream(this.sessionId(), { pollIntervalSeconds: 5 })
+      .subscribe({
+        next: event => {
+          if (event.type === 'open') {
+            this.streamConnected.set(true);
+            return;
+          }
+          if (event.type === 'error') {
+            this.streamConnected.set(false);
+            return;
+          }
+          if (event.type === 'session_update') {
+            this.session.set(event.session);
+            return;
+          }
+          if (event.type === 'activity_update') {
+            this.activityTimeline?.loadActivities(null);
+          }
+        },
+        complete: () => {
+          this.streamConnected.set(false);
+          this.streamSubscription = null;
+        }
+      });
   }
 
   getStateLabel(state: SessionState): string {
