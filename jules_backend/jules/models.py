@@ -30,14 +30,20 @@ def get_api_key_fernet():
 
 
 @lru_cache(maxsize=1)
-def get_legacy_fernet():
-    """Get legacy Fernet instance using JULES_API_KEY_ENCRYPTION_KEY for fallback reads."""
-    if not settings.JULES_API_KEY_ENCRYPTION_KEY:
-        return None
+def get_legacy_fernets() -> list[Fernet]:
+    """Get legacy Fernet instances for fallback reads."""
+    secrets: list[str] = []
+    if settings.JULES_API_KEY_ENCRYPTION_KEY:
+        secrets.append(settings.JULES_API_KEY_ENCRYPTION_KEY)
+    if settings.SECRET_KEY and settings.SECRET_KEY not in secrets:
+        secrets.append(settings.SECRET_KEY)
 
-    key = hashlib.sha256(settings.JULES_API_KEY_ENCRYPTION_KEY.encode()).digest()
-    key_b64 = base64.urlsafe_b64encode(key)
-    return Fernet(key_b64)
+    fernets: list[Fernet] = []
+    for secret in secrets:
+        key = hashlib.sha256(secret.encode()).digest()
+        key_b64 = base64.urlsafe_b64encode(key)
+        fernets.append(Fernet(key_b64))
+    return fernets
 
 
 class JulesSettings(models.Model):
@@ -84,8 +90,7 @@ class JulesSettings(models.Model):
             decrypted = f.decrypt(self._encrypted_api_key.encode()).decode()
             return decrypted
         except Exception:
-            legacy_fernet = get_legacy_fernet()
-            if legacy_fernet:
+            for legacy_fernet in get_legacy_fernets():
                 try:
                     decrypted = legacy_fernet.decrypt(
                         self._encrypted_api_key.encode()
