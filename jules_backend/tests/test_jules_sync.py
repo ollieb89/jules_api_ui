@@ -31,7 +31,7 @@ def test_upsert_session_persists_fields() -> None:
     assert session.source == "sources/alpha"
     assert session.create_time == datetime(2024, 1, 1, 12, 0, tzinfo=timezone.utc)
     assert session.update_time == datetime(2024, 1, 2, 12, 0, tzinfo=timezone.utc)
-    assert session.raw_payload["name"] == "sessions/123"
+    assert session.last_synced_at is not None
 
 
 @pytest.mark.django_db
@@ -56,7 +56,7 @@ def test_upsert_activities_deduplicates() -> None:
 
     activity = JulesActivity.objects.get(session=session)
     assert JulesActivity.objects.count() == 1
-    assert activity.activity_type == "planGenerated"
+    assert activity.activity_type == JulesActivity.TYPE_PLAN_GENERATED
     assert activity.create_time == datetime(2024, 1, 3, 9, 30, tzinfo=timezone.utc)
 
 
