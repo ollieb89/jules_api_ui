@@ -7,6 +7,9 @@ from jules.services import JulesApiClient
 from jules.sync import upsert_activities, upsert_session
 
 
+logger = logging.getLogger(__name__)
+
+
 class Command(BaseCommand):
     help = "Sync Jules sessions and activities into the local database."
 
@@ -19,7 +22,6 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options) -> None:
-        logger = logging.getLogger(__name__)
         client = JulesApiClient()
         page_size = options["page_size"]
         page_token = None
