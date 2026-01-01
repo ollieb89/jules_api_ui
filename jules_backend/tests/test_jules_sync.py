@@ -1,5 +1,4 @@
 import pytest
-from datetime import datetime
 from django.utils import timezone
 from jules.models import JulesSession, JulesActivity
 from jules.sync import parse_api_datetime, upsert_session, detect_activity_type, upsert_activities
