@@ -26,7 +26,7 @@ export interface ApiError {
   [field: string]: string[];
 }
 
-export interface HttpErrorWithFields extends Error {
+export interface HttpErrorWithFields {
   fieldErrors?: ApiError;
 }
 

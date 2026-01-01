@@ -1,3 +1,5 @@
+import type { ApiError } from './user.model';
+
 // Source types
 export interface GitHubSourceMetadata {
   repository: string;
@@ -127,4 +129,5 @@ export interface TestConnectionResponse {
 // API Error types
 export interface JulesApiError {
   error: string;
+  fieldErrors?: ApiError;
 }
