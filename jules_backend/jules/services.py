@@ -6,6 +6,8 @@ from typing import Any
 import httpx
 from django.conf import settings
 
+from .utils import log_jules_api_call
+
 logger = logging.getLogger(__name__)
 
 
@@ -51,6 +53,7 @@ class SharedHttpClient:
 
         for attempt in range(self.MAX_RETRIES + 1):
             try:
+                start_time = time.monotonic()
                 response = self._client.request(
                     method,
                     url,
@@ -64,17 +67,38 @@ class SharedHttpClient:
                     continue
 
                 response.raise_for_status()
+                log_jules_api_call(
+                    method=method,
+                    url=url,
+                    status_code=response.status_code,
+                    duration_s=time.monotonic() - start_time,
+                    response_bytes=len(response.content),
+                )
                 return response
             except httpx.HTTPStatusError as exc:
                 status_code = exc.response.status_code
                 if status_code in self.RETRY_STATUS_CODES and attempt < self.MAX_RETRIES:
                     self._sleep_backoff(attempt, url, status_code)
                     continue
+                log_jules_api_call(
+                    method=method,
+                    url=url,
+                    status_code=status_code,
+                    duration_s=time.monotonic() - start_time,
+                    response_bytes=len(exc.response.content),
+                    error=exc.__class__.__name__,
+                )
                 raise self._map_http_status_error(exc) from exc
             except httpx.RequestError as exc:
                 if attempt < self.MAX_RETRIES:
                     self._sleep_backoff(attempt, url, None)
                     continue
+                log_jules_api_call(
+                    method=method,
+                    url=url,
+                    duration_s=time.monotonic() - start_time,
+                    error=exc.__class__.__name__,
+                )
                 raise ApiRequestError(
                     "Upstream request failed.",
                     status_code=503,
