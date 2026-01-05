@@ -9,9 +9,9 @@ from rest_framework import status
 from rest_framework.exceptions import Throttled
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.views import exception_handler as drf_exception_handler
+from rest_framework.views import exception_handler as default_drf_exception_handler
 
-from .services import ApiRequestError
+from .exceptions.api_error import ApiRequestError
 
 logger = logging.getLogger(__name__)
 
@@ -158,7 +158,7 @@ def handle_api_exception(e: Exception, request: Request | None = None) -> Respon
 
 
 def drf_exception_handler(exc: Exception, context: dict[str, Any] | None) -> Response | None:
-    response = drf_exception_handler(exc, context)
+    response = default_drf_exception_handler(exc, context)
     if response is None:
         return None
     if isinstance(exc, Throttled):
