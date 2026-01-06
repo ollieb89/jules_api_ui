@@ -5,7 +5,7 @@
       (click)="createUser()"
       type="button"
       aria-label="Add new user"
-      class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+      class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
     >
       Add User
     </button>
@@ -28,7 +28,7 @@
       (click)="loadUsers()"
       type="button"
       aria-label="Retry loading users"
-      class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+      class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2"
     >
       Retry
     </button>
@@ -39,7 +39,7 @@
         (click)="createUser()"
         type="button"
         aria-label="Add first user"
-        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
       >
         Add First User
       </button>
@@ -80,7 +80,7 @@
                   (click)="editUser(user.id)"
                   type="button"
                   [aria-label]="'Edit user ' + user.name"
-                  class="text-blue-600 hover:text-blue-900 mr-4 cursor-pointer"
+                  class="text-blue-600 hover:text-blue-900 mr-4 cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1"
                 >
                   Edit
                 </button>
@@ -88,7 +88,7 @@
                   (click)="deleteUser(user.id)"
                   type="button"
                   [aria-label]="'Delete user ' + user.name"
-                  class="text-red-600 hover:text-red-900 cursor-pointer"
+                  class="text-red-600 hover:text-red-900 cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-1"
                 >
                   Delete
                 </button>
