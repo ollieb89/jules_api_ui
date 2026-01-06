@@ -225,9 +225,6 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
           }
 
           this.loading.set(false);
-        } catch (error) {
-          this.error.set(getParserErrorMessage(error, 'Invalid activities response.'));
-          this.loading.set(false);
         }
       },
       error: (err: JulesApiError) => {

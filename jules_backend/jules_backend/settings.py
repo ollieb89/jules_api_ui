@@ -24,18 +24,47 @@ JULES_API_KEY_ENCRYPTION_KEY = os.getenv(
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
-TESTING = os.getenv("TESTING", "False").lower() == "true"
+TESTING = os.getenv("TESTING", "False").lower() == "true" or "pytest" in sys.modules
+
+# Security Headers
+if not DEBUG:
+    # Force HTTPS
+    # Use SECURE_SSL_REDIRECT = True in production, but we need to disable it for tests running without HTTPS
+    # or ensure tests override it.
+    if os.getenv("TESTING") != "true":
+        SECURE_SSL_REDIRECT = True
+    # Secure cookies
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    # HSTS settings
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    # Content type security
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    # Referrer policy
+    SECURE_REFERRER_POLICY = "same-origin"
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
 # Security settings
-if not DEBUG and not TESTING:
-    SECURE_SSL_REDIRECT = True
-    SECURE_HSTS_SECONDS = 31536000
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
+if not DEBUG:
+    # Set to True to avoid transmitting the session cookie over HTTP accidentally.
     SESSION_COOKIE_SECURE = True
+    # Set to True to avoid transmitting the CSRF cookie over HTTP accidentally.
     CSRF_COOKIE_SECURE = True
+    # Redirect all non-HTTPS requests to HTTPS.
+    SECURE_SSL_REDIRECT = not TESTING
+    # Trust the X-Forwarded-Proto header for SSL termination proxies
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    # HTTP Strict Transport Security (HSTS)
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+    SECURE_HSTS_PRELOAD = False
+else:
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+    SECURE_SSL_REDIRECT = False
 
 # Application definition
 INSTALLED_APPS = [
