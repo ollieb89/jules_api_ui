@@ -1,3 +1,5 @@
+from typing import Any
+
 
 class ApiRequestError(Exception):
     """Represents an error response from the Jules API or network layer."""
@@ -7,7 +9,7 @@ class ApiRequestError(Exception):
         message: str,
         *,
         status_code: int | None = None,
-        details: dict | None = None,
+        details: dict[str, Any] | None = None,
         user_message: str | None = None,
         retry_after: float | None = None,
     ) -> None:
