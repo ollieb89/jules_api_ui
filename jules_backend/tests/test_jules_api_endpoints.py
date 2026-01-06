@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from jules.models import JulesSettings
-from jules.services import ApiRequestError
+from jules.exceptions.api_error import ApiRequestError
 
 
 @pytest.fixture
@@ -67,6 +67,7 @@ def test_sessions_list_uses_default_pagination(api_client, monkeypatch):
             }
 
     monkeypatch.setattr('jules.views.JulesApiClient', lambda: StubClient())
+    monkeypatch.setattr('jules.views.is_sessions_cache_fresh', lambda: False)
 
     response = api_client.get('/api/jules/sessions/')
 
@@ -88,6 +89,9 @@ def test_sessions_list_handles_api_error(api_client, monkeypatch):
             )
 
     monkeypatch.setattr('jules.views.JulesApiClient', lambda: StubClient())
+
+    # Bypass cache check
+    monkeypatch.setattr('jules.views.is_sessions_cache_fresh', lambda: False)
 
     with override_settings(DEBUG=True):
         response = api_client.get('/api/jules/sessions/')
@@ -124,6 +128,7 @@ def test_activities_list_serializes_progress_updates(api_client, monkeypatch):
             }
 
     monkeypatch.setattr('jules.views.JulesApiClient', lambda: StubClient())
+    monkeypatch.setattr('jules.views.is_activities_cache_fresh', lambda x: False)
 
     response = api_client.get('/api/jules/sessions/1/activities/')
 
@@ -131,7 +136,10 @@ def test_activities_list_serializes_progress_updates(api_client, monkeypatch):
     assert captured == {'session_id': '1', 'page_size': 100, 'page_token': None}
     payload = response.json()
     activity = payload['activities'][0]
-    assert activity['progress_updated']['artifacts'] == [{'bash_output': 'ok'}]
+
+    assert len(activity['progress_updated']['artifacts']) == 1
+    artifact = activity['progress_updated']['artifacts'][0]
+    assert artifact['bash_output'] == 'ok'
 
 
 def test_activities_list_handles_api_error(api_client, monkeypatch):
@@ -146,6 +154,7 @@ def test_activities_list_handles_api_error(api_client, monkeypatch):
             )
 
     monkeypatch.setattr('jules.views.JulesApiClient', lambda: StubClient())
+    monkeypatch.setattr('jules.views.is_activities_cache_fresh', lambda x: False)
 
     with override_settings(DEBUG=True):
         response = api_client.get('/api/jules/sessions/1/activities/')

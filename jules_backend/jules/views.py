@@ -46,6 +46,7 @@ class JulesAuthenticatedViewSet(viewsets.ViewSet):
     """Base ViewSet that enforces JWT or session authentication."""
 
     authentication_classes = [SessionAuthentication, JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
 
 class SourceViewSet(JulesAuthenticatedViewSet):

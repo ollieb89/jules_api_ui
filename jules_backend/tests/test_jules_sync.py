@@ -66,7 +66,7 @@ def test_sync_command_persists_sessions_and_activities(monkeypatch) -> None:
         def __init__(self) -> None:
             self.calls = 0
 
-        def list_sessions(self, page_size: int, page_token: str | None = None) -> dict:
+        def list_sessions(self, page_size: int = 100, page_token: str | None = None) -> dict:
             if self.calls == 0:
                 self.calls += 1
                 return {
@@ -86,7 +86,7 @@ def test_sync_command_persists_sessions_and_activities(monkeypatch) -> None:
             return {"sessions": [], "nextPageToken": None}
 
         def list_activities(
-            self, session_id: str, page_size: int, page_token: str | None = None
+            self, session_id: str, page_size: int = 100, page_token: str | None = None
         ) -> dict:
             return {
                 "activities": [
@@ -99,9 +99,16 @@ def test_sync_command_persists_sessions_and_activities(monkeypatch) -> None:
                 "nextPageToken": None,
             }
 
-    monkeypatch.setattr(command_module, "JulesApiClient", StubClient)
+    # The command uses poll_sessions_and_activities from tasks.py
+    # and tasks.py imports JulesApiClient from services.py
+    monkeypatch.setattr("jules.tasks.JulesApiClient", StubClient)
 
-    call_command("sync_jules_sessions", page_size=50)
+    # We also need to monkeypatch is_sessions_cache_fresh and is_activities_cache_fresh
+    # or ensure they return false so the sync happens
+    monkeypatch.setattr("jules.tasks.is_sessions_cache_fresh", lambda: False)
+    monkeypatch.setattr("jules.tasks.is_activities_cache_fresh", lambda x: False)
+
+    call_command("sync_jules_sessions", interval=0)
 
     session = JulesSession.objects.get(name="sessions/789")
     assert session.display_name == "Session 789"
