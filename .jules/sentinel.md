@@ -1,14 +1,4 @@
-## 2024-05-22 - Insecure API Key Storage
-**Vulnerability:** API Keys in `JulesSettings` are stored using Base64 encoding instead of encryption.
-**Learning:** The codebase acknowledges this with a comment `# In production, use proper encryption`, but it presents a high risk if the database is compromised.
-**Prevention:** Use `fernet` or similar field-level encryption libraries for sensitive data fields.
-
-## 2024-05-22 - Mixed Framework Identity
-**Vulnerability:** The project uses both FastAPI and Django, but `pixi.toml` and `manage.py` suggest a migration to Django. This leads to confusion on which dependencies are active and which security middleware is applied.
-**Learning:** Legacy or transitional code can hide vulnerabilities if it's unclear what is actually running in production.
-**Prevention:** Clearly deprecate and remove unused frameworks/routes. Ensure documentation (`AGENTS.md`) matches the active deployment configuration.
-
-## 2025-05-24 - Missing Security Headers
-**Vulnerability:** `SECURE_SSL_REDIRECT`, `SESSION_COOKIE_SECURE`, `CSRF_COOKIE_SECURE`, and HSTS headers were missing in production (`DEBUG=False`).
-**Learning:** Default Django settings are insecure for production. Relying on defaults leaves the application vulnerable to MITM and cookie hijacking.
-**Prevention:** Explicitly configure security headers in `settings.py` for production environments. Added logic to disable `SECURE_SSL_REDIRECT` during testing (`TESTING=true`) to avoid 301 redirect loops in tests.
+## 2025-01-20 - Enforcing SECRET_KEY in Production
+**Vulnerability:** The application was configured to fallback to a known insecure `SECRET_KEY` (`django-insecure-change-this-in-production`) when `DJANGO_SECRET_KEY` was missing, even in production mode (`DEBUG=False`).
+**Learning:** Default fallbacks in `settings.py` for critical security values can silently mask configuration errors, leaving production deployments vulnerable if environment variables are accidentally omitted.
+**Prevention:** In `settings.py`, explicitly check for `DEBUG` or `TESTING` flags. If neither is true, raise `ImproperlyConfigured` when critical secrets are missing, forcing the deployment to fail securely (fail-fast) rather than running insecurely.
