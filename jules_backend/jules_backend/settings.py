@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 from urllib.parse import urlparse
 
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -15,24 +16,32 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = os.getenv("DEBUG", "False").lower() == "true"
+TESTING = os.getenv("TESTING", "False").lower() == "true" or "pytest" in sys.modules
+
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-change-this-in-production")
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
+
+if not SECRET_KEY:
+    if DEBUG or TESTING:
+        SECRET_KEY = "django-insecure-change-this-in-production"
+    else:
+        raise ImproperlyConfigured("The DJANGO_SECRET_KEY environment variable must be set in production.")
+
 JULES_ENCRYPTION_KEY = os.getenv("JULES_ENCRYPTION_KEY", SECRET_KEY)
 JULES_API_KEY_ENCRYPTION_KEY = os.getenv(
     "JULES_API_KEY_ENCRYPTION_KEY", JULES_ENCRYPTION_KEY
 )
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DEBUG", "False").lower() == "true"
-TESTING = os.getenv("TESTING", "False").lower() == "true" or "pytest" in sys.modules
 
 # Security Headers
 if not DEBUG:
     # Force HTTPS
     # Use SECURE_SSL_REDIRECT = True in production, but we need to disable it for tests running without HTTPS
     # or ensure tests override it.
-    if os.getenv("TESTING") != "true":
-        SECURE_SSL_REDIRECT = True
+    SECURE_SSL_REDIRECT = not TESTING
+    # Trust the X-Forwarded-Proto header for SSL termination proxies
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     # Secure cookies
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
@@ -44,27 +53,12 @@ if not DEBUG:
     SECURE_CONTENT_TYPE_NOSNIFF = True
     # Referrer policy
     SECURE_REFERRER_POLICY = "same-origin"
-
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
-
-# Security settings
-if not DEBUG:
-    # Set to True to avoid transmitting the session cookie over HTTP accidentally.
-    SESSION_COOKIE_SECURE = True
-    # Set to True to avoid transmitting the CSRF cookie over HTTP accidentally.
-    CSRF_COOKIE_SECURE = True
-    # Redirect all non-HTTPS requests to HTTPS.
-    SECURE_SSL_REDIRECT = not TESTING
-    # Trust the X-Forwarded-Proto header for SSL termination proxies
-    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-    # HTTP Strict Transport Security (HSTS)
-    SECURE_HSTS_SECONDS = 31536000  # 1 year
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = False
-    SECURE_HSTS_PRELOAD = False
 else:
     SESSION_COOKIE_SECURE = False
     CSRF_COOKIE_SECURE = False
     SECURE_SSL_REDIRECT = False
+
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
 # Application definition
 INSTALLED_APPS = [
