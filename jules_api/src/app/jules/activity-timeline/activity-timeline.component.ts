@@ -139,6 +139,9 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
   });
 
   ngOnInit(): void {
+    if (!this.showPagination) {
+      this.pageSize.set(100);
+    }
     this.loadActivities();
     this.previousSessionId = this.sessionId;
   }
@@ -174,56 +177,62 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
     this.loading.set(true);
     this.error.set(null);
 
+    if (!this.showPagination) {
+      this.loadAllActivities(null, []);
+      return;
+    }
+
     this.julesService.getActivities(this.sessionId, this.pageSize(), pageToken || null).subscribe({
       next: (response) => {
-        this.activities.set(response.activities);
-        this.currentPageActivities.set(response.activities);
-        const snapshot = this.derivePlanSnapshot(response.activities);
-        this.planSnapshot.set(snapshot);
-        this.planStateChange.emit(snapshot?.plan.state ?? null);
-        const nextToken = response.next_page_token || null;
-        this.nextPageToken.set(nextToken);
-        
-        const currentIndex = this.currentPageIndex();
-        const tokens = this.pageTokens();
-        const nexts = this.nextTokens();
-        
-        // Store the token used for this page and the next token from this page
-        if (tokens.length <= currentIndex) {
-          const newTokens = [...tokens];
-          const newNexts = [...nexts];
-          while (newTokens.length <= currentIndex) {
-            newTokens.push(null);
-            newNexts.push(null);
-          }
-          newTokens[currentIndex] = pageToken || null;
-          newNexts[currentIndex] = nextToken;
-          this.pageTokens.set(newTokens);
-          this.nextTokens.set(newNexts);
-        } else {
-          const newNexts = [...nexts];
-          newNexts[currentIndex] = nextToken;
-          this.nextTokens.set(newNexts);
-        }
-        
-        if (this.paginator) {
-          if (nextToken) {
-            this.paginator.length = 10000;
+        try {
+          this.activities.set(response.activities);
+          this.currentPageActivities.set(response.activities);
+          const snapshot = this.derivePlanSnapshot(response.activities);
+          this.planSnapshot.set(snapshot);
+          this.planStateChange.emit(snapshot?.plan.state ?? null);
+          const nextToken = response.next_page_token || null;
+          this.nextPageToken.set(nextToken);
+          
+          const currentIndex = this.currentPageIndex();
+          const tokens = this.pageTokens();
+          const nexts = this.nextTokens();
+          
+          // Store the token used for this page and the next token from this page
+          if (tokens.length <= currentIndex) {
+            const newTokens = [...tokens];
+            const newNexts = [...nexts];
+            while (newTokens.length <= currentIndex) {
+              newTokens.push(null);
+              newNexts.push(null);
+            }
+            newTokens[currentIndex] = pageToken || null;
+            newNexts[currentIndex] = nextToken;
+            this.pageTokens.set(newTokens);
+            this.nextTokens.set(newNexts);
           } else {
             const newNexts = [...nexts];
             newNexts[currentIndex] = nextToken;
             this.nextTokens.set(newNexts);
           }
-
+          
           if (this.paginator) {
             if (nextToken) {
               this.paginator.length = 10000;
             } else {
-              this.paginator.length = (currentIndex + 1) * this.pageSize();
+              const newNexts = [...nexts];
+              newNexts[currentIndex] = nextToken;
+              this.nextTokens.set(newNexts);
             }
-            this.paginator.pageIndex = currentIndex;
-          }
 
+            if (this.paginator) {
+              if (nextToken) {
+                this.paginator.length = 10000;
+              } else {
+                this.paginator.length = (currentIndex + 1) * this.pageSize();
+              }
+              this.paginator.pageIndex = currentIndex;
+            }
+          }
           this.loading.set(false);
         }
       },
@@ -316,27 +325,75 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
       return null;
     }
 
+    const planState = this.derivePlanState(basePlan.state, activities, latestPlanActivity);
     const plan: Plan = {
       ...basePlan,
-      state: basePlan.state || 'STATE_UNSPECIFIED',
+      state: planState,
       steps: basePlan.steps.map(step => ({ ...step }))
     };
-
-    const planApprovedAfter = activities.some(activity => {
-      if (!activity.plan_approved) {
-        return false;
-      }
-      return new Date(activity.create_time).getTime() >= new Date(latestPlanActivity.create_time).getTime();
-    });
-
-    if (planApprovedAfter && plan.state !== 'REJECTED') {
-      plan.state = 'APPROVED';
-    }
 
     return {
       plan,
       planGeneratedAt: latestPlanActivity.create_time
     };
+  }
+
+  private derivePlanState(
+    baseState: PlanState,
+    activities: Activity[],
+    latestPlanActivity: Activity
+  ): PlanState {
+    const latestPlanTime = new Date(latestPlanActivity.create_time).getTime();
+    const planApprovedAfter = activities.some(activity => {
+      if (!activity.plan_approved) {
+        return false;
+      }
+      return new Date(activity.create_time).getTime() >= latestPlanTime;
+    });
+
+    if (planApprovedAfter && baseState !== 'REJECTED') {
+      return 'APPROVED';
+    }
+
+    if (baseState === 'STATE_UNSPECIFIED') {
+      return 'PENDING';
+    }
+
+    return baseState;
+  }
+
+  private loadAllActivities(pageToken: string | null, collected: Activity[]): void {
+    this.julesService.getActivities(this.sessionId, this.pageSize(), pageToken || null).subscribe({
+      next: (response) => {
+        try {
+          const mergedActivities = [...collected, ...response.activities];
+          const nextToken = response.next_page_token || null;
+          if (nextToken) {
+            this.loadAllActivities(nextToken, mergedActivities);
+            return;
+          }
+          this.activities.set(mergedActivities);
+          this.currentPageActivities.set(mergedActivities);
+          const snapshot = this.derivePlanSnapshot(mergedActivities);
+          this.planSnapshot.set(snapshot);
+          this.planStateChange.emit(snapshot?.plan.state ?? null);
+          this.currentPageIndex.set(0);
+          this.pageTokens.set([]);
+          this.nextTokens.set([]);
+          this.nextPageToken.set(null);
+          this.loading.set(false);
+        } catch (error) {
+          this.error.set(getParserErrorMessage(error, 'Invalid activities response.'));
+          this.loading.set(false);
+        }
+      },
+      error: (err: JulesApiError) => {
+        this.error.set(getApiErrorMessage(err, 'Failed to load activities'));
+        this.planSnapshot.set(null);
+        this.planStateChange.emit(null);
+        this.loading.set(false);
+      }
+    });
   }
 
   private getPlanStateLabel(state: PlanState): string {

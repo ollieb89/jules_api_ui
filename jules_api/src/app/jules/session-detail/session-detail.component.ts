@@ -64,7 +64,8 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
 
   // Check if session has a pending plan
   hasPendingPlan = computed(() => {
-    return this.planStateFromActivities() === 'PENDING';
+    const state = this.planStateFromActivities();
+    return state === 'PENDING' || state === 'STATE_UNSPECIFIED';
   });
 
   ngOnInit(): void {
