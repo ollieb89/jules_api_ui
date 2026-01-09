@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SessionCreateComponent } from './session-create.component';
 import { JulesService } from '../../services/jules.service';
 import { Router } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
 describe('SessionCreateComponent', () => {
   let component: SessionCreateComponent;
@@ -71,5 +71,22 @@ describe('SessionCreateComponent', () => {
       source: 'sources/test-repo'
     });
     expect(router.navigate).toHaveBeenCalledWith(['/jules', 'abc123']);
+  });
+
+  it('should surface errors when session creation fails', () => {
+    julesService.createSession.and.returnValue(throwError(() => ({ error: 'Session failed' })));
+
+    fixture.detectChanges();
+
+    component.form.setValue({
+      source: 'sources/test-repo',
+      prompt: 'Test prompt for session',
+      automationMode: false
+    });
+
+    component.onSubmit();
+
+    expect(component.error()).toBe('Session failed');
+    expect(component.loading()).toBe(false);
   });
 });

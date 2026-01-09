@@ -233,7 +233,32 @@ def test_settings_requires_authentication(anon_client, db):
     assert response.status_code in [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN]
 
 
+def test_settings_actions_require_authentication(anon_client, db):
+    update_response = anon_client.post(
+        "/api/jules/settings/api-key/",
+        data={"api_key": "not-allowed"},
+        format="json",
+    )
+    test_response = anon_client.post("/api/jules/settings/test/")
+
+    assert update_response.status_code in [
+        status.HTTP_401_UNAUTHORIZED,
+        status.HTTP_403_FORBIDDEN,
+    ]
+    assert test_response.status_code in [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN]
+
+
 def test_sessions_require_authentication(anon_client, db):
     response = anon_client.get("/api/jules/sessions/")
+
+    assert response.status_code in [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN]
+
+
+def test_session_create_requires_authentication(anon_client, db):
+    response = anon_client.post(
+        "/api/jules/sessions/",
+        data={"prompt": "Hi", "source": "sources/1"},
+        format="json",
+    )
 
     assert response.status_code in [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN]

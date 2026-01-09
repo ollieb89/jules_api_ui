@@ -13,6 +13,7 @@ describe('JulesStreamService', () => {
     getSessionEventStreamUrl: ReturnType<typeof vi.fn>;
   };
   let mockEventSource: any;
+  let createdSources: any[];
   let OriginalEventSource: any;
 
   beforeEach(() => {
@@ -27,16 +28,19 @@ describe('JulesStreamService', () => {
       getSessionEventStreamUrl: vi.fn()
     };
 
-    // Mock EventSource
-    mockEventSource = {
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      close: vi.fn()
-    };
+    createdSources = [];
 
     // Store original EventSource and replace with mock
     OriginalEventSource = (global as any).EventSource;
-    (global as any).EventSource = vi.fn(() => mockEventSource);
+    (global as any).EventSource = vi.fn(() => {
+      const source = {
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        close: vi.fn()
+      };
+      createdSources.push(source);
+      return source;
+    });
 
     TestBed.configureTestingModule({
       providers: [
@@ -96,6 +100,7 @@ describe('JulesStreamService', () => {
       });
 
       const subscription = observable.subscribe();
+      mockEventSource = createdSources[0];
 
       expect(mockJulesService.getSessionsEventStreamUrl).toHaveBeenCalledWith(
         expect.any(URLSearchParams)
@@ -122,6 +127,7 @@ describe('JulesStreamService', () => {
           }
         }
       });
+      mockEventSource = createdSources[0];
 
       // Simulate EventSource open event
       const openHandler = mockEventSource.addEventListener.mock.calls.find(
@@ -156,6 +162,7 @@ describe('JulesStreamService', () => {
           }
         }
       });
+      mockEventSource = createdSources[0];
 
       // Simulate EventSource sessions_update event
       const updateHandler = mockEventSource.addEventListener.mock.calls.find(
@@ -177,6 +184,7 @@ describe('JulesStreamService', () => {
           }
         }
       });
+      mockEventSource = createdSources[0];
 
       // Simulate EventSource sessions_update event with invalid JSON
       const updateHandler = mockEventSource.addEventListener.mock.calls.find(
@@ -185,26 +193,26 @@ describe('JulesStreamService', () => {
       updateHandler({ data: 'invalid json' });
     });
 
-    it('should emit error event and close on EventSource error', (done) => {
+    it('should emit error event, close, and attempt reconnect on EventSource error', () => {
       mockAuthTokenService.getToken.mockReturnValue('test-token');
       mockJulesService.getSessionsEventStreamUrl.mockReturnValue('https://example.com/stream');
 
+      vi.useFakeTimers();
       const observable = service.sessionsStream();
 
-      observable.subscribe({
-        next: (event) => {
-          if (event.type === 'error') {
-            expect(mockEventSource.close).toHaveBeenCalled();
-          }
-        },
-        complete: () => done()
-      });
+      observable.subscribe();
+      mockEventSource = createdSources[0];
 
       // Simulate EventSource error event
       const errorHandler = mockEventSource.addEventListener.mock.calls.find(
         (call: any[]) => call[0] === 'error'
       )[1];
       errorHandler();
+
+      expect(mockEventSource.close).toHaveBeenCalled();
+      vi.runAllTimers();
+      expect(createdSources.length).toBeGreaterThan(1);
+      vi.useRealTimers();
     });
 
     it('should remove event listeners and close EventSource on unsubscribe', () => {
@@ -213,6 +221,7 @@ describe('JulesStreamService', () => {
 
       const observable = service.sessionsStream();
       const subscription = observable.subscribe();
+      mockEventSource = createdSources[0];
 
       subscription.unsubscribe();
 
@@ -255,7 +264,11 @@ describe('JulesStreamService', () => {
       mockAuthTokenService.getToken.mockReturnValue('test-token');
       mockJulesService.getSessionEventStreamUrl.mockReturnValue('https://example.com/session-stream');
 
-      const observable = service.sessionStream('test-session-id', { pollIntervalSeconds: 10 });
+      const observable = service.sessionStream('test-session-id', {
+        pollIntervalSeconds: 10,
+        lastUpdate: '2024-01-02T00:00:00Z',
+        lastActivityId: 42
+      });
 
       const subscription = observable.subscribe();
 
@@ -267,6 +280,8 @@ describe('JulesStreamService', () => {
       const params = mockJulesService.getSessionEventStreamUrl.mock.calls[0][1];
       expect(params.get('token')).toBe('test-token');
       expect(params.get('poll_interval')).toBe('10');
+      expect(params.get('last_update')).toBe('2024-01-02T00:00:00Z');
+      expect(params.get('last_activity_id')).toBe('42');
 
       subscription.unsubscribe();
     });
@@ -295,6 +310,7 @@ describe('JulesStreamService', () => {
           }
         }
       });
+      mockEventSource = createdSources[0];
 
       // Simulate EventSource session_update event
       const updateHandler = mockEventSource.addEventListener.mock.calls.find(
@@ -316,12 +332,13 @@ describe('JulesStreamService', () => {
           }
         }
       });
+      mockEventSource = createdSources[0];
 
       // Simulate EventSource activity_update event
       const activityHandler = mockEventSource.addEventListener.mock.calls.find(
         (call: any[]) => call[0] === 'activity_update'
       )[1];
-      activityHandler();
+      activityHandler({ data: JSON.stringify({ latest_activity_id: 7 }) });
     });
 
     it('should handle JSON parse errors gracefully', (done) => {
@@ -337,6 +354,7 @@ describe('JulesStreamService', () => {
           }
         }
       });
+      mockEventSource = createdSources[0];
 
       // Simulate EventSource session_update event with invalid JSON
       const updateHandler = mockEventSource.addEventListener.mock.calls.find(
@@ -351,6 +369,7 @@ describe('JulesStreamService', () => {
 
       const observable = service.sessionStream('test-session-id');
       const subscription = observable.subscribe();
+      mockEventSource = createdSources[0];
 
       subscription.unsubscribe();
 

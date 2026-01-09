@@ -1,7 +1,8 @@
 import json
 import logging
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from contextvars import ContextVar, Token
-from typing import Any
+from typing import Any, Mapping
 
 from django.conf import settings
 import httpx
@@ -16,6 +17,16 @@ from .exceptions.api_error import ApiRequestError
 logger = logging.getLogger(__name__)
 
 _correlation_id: ContextVar[str | None] = ContextVar("correlation_id", default=None)
+_SENSITIVE_KEY_MARKERS = ("token", "secret", "password", "auth", "key")
+_SENSITIVE_HEADER_KEYS = {
+    "authorization",
+    "cookie",
+    "set-cookie",
+    "x-api-key",
+    "x-auth-token",
+    "x-csrf-token",
+    "x-goog-api-key",
+}
 
 
 def set_correlation_id(value: str | None) -> Token[str | None]:
@@ -38,6 +49,46 @@ def get_correlation_id(request: Request | None = None) -> str | None:
     )
 
 
+def _is_sensitive_key(key: str) -> bool:
+    lowered = key.lower()
+    if lowered in _SENSITIVE_HEADER_KEYS:
+        return True
+    return any(marker in lowered for marker in _SENSITIVE_KEY_MARKERS)
+
+
+def _sanitize_metadata(metadata: Mapping[str, Any] | None) -> dict[str, Any] | None:
+    if not metadata:
+        return None
+    sanitized: dict[str, Any] = {}
+    for key, value in metadata.items():
+        if _is_sensitive_key(str(key)):
+            sanitized[key] = "[redacted]"
+        else:
+            sanitized[key] = value
+    return sanitized
+
+
+def sanitize_url(url: str) -> str:
+    """Redact sensitive query parameters from URLs before logging."""
+    try:
+        split_url = urlsplit(url)
+        if not split_url.query:
+            return url
+        query_params = parse_qsl(split_url.query, keep_blank_values=True)
+        sanitized_params = []
+        for key, value in query_params:
+            if _is_sensitive_key(key):
+                sanitized_params.append((key, "[redacted]"))
+            else:
+                sanitized_params.append((key, value))
+        sanitized_query = urlencode(sanitized_params, doseq=True)
+        return urlunsplit(
+            (split_url.scheme, split_url.netloc, split_url.path, sanitized_query, split_url.fragment)
+        )
+    except Exception:
+        return url
+
+
 def log_jules_api_call(
     *,
     method: str,
@@ -46,8 +97,11 @@ def log_jules_api_call(
     duration_s: float | None = None,
     response_bytes: int | None = None,
     error: str | None = None,
+    request_headers: Mapping[str, Any] | None = None,
+    response_headers: Mapping[str, Any] | None = None,
+    request_params: Mapping[str, Any] | None = None,
 ) -> None:
-    log_extra: dict[str, Any] = {"method": method, "url": url}
+    log_extra: dict[str, Any] = {"method": method, "url": sanitize_url(url)}
     correlation_id = get_correlation_id()
     if correlation_id:
         log_extra["correlation_id"] = correlation_id
@@ -59,6 +113,18 @@ def log_jules_api_call(
         log_extra["response_bytes"] = response_bytes
     if error is not None:
         log_extra["error"] = error
+    if request_headers:
+        sanitized_headers = _sanitize_metadata(request_headers)
+        if sanitized_headers:
+            log_extra["request_headers"] = sanitized_headers
+    if response_headers:
+        sanitized_headers = _sanitize_metadata(response_headers)
+        if sanitized_headers:
+            log_extra["response_headers"] = sanitized_headers
+    if request_params:
+        sanitized_params = _sanitize_metadata(request_params)
+        if sanitized_params:
+            log_extra["request_params"] = sanitized_params
     logger.info("Jules API request metadata", extra=log_extra)
 
 
@@ -78,6 +144,17 @@ def _extract_upstream_error(response: httpx.Response) -> dict[str, Any]:
         return {"detail": text}
 
 
+def _normalize_error_detail(detail: Any) -> tuple[str | None, Any | None]:
+    if not isinstance(detail, dict):
+        return None, detail
+    error_payload = detail.get("error")
+    if isinstance(error_payload, dict):
+        message = error_payload.get("message") or error_payload.get("detail")
+        return message, detail
+    message = detail.get("message") or detail.get("detail")
+    return message, detail
+
+
 def handle_api_exception(e: Exception, request: Request | None = None) -> Response:
     """
     Log the exception and return a secure error response.
@@ -93,7 +170,8 @@ def handle_api_exception(e: Exception, request: Request | None = None) -> Respon
     if isinstance(e, httpx.HTTPStatusError):
         status_code = e.response.status_code
         error_detail = _extract_upstream_error(e.response)
-        message = "Upstream service error"
+        message, error_detail = _normalize_error_detail(error_detail)
+        message = message or "Upstream service error"
     elif isinstance(e, httpx.TimeoutException):
         status_code = status.HTTP_504_GATEWAY_TIMEOUT
         error_detail = {"detail": str(e)}
@@ -103,11 +181,15 @@ def handle_api_exception(e: Exception, request: Request | None = None) -> Respon
         error_detail = {"detail": str(e)}
         message = "Upstream request failed"
     elif isinstance(e, ApiRequestError):
-        if status_code is None and isinstance(details, dict):
-            status_code = details.get("upstream_status")
-        if details:
+        if isinstance(details, dict):
+            status_code = details.get("upstream_status") or status_code
             error_detail = details
-        message = getattr(e, "user_message", None) or str(e)
+            detail_message, _ = _normalize_error_detail(details)
+            if detail_message:
+                message = detail_message
+        elif details:
+            error_detail = details
+        message = getattr(e, "user_message", None) or message or str(e)
     elif isinstance(e, Throttled):
         status_code = e.status_code
         error_detail = {"detail": str(e)}
@@ -121,6 +203,8 @@ def handle_api_exception(e: Exception, request: Request | None = None) -> Respon
         log_extra["correlation_id"] = correlation_id
     if isinstance(details, dict) and details.get("upstream_status"):
         log_extra["upstream_status"] = details["upstream_status"]
+    if isinstance(details, dict) and details.get("upstream_request_id"):
+        log_extra["upstream_request_id"] = details["upstream_request_id"]
 
     logger.error("API Error: %s", str(e), exc_info=True, extra=log_extra)
 
@@ -163,7 +247,10 @@ def drf_exception_handler(exc: Exception, context: dict[str, Any] | None) -> Res
         return None
     if isinstance(exc, Throttled):
         response.data = {
-            "error": str(exc) or "Request rate limit exceeded. Please retry shortly.",
+            "error": {
+                "message": str(exc) or "Request rate limit exceeded. Please retry shortly.",
+                "detail": {"retry_after_seconds": exc.wait},
+            },
             "retry_after_seconds": exc.wait,
         }
     return response

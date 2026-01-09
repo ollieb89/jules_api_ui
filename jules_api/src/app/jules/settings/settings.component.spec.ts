@@ -53,4 +53,43 @@ describe('SettingsComponent', () => {
     expect(julesService.getSettings).toHaveBeenCalledTimes(2);
     expect(component.successMessage()).toBe('Saved');
   });
+
+  it('should update connection status on successful test connection', () => {
+    julesService.testConnection.and.returnValue(
+      of({
+        status: 'success',
+        message: 'Connection ok',
+        api_key_configured: true,
+        api_connectivity: 'ok',
+        sources_count: 2
+      })
+    );
+
+    fixture.detectChanges();
+
+    component.testConnection();
+
+    expect(julesService.testConnection).toHaveBeenCalled();
+    expect(component.connectionStatus()).toBe('connected');
+    expect(component.successMessage()).toBe('Connection ok');
+  });
+
+  it('should surface errors on failed connection tests', () => {
+    julesService.testConnection.and.returnValue(
+      of({
+        status: 'error',
+        message: 'Connection failed',
+        api_key_configured: true,
+        api_connectivity: 'error',
+        sources_count: 0
+      })
+    );
+
+    fixture.detectChanges();
+
+    component.testConnection();
+
+    expect(component.connectionStatus()).toBe('error');
+    expect(component.error()).toBe('Connection failed');
+  });
 });

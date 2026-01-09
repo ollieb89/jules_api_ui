@@ -4,6 +4,7 @@ import { Observable, EMPTY, Observer } from 'rxjs';
 import { AuthTokenService } from './auth-token.service';
 import { JulesService } from './jules.service';
 import { Session } from '../models/jules.model';
+import { parseSessionResponse, parseSessionsList } from '../utils/api-parsers';
 
 export type SessionsStreamEvent =
   | { type: 'open' }
@@ -14,7 +15,7 @@ export type SessionStreamEvent =
   | { type: 'open' }
   | { type: 'error' }
   | { type: 'session_update'; session: Session }
-  | { type: 'activity_update' };
+  | { type: 'activity_update'; latestActivityId?: number | null };
 
 type StreamEventHandler<T> = {
   eventType: string;
@@ -38,50 +39,101 @@ export class JulesStreamService {
     eventHandlers: StreamEventHandler<T>[]
   ): Observable<T> {
     return new Observable<T>(observer => {
-      const eventSource = new EventSource(streamUrl);
-      const listeners: Array<{ type: string; handler: EventListener }> = [];
+      // Reconnect with capped exponential backoff to avoid rapid reconnect loops.
+      const maxReconnectAttempts = 5;
+      const baseReconnectDelayMs = 1000;
+      const maxReconnectDelayMs = 30000;
+      let reconnectAttempts = 0;
+      let reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
+      let eventSource: EventSource | null = null;
+      let listeners: Array<{ type: string; handler: EventListener }> = [];
+      let closed = false;
 
-      const handleOpen = () => {
-        observer.next({ type: 'open' } as T);
+      const clearReconnectTimer = () => {
+        if (reconnectTimeout) {
+          clearTimeout(reconnectTimeout);
+          reconnectTimeout = null;
+        }
       };
 
-      const handleError = () => {
-        observer.next({ type: 'error' } as T);
-        observer.complete();
-        eventSource.close();
-      };
-
-      // Register open and error handlers
-      eventSource.addEventListener('open', handleOpen);
-      eventSource.addEventListener('error', handleError);
-      listeners.push({ type: 'open', handler: handleOpen });
-      listeners.push({ type: 'error', handler: handleError });
-
-      // Register custom event handlers
-      eventHandlers.forEach(({ eventType, handler }) => {
-        const wrappedHandler = (event: Event) => {
-          try {
-            handler(event, observer);
-          } catch (error) {
-            console.error(
-              `Failed to handle ${eventType} event:`,
-              error,
-              'Event data:',
-              (event as MessageEvent).data
-            );
-            observer.next({ type: 'error' } as T);
-          }
-        };
-        eventSource.addEventListener(eventType, wrappedHandler);
-        listeners.push({ type: eventType, handler: wrappedHandler });
-      });
-
-      return () => {
-        // Clean up all event listeners
+      const cleanupEventSource = () => {
+        if (!eventSource) {
+          return;
+        }
         listeners.forEach(({ type, handler }) => {
-          eventSource.removeEventListener(type, handler);
+          eventSource?.removeEventListener(type, handler);
         });
         eventSource.close();
+        eventSource = null;
+        listeners = [];
+      };
+
+      const scheduleReconnect = () => {
+        if (closed) {
+          return;
+        }
+        if (reconnectAttempts >= maxReconnectAttempts) {
+          observer.complete();
+          return;
+        }
+        const delay = Math.min(maxReconnectDelayMs, baseReconnectDelayMs * 2 ** reconnectAttempts);
+        reconnectAttempts += 1;
+        reconnectTimeout = setTimeout(() => {
+          connect();
+        }, delay);
+      };
+
+      const connect = () => {
+        if (closed) {
+          return;
+        }
+        clearReconnectTimer();
+        cleanupEventSource();
+        eventSource = new EventSource(streamUrl);
+
+        const handleOpen = () => {
+          reconnectAttempts = 0;
+          observer.next({ type: 'open' } as T);
+        };
+
+        const handleError = () => {
+          observer.next({ type: 'error' } as T);
+          cleanupEventSource();
+          scheduleReconnect();
+        };
+
+        // Register open and error handlers
+        eventSource.addEventListener('open', handleOpen);
+        eventSource.addEventListener('error', handleError);
+        listeners.push({ type: 'open', handler: handleOpen });
+        listeners.push({ type: 'error', handler: handleError });
+
+        // Register custom event handlers
+        eventHandlers.forEach(({ eventType, handler }) => {
+          const wrappedHandler = (event: Event) => {
+            try {
+              handler(event, observer);
+            } catch (error) {
+              console.error(
+                `Failed to handle ${eventType} event:`,
+                error,
+                'Event data:',
+                (event as MessageEvent).data
+              );
+              observer.next({ type: 'error' } as T);
+            }
+          };
+          eventSource.addEventListener(eventType, wrappedHandler);
+          listeners.push({ type: eventType, handler: wrappedHandler });
+        });
+      };
+
+      connect();
+
+      return () => {
+        closed = true;
+        clearReconnectTimer();
+        cleanupEventSource();
       };
     });
   }
@@ -117,8 +169,9 @@ export class JulesStreamService {
       {
         eventType: 'sessions_update',
         handler: (event: Event, observer) => {
-          const data = JSON.parse((event as MessageEvent).data) as Session[];
-          observer.next({ type: 'sessions_update', sessions: data });
+          const data = JSON.parse((event as MessageEvent).data) as unknown;
+          const sessions = parseSessionsList(data);
+          observer.next({ type: 'sessions_update', sessions });
         }
       }
     ]);
@@ -126,7 +179,11 @@ export class JulesStreamService {
 
   sessionStream(
     sessionId: string,
-    { pollIntervalSeconds = 5 }: { pollIntervalSeconds?: number } = {}
+    {
+      pollIntervalSeconds = 5,
+      lastUpdate,
+      lastActivityId
+    }: { pollIntervalSeconds?: number; lastUpdate?: string | null; lastActivityId?: number | null } = {}
   ): Observable<SessionStreamEvent> {
     if (!isPlatformBrowser(this.platformId)) {
       return EMPTY;
@@ -142,20 +199,36 @@ export class JulesStreamService {
       poll_interval: pollIntervalSeconds.toString()
     });
 
+    if (lastUpdate) {
+      params.set('last_update', lastUpdate);
+    }
+
+    if (lastActivityId) {
+      params.set('last_activity_id', lastActivityId.toString());
+    }
+
     const streamUrl = this.julesService.getSessionEventStreamUrl(sessionId, params);
 
     return this.createEventSourceObservable<SessionStreamEvent>(streamUrl, [
       {
         eventType: 'session_update',
         handler: (event: Event, observer) => {
-          const data = JSON.parse((event as MessageEvent).data) as Session;
-          observer.next({ type: 'session_update', session: data });
+          const data = JSON.parse((event as MessageEvent).data) as unknown;
+          const session = parseSessionResponse(data);
+          observer.next({ type: 'session_update', session });
         }
       },
       {
         eventType: 'activity_update',
         handler: (event: Event, observer) => {
-          observer.next({ type: 'activity_update' });
+          let latestActivityId: number | null | undefined;
+          try {
+            const data = JSON.parse((event as MessageEvent).data) as { latest_activity_id?: number };
+            latestActivityId = data.latest_activity_id ?? null;
+          } catch (error) {
+            latestActivityId = null;
+          }
+          observer.next({ type: 'activity_update', latestActivityId });
         }
       }
     ]);
