@@ -99,10 +99,12 @@ The Angular router is configured in `jules_api/src/app/app.routes.ts`:
 - `/jules/settings` → `SettingsComponent`
 - `/jules/integrations` → `PhaseTwoComponent`
 
-All routes load standalone components with `loadComponent` for SSR-friendly lazy loading.
+All routes load standalone components with `loadComponent` for SSR-friendly lazy loading,
+and routing is defined without NgModules.
 
-SSR rendering modes are configured in `jules_api/src/app/app.routes.server.ts`, with
-server rendering for detail/edit routes and prerendering for the catch-all path.
+SSR rendering modes are configured in `jules_api/src/app/app.routes.server.ts`:
+- Server rendering for `users/:id/edit` and `jules/:id`
+- Prerendering for the `**` catch-all
 
 ---
 
