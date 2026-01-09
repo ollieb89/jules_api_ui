@@ -269,8 +269,8 @@ class JulesApiClient:
 
         if not self.api_key:
             raise ValueError("JULES_API_KEY must be set in settings or environment")
-        self.base_url = settings.JULES_API_BASE_URL
-        self.api_version = settings.JULES_API_VERSION
+        self.base_url = settings.JULES_API_BASE_URL.rstrip("/")
+        self.api_version = settings.JULES_API_VERSION.strip("/")
         self.headers = {
             "X-Goog-Api-Key": self.api_key,
             "Content-Type": "application/json",
@@ -279,7 +279,8 @@ class JulesApiClient:
 
     def _get_url(self, endpoint: str) -> str:
         """Construct full API URL."""
-        return f"{self.base_url}/{self.api_version}/{endpoint}"
+        normalized_endpoint = endpoint.lstrip("/")
+        return f"{self.base_url}/{self.api_version}/{normalized_endpoint}"
 
     def list_sources(self) -> dict[str, Any]:
         """List all connected GitHub repositories."""
