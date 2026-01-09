@@ -14,10 +14,25 @@
   --color-text-tertiary: var(--color-neutral-500);
   --color-text-disabled: var(--color-neutral-400);
   --color-text-inverse: var(--color-neutral-50);
+  --color-text-success: var(--color-success-700);
+  --color-text-success-strong: var(--color-success-800);
+  --color-text-error: var(--color-error-700);
+  --color-text-error-strong: var(--color-error-800);
+  --color-text-warning: var(--color-warning-700);
+  --color-text-warning-strong: var(--color-warning-800);
+  --color-text-info: var(--color-info-700);
+  --color-text-info-strong: var(--color-info-800);
+  --color-text-accent: var(--color-secondary-700);
+  --color-text-accent-strong: var(--color-secondary-800);
 
   --color-border-default: var(--color-neutral-200);
   --color-border-subtle: var(--color-neutral-100);
   --color-border-strong: var(--color-neutral-300);
+  --color-border-success: var(--color-success-200);
+  --color-border-error: var(--color-error-200);
+  --color-border-warning: var(--color-warning-200);
+  --color-border-info: var(--color-info-200);
+  --color-border-accent: var(--color-secondary-200);
 
   --color-interactive-primary: var(--color-primary-500);
   --color-interactive-primary-hover: var(--color-primary-600);
@@ -28,12 +43,26 @@
   --color-interactive-secondary-hover: var(--color-secondary-600);
   --color-interactive-secondary-active: var(--color-secondary-700);
   --color-interactive-secondary-disabled: var(--color-neutral-300);
+  --color-interactive-success: var(--color-success-600);
+  --color-interactive-success-hover: var(--color-success-700);
+  --color-interactive-error: var(--color-error-600);
+  --color-interactive-error-hover: var(--color-error-700);
 
   /* State Colors */
   --color-state-success: var(--color-success-500);
   --color-state-error: var(--color-error-500);
   --color-state-warning: var(--color-warning-500);
   --color-state-info: var(--color-info-500);
+  --color-surface-success: var(--color-success-50);
+  --color-surface-success-hover: var(--color-success-100);
+  --color-surface-error: var(--color-error-50);
+  --color-surface-error-hover: var(--color-error-100);
+  --color-surface-warning: var(--color-warning-50);
+  --color-surface-warning-hover: var(--color-warning-100);
+  --color-surface-info: var(--color-info-50);
+  --color-surface-info-hover: var(--color-info-200);
+  --color-surface-accent: var(--color-secondary-50);
+  --color-surface-accent-hover: var(--color-secondary-100);
 
   /* Focus & Validation */
   --color-focus-ring: var(--color-primary-300);

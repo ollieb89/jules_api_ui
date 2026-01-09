@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, catchError, throwError } from 'rxjs';
+import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import {
   Source,
@@ -15,14 +15,12 @@ import {
   UpdateApiKeyResponse,
   TestConnectionResponse
 } from '../models/jules.model';
-import { ApiErrorService } from './api-error.service';
 
 @Injectable({ providedIn: 'root' })
 export class JulesService {
   private http = inject(HttpClient);
-  private apiErrorService = inject(ApiErrorService);
   private readonly apiUrl = `${environment.apiUrl}/jules`;
-  private readonly wsUrl = `${environment.wsUrl}/jules`;
+  private readonly sseUrl = `${environment.sseUrl}/jules`;
 
   getSessionsEventStreamUrl(params: URLSearchParams): string {
     return `${this.getStreamBaseUrl()}/sessions/cached-events/?${params.toString()}`;
@@ -34,16 +32,12 @@ export class JulesService {
 
   // Sources
   getSources(): Observable<PaginatedSourcesResponse> {
-    return this.handleApiError(
-      this.http.get<PaginatedSourcesResponse>(`${this.apiUrl}/sources/`)
-    );
+    return this.http.get<PaginatedSourcesResponse>(`${this.apiUrl}/sources/`);
   }
 
   // Sessions
   createSession(session: CreateSession): Observable<Session> {
-    return this.handleApiError(
-      this.http.post<Session>(`${this.apiUrl}/sessions/`, session)
-    );
+    return this.http.post<Session>(`${this.apiUrl}/sessions/`, session);
   }
 
   getSessions(
@@ -54,32 +48,28 @@ export class JulesService {
     if (pageToken) {
       params = params.set('page_token', pageToken);
     }
-    return this.handleApiError(
-      this.http.get<PaginatedSessionsResponse>(`${this.apiUrl}/sessions/`, { params })
-    );
+    return this.http.get<PaginatedSessionsResponse>(`${this.apiUrl}/sessions/`, { params });
   }
 
   getSession(sessionId: string): Observable<Session> {
-    return this.handleApiError(
-      this.http.get<Session>(`${this.apiUrl}/sessions/${sessionId}/`)
-    );
+    return this.http.get<Session>(`${this.apiUrl}/sessions/${sessionId}/`);
   }
 
   deleteSession(sessionId: string): Observable<void> {
-    return this.handleApiError(
-      this.http.delete<void>(`${this.apiUrl}/sessions/${sessionId}/`)
-    );
+    return this.http.delete<void>(`${this.apiUrl}/sessions/${sessionId}/`);
   }
 
   approvePlan(sessionId: string): Observable<Session> {
-    return this.handleApiError(
-      this.http.post<Session>(`${this.apiUrl}/sessions/${sessionId}/approve-plan/`, {})
+    return this.http.post<Session>(
+      `${this.apiUrl}/sessions/${sessionId}/approve-plan/`,
+      {}
     );
   }
 
   sendMessage(sessionId: string, request: SendMessageRequest): Observable<Session> {
-    return this.handleApiError(
-      this.http.post<Session>(`${this.apiUrl}/sessions/${sessionId}/send-message/`, request)
+    return this.http.post<Session>(
+      `${this.apiUrl}/sessions/${sessionId}/send-message/`,
+      request
     );
   }
 
@@ -93,50 +83,29 @@ export class JulesService {
     if (pageToken) {
       params = params.set('page_token', pageToken);
     }
-    return this.handleApiError(
-      this.http.get<PaginatedActivitiesResponse>(
-        `${this.apiUrl}/sessions/${sessionId}/activities/`,
-        { params }
-      )
+    return this.http.get<PaginatedActivitiesResponse>(
+      `${this.apiUrl}/sessions/${sessionId}/activities/`,
+      { params }
     );
   }
 
   // Settings
   getSettings(): Observable<JulesSettings> {
-    return this.handleApiError(this.http.get<JulesSettings>(`${this.apiUrl}/settings/`));
+    return this.http.get<JulesSettings>(`${this.apiUrl}/settings/`);
   }
 
   updateApiKey(apiKey: string): Observable<UpdateApiKeyResponse> {
-    return this.handleApiError(
-      this.http.post<UpdateApiKeyResponse>(
-        `${this.apiUrl}/settings/api-key/`,
-        { api_key: apiKey }
-      )
+    return this.http.post<UpdateApiKeyResponse>(
+      `${this.apiUrl}/settings/api-key/`,
+      { api_key: apiKey }
     );
   }
 
   testConnection(): Observable<TestConnectionResponse> {
-    return this.handleApiError(
-      this.http.post<TestConnectionResponse>(`${this.apiUrl}/settings/test/`, {})
-    );
+    return this.http.post<TestConnectionResponse>(`${this.apiUrl}/settings/test/`, {});
   }
 
   private getStreamBaseUrl(): string {
-    return this.toHttpUrl(this.wsUrl);
-  }
-
-  private toHttpUrl(url: string): string {
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      return url;
-    }
-    return url.replace(/^ws/, 'http');
-  }
-
-  private handleApiError<T>(source: Observable<T>): Observable<T> {
-    return source.pipe(
-      catchError((error: unknown) =>
-        throwError(() => this.apiErrorService.normalizeError(error))
-      )
-    );
+    return this.sseUrl;
   }
 }

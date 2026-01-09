@@ -4,7 +4,6 @@ import { Router, RouterModule } from '@angular/router';
 
 import { UserService } from '../../services/user.service';
 import { User } from '../../models/user.model';
-import { JulesApiError } from '../../models/jules.model';
 import { getApiErrorMessage } from '../../utils/api-error';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 import { LoadingSpinnerComponent } from '../loading-spinner/loading-spinner.component';
@@ -58,7 +57,7 @@ export class UserListComponent implements OnInit {
         this.users.set(response.results);
         this.loading.set(false);
       },
-      error: (err: JulesApiError) => {
+      error: (err: unknown) => {
         this.error.set(getApiErrorMessage(err, 'Failed to load users'));
         this.loading.set(false);
       }
@@ -89,7 +88,7 @@ export class UserListComponent implements OnInit {
         this.confirmDialog?.reset();
         this.userToDelete.set(null);
       },
-      error: (err: JulesApiError) => {
+      error: (err: unknown) => {
         this.error.set(getApiErrorMessage(err, 'Failed to delete user'));
         this.confirmDialog?.reset(); // Ensure dialog closes and resets loading state
       }

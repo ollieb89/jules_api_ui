@@ -8,6 +8,7 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 
 from .models import JulesActivity, JulesSession
+from .streaming import publish
 
 SESSION_SYNC_TTL_SECONDS = 60
 ACTIVITY_SYNC_TTL_SECONDS = 30
@@ -202,6 +203,8 @@ def upsert_session_from_api(session_data: dict[str, Any]) -> JulesSession:
         "last_synced_at": now,
     }
     session, _ = JulesSession.objects.update_or_create(name=session_name, defaults=defaults)
+    publish("sessions", "sessions_update", get_cached_sessions_payload())
+    publish(f"session:{session.name}", "session_update", session_to_api_dict(session))
     return session
 
 
@@ -246,6 +249,11 @@ def upsert_activity_from_api(
     activity, _ = JulesActivity.objects.update_or_create(
         name=activity_data.get("name", ""),
         defaults=defaults,
+    )
+    publish(
+        f"session:{session.name}",
+        "activity_update",
+        {"latest_activity_id": activity.id},
     )
     return activity
 

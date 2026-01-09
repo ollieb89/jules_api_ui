@@ -1,29 +1,133 @@
-$ ng serve --port "4700"
+$ ng serve --port "4200"
 ❯ Building...
 ✔ Building...
-Browser bundles
-Initial chunk files  | Names            |  Raw size
-main.js              | main             | 259.57 kB |
-styles.css           | styles           | 159.53 kB |
+Application bundle generation failed. [5.835 seconds] - 2026-01-01T19:36:55.592Z
 
-                     | Initial total    | 419.10 kB
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'parseSourcesResponse'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/jules/session-create/session-create.component.ts:289:25:
+[37m      289 │           const parsed = [32mparseSourcesResponse[37m(response);
+          ╵                          [32m~~~~~~~~~~~~~~~~~~~~[0m
 
 
-Server bundles
-Initial chunk files  | Names            |  Raw size
-main.server.mjs      | main.server      | 261.26 kB |
-server.mjs           | server           |   1.81 kB |
-polyfills.server.mjs | polyfills.server | 243 bytes |
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2552: Cannot find name 'getParserErrorMessage'. Did you mean 'getApiErrorMessage'?[0m [1m[35m[plugin angular-compiler][0m
 
-Application bundle generation complete. [11.267 seconds] - 2025-12-25T19:35:05.848Z
+    src/app/jules/session-create/session-create.component.ts:293:25:
+[37m      293 │ ...      this.error.set([32mgetParserErrorMessage[37m(error, 'Invalid sou...
+          ╵                         [32m~~~~~~~~~~~~~~~~~~~~~[0m
 
-[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mUnexpected "*"[0m [css-syntax-error]
 
-    src/styles.css:3696:13:
-[37m      3696 │ markdown h2 *[32m*[37m,
-           ╵              [32m^[0m
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'parseSettingsResponse'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/jules/settings/settings.component.ts:183:25:
+[37m      183 │           const parsed = [32mparseSettingsResponse[37m(response);
+          ╵                          [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2552: Cannot find name 'getParserErrorMessage'. Did you mean 'getApiErrorMessage'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/jules/settings/settings.component.ts:188:25:
+[37m      188 │ ...      this.error.set([32mgetParserErrorMessage[37m(error, 'Invalid set...
+          ╵                         [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'parseUpdateApiKeyResponse'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/jules/settings/settings.component.ts:209:27:
+[37m      209 │             const parsed = [32mparseUpdateApiKeyResponse[37m(response);
+          ╵                            [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2552: Cannot find name 'getParserErrorMessage'. Did you mean 'getApiErrorMessage'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/jules/settings/settings.component.ts:215:27:
+[37m      215 │ ...      this.error.set([32mgetParserErrorMessage[37m(error, 'Invalid upd...
+          ╵                         [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'parseTestConnectionResponse'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/jules/settings/settings.component.ts:235:25:
+[37m      235 │           const parsed = [32mparseTestConnectionResponse[37m(response);
+          ╵                          [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2552: Cannot find name 'getParserErrorMessage'. Did you mean 'getApiErrorMessage'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/jules/settings/settings.component.ts:245:25:
+[37m      245 │ ...      this.error.set([32mgetParserErrorMessage[37m(error, 'Invalid tes...
+          ╵                         [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS7053: Element implicitly has an 'any' type because expression of type '"plan"' can't be used to index type '{}'.
+  Property 'plan' does not exist on type '{}'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/utils/api-parsers.ts:225:54:
+[37m      225 │ ...lanGenerated ? { plan: parsePlan([32mplanGenerated['plan'][37m) } : null,
+          ╵                                     [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2322: Type '{ title: string | null | undefined; description: string | null | undefined; artifacts: Artifact[] | null; } | null' is not assignable to type 'ProgressUpdatedActivity | null | undefined'.
+  Type '{ title: string | null | undefined; description: string | null | undefined; artifacts: Artifact[] | null; }' is not assignable to type 'ProgressUpdatedActivity'.
+    Types of property 'title' are incompatible.
+      Type 'string | null | undefined' is not assignable to type 'string | undefined'.
+        Type 'null' is not assignable to type 'string | undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/utils/api-parsers.ts:227:4:
+[37m      227 │     [32mprogress_updated[37m: progressUpdated
+          ╵     [32m~~~~~~~~~~~~~~~~[0m
+
+  The expected type comes from property 'progress_updated' which is declared here on type 'Activity'
+
+    src/app/models/jules.model.ts:81:2:
+[37m      81 │   [32mprogress_updated[37m?: ProgressUpdatedActivity | null;
+         ╵   [32m~~~~~~~~~~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS7053: Element implicitly has an 'any' type because expression of type '"title"' can't be used to index type '{}'.
+  Property 'title' does not exist on type '{}'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/utils/api-parsers.ts:229:34:
+[37m      229 │ ...: asNullableString([32mprogressUpdated['title'][37m, 'activity.progres...
+          ╵                       [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS7053: Element implicitly has an 'any' type because expression of type '"description"' can't be used to index type '{}'.
+  Property 'description' does not exist on type '{}'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/utils/api-parsers.ts:231:12:
+[37m      231 │             [32mprogressUpdated['description'][37m,
+          ╵             [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS7053: Element implicitly has an 'any' type because expression of type '"artifacts"' can't be used to index type '{}'.
+  Property 'artifacts' does not exist on type '{}'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/utils/api-parsers.ts:234:21:
+[37m      234 │           artifacts: [32mprogressUpdated['artifacts'][37m
+          ╵                      [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS7053: Element implicitly has an 'any' type because expression of type '"artifacts"' can't be used to index type '{}'.
+  Property 'artifacts' does not exist on type '{}'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/utils/api-parsers.ts:236:16:
+[37m      236 │                 [32mprogressUpdated['artifacts'][37m,
+          ╵                 [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2322: Type 'number | null | undefined' is not assignable to type 'number | undefined'.
+  Type 'null' is not assignable to type 'number | undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/utils/api-parsers.ts:346:4:
+[37m      346 │     [32msources_count[37m: asOptionalNumber(value['sources_count'], 'test...
+          ╵     [32m~~~~~~~~~~~~~[0m
+
+  The expected type comes from property 'sources_count' which is declared here on type 'TestConnectionResponse'
+
+    src/app/models/jules.model.ts:125:2:
+[37m      125 │   [32msources_count[37m?: number;
+          ╵   [32m~~~~~~~~~~~~~[0m
 
 
 Watch mode enabled. Watching for file changes...
-NOTE: Raw file sizes do not reflect development server per-request transformations.
-  ➜  Local:   http://localhost:4700/

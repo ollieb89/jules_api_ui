@@ -48,17 +48,17 @@ import { ThemeService } from '../../services/theme.service';
       <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
         <div class="bg-[var(--color-surface-primary)] shadow-md rounded-lg p-5">
           <p class="text-sm text-[var(--color-text-tertiary)]">Active Tasks</p>
-          <p class="text-3xl font-semibold text-[var(--color-info-700)]">{{ activeCount() }}</p>
+          <p class="text-3xl font-semibold text-[var(--color-text-info)]">{{ activeCount() }}</p>
           <p class="text-xs text-[var(--color-text-tertiary)] mt-2">{{ lastUpdatedLabel() }}</p>
         </div>
         <div class="bg-[var(--color-surface-primary)] shadow-md rounded-lg p-5">
           <p class="text-sm text-[var(--color-text-tertiary)]">Completed</p>
-          <p class="text-3xl font-semibold text-[var(--color-success-700)]">{{ completedCount() }}</p>
+          <p class="text-3xl font-semibold text-[var(--color-text-success)]">{{ completedCount() }}</p>
           <p class="text-xs text-[var(--color-text-tertiary)] mt-2">Completion rate {{ completionRateLabel() }}</p>
         </div>
         <div class="bg-[var(--color-surface-primary)] shadow-md rounded-lg p-5">
           <p class="text-sm text-[var(--color-text-tertiary)]">Failed</p>
-          <p class="text-3xl font-semibold text-[var(--color-error-700)]">{{ failedCount() }}</p>
+          <p class="text-3xl font-semibold text-[var(--color-text-error)]">{{ failedCount() }}</p>
           <p class="text-xs text-[var(--color-text-tertiary)] mt-2">Needs attention</p>
         </div>
         <div class="bg-[var(--color-surface-primary)] shadow-md rounded-lg p-5">
@@ -76,7 +76,7 @@ import { ThemeService } from '../../services/theme.service';
           </div>
           <div class="h-3 rounded-full bg-[var(--color-background-tertiary)] overflow-hidden">
             <div
-              class="h-full bg-[var(--color-success-500)] transition-all"
+              class="h-full bg-[var(--color-state-success)] transition-all"
               [style.width.%]="completionRate()"
               [attr.aria-valuenow]="completionRate()"
               aria-valuemin="0"
@@ -105,7 +105,7 @@ import { ThemeService } from '../../services/theme.service';
           <div class="flex flex-col gap-3 text-sm">
             <a
               routerLink="/jules/create"
-              class="px-4 py-2 rounded-lg bg-[var(--color-info-50)] text-[var(--color-info-700)] font-semibold hover:bg-[var(--color-info-200)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+              class="px-4 py-2 rounded-lg bg-[var(--color-surface-info)] text-[var(--color-text-info)] font-semibold hover:bg-[var(--color-surface-info-hover)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
             >
               Create a new Jules task
             </a>

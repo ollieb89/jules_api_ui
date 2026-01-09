@@ -9,6 +9,7 @@
 - Use `:focus-visible` styles to ensure keyboard users can see focus states.
 - Focus rings use `--color-focus-ring` and `--color-focus-ring-offset` to remain visible on all
   surfaces.
+- Global focus styles are defined in `src/styles.css` using `:focus-visible` outlines.
 
 ## Dark Mode
 - Dark mode is enabled through `prefers-color-scheme: dark` and `.dark` overrides.
@@ -18,6 +19,18 @@
 - Use semantic classes (`.input-error`, `.input-success`, `.input-warning`) or
   `aria-invalid="true"` to indicate validation status.
 - Pair color with text descriptions and inline help messages when possible.
+- Inputs in `src/styles/components/input.css` apply focus rings and validation borders. Use
+  `aria-describedby` for inline error messaging.
+
+## Example Patterns
+```html
+<input
+  aria-invalid="true"
+  aria-describedby="email-error"
+  class="input-error"
+/>
+<p id="email-error" role="alert">Please enter a valid email address.</p>
+```
 
 ## Testing Checklist
 - Run contrast checks using WebAIM or Lighthouse.

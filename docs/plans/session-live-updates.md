@@ -6,6 +6,7 @@
 - Reduce polling frequency to lower backend load while maintaining timely updates.
 
 ## Notes
-- Cached SSE endpoints stream updates from the local database cache, not direct API polling.
+- Cached SSE endpoints stream updates from the local database cache and publish updates through
+  an in-process channel to avoid tight polling loops.
 - SSE endpoints authenticate via JWT bearer header or `token` query param.
 - Frontend uses EventSource only on the browser runtime.

@@ -29,7 +29,7 @@ export class SessionCacheService {
   // Maximum number of sessions to fetch (configurable)
   private readonly MAX_SESSIONS = 1000;
 
-  private readonly ssePollIntervalSeconds = 20;
+  private readonly ssePollIntervalSeconds = 60;
   
   // Raw cached sessions
   private readonly sessions = signal<Session[]>([]);
@@ -202,9 +202,9 @@ export class SessionCacheService {
   /**
    * Start live SSE updates and fallback polling for session updates.
    * This initiates SSE streaming and only falls back to polling when the stream is not connected.
-   * @param intervalMs - Polling interval in milliseconds (default: 180000ms / 3 minutes)
+   * @param intervalMs - Polling interval in milliseconds (default: 300000ms / 5 minutes)
    */
-  startAutoRefresh(intervalMs = 180000): void {
+  startAutoRefresh(intervalMs = 300000): void {
     this.startLiveUpdates();
     if (this.autoRefreshSubscription) {
       return;
