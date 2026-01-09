@@ -12,8 +12,7 @@ def api_client():
 
 
 @pytest.fixture
-@pytest.mark.django_db
-def authenticated_client(api_client):
+def authenticated_client(api_client, db):
     """Authenticated APIClient for testing."""
     user = User.objects.create_user(username="testuser", password="testpassword")
     api_client.force_authenticate(user=user)
@@ -56,6 +55,12 @@ class TestSourceViewSet:
         assert "sources" in response.data
         assert len(response.data["sources"]) == 1
 
+    def test_list_sources_unauthenticated(self, api_client):
+        """Test listing sources without authentication."""
+        url = reverse("source-list")
+        response = api_client.get(url)
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
 
 @pytest.mark.django_db
 class TestSessionViewSet:
@@ -79,6 +84,13 @@ class TestSessionViewSet:
 
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["display_name"] == "Test Session"
+
+    def test_create_session_unauthenticated(self, api_client):
+        """Test creating a session without authentication."""
+        url = reverse("session-list")
+        data = {"prompt": "Test prompt", "source": "sources/test-repo"}
+        response = api_client.post(url, data, format="json")
+        assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_list_sessions(self, authenticated_client, mock_jules_client):
         """Test listing sessions."""
@@ -104,6 +116,12 @@ class TestSessionViewSet:
         assert "sessions" in response.data
         assert len(response.data["sessions"]) == 1
 
+    def test_list_sessions_unauthenticated(self, api_client):
+        """Test listing sessions without authentication."""
+        url = reverse("session-list")
+        response = api_client.get(url)
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
     def test_get_session(self, authenticated_client, mock_jules_client):
         """Test getting a session."""
         mock_jules_client.get_session.return_value = {
@@ -122,6 +140,12 @@ class TestSessionViewSet:
         assert response.status_code == status.HTTP_200_OK
         assert response.data["display_name"] == "Test Session"
 
+    def test_get_session_unauthenticated(self, api_client):
+        """Test getting a session without authentication."""
+        url = reverse("session-detail", kwargs={"pk": "test-session"})
+        response = api_client.get(url)
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
     def test_delete_session(self, authenticated_client, mock_jules_client):
         """Test deleting a session."""
         mock_jules_client.delete_session.return_value = None
@@ -130,6 +154,12 @@ class TestSessionViewSet:
         response = authenticated_client.delete(url)
 
         assert response.status_code == status.HTTP_204_NO_CONTENT
+
+    def test_delete_session_unauthenticated(self, api_client):
+        """Test deleting a session without authentication."""
+        url = reverse("session-detail", kwargs={"pk": "test-session"})
+        response = api_client.delete(url)
+        assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_approve_plan(self, authenticated_client, mock_jules_client):
         """Test approving a plan."""
@@ -148,6 +178,12 @@ class TestSessionViewSet:
 
         assert response.status_code == status.HTTP_200_OK
 
+    def test_approve_plan_unauthenticated(self, api_client):
+        """Test approving a plan without authentication."""
+        url = reverse("session-approve-plan", kwargs={"pk": "test-session"})
+        response = api_client.post(url, {}, format="json")
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
     def test_send_message(self, authenticated_client, mock_jules_client):
         """Test sending a message."""
         mock_jules_client.send_message.return_value = {
@@ -165,6 +201,13 @@ class TestSessionViewSet:
         response = authenticated_client.post(url, data, format="json")
 
         assert response.status_code == status.HTTP_200_OK
+
+    def test_send_message_unauthenticated(self, api_client):
+        """Test sending a message without authentication."""
+        url = reverse("session-send-message", kwargs={"pk": "test-session"})
+        data = {"message": "Test message"}
+        response = api_client.post(url, data, format="json")
+        assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_list_activities(self, authenticated_client, mock_jules_client):
         """Test listing activities."""
@@ -191,3 +234,8 @@ class TestSessionViewSet:
         assert "activities" in response.data
         assert len(response.data["activities"]) == 1
 
+    def test_list_activities_unauthenticated(self, api_client):
+        """Test listing activities without authentication."""
+        url = reverse("session-activities", kwargs={"pk": "test-session"})
+        response = api_client.get(url)
+        assert response.status_code == status.HTTP_403_FORBIDDEN
