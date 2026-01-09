@@ -19,6 +19,8 @@ def parse_api_datetime(value: str | None) -> timezone.datetime | None:
 
 def upsert_session(session_data: dict) -> JulesSession:
     name = session_data.get("name", "")
+    if not name or not str(name).strip():
+        raise ValueError("JulesSession 'name' is required and must be non-empty")
     defaults = {
         "display_name": session_data.get(
             "displayName", session_data.get("display_name", "")
@@ -47,9 +49,14 @@ def detect_activity_type(activity_data: dict) -> str:
 
 def upsert_activities(session: JulesSession, activities: list[dict]) -> None:
     for activity in activities:
+        name = activity.get("name", "")
+        if not name or not str(name).strip():
+            # Skip activities without a valid non-empty name to avoid
+            # violating the unique (session, name) constraint.
+            continue
         JulesActivity.objects.update_or_create(
             session=session,
-            name=activity.get("name", ""),
+            name=name,
             defaults={
                 "activity_type": detect_activity_type(activity),
                 "create_time": parse_api_datetime(
