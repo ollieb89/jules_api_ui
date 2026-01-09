@@ -1,19 +1,39 @@
 from __future__ import annotations
 
+from datetime import tzinfo
+
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 
 from .models import JulesActivity, JulesSession
 
 
-def parse_api_datetime(value: str | None) -> timezone.datetime | None:
+def parse_api_datetime(
+    value: str | None,
+    *,
+    default_timezone: tzinfo | None = timezone.utc,
+) -> timezone.datetime | None:
+    """
+    Parse a datetime string returned by the Jules API.
+
+    If the parsed datetime is naive, it is converted to an aware datetime using
+    ``default_timezone``. By default, naive datetimes are assumed to be in UTC.
+
+    :param value: The datetime string from the API, or ``None``.
+    :param default_timezone: Timezone to apply to naive datetimes. If ``None``,
+        naive datetimes are returned unchanged.
+    :return: A timezone-aware (or naive, if ``default_timezone`` is ``None``)
+        datetime instance, or ``None`` if parsing fails.
+    """
     if not value:
         return None
     parsed = parse_datetime(value)
     if parsed is None:
         return None
     if timezone.is_naive(parsed):
-        return timezone.make_aware(parsed, timezone=timezone.utc)
+        if default_timezone is None:
+            return parsed
+        return timezone.make_aware(parsed, timezone=default_timezone)
     return parsed
 
 
