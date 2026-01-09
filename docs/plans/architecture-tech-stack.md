@@ -19,7 +19,7 @@
 │  │  State & UI Model                                               │  │
 │  │  - Angular signals + computed state                             │  │
 │  │  - Services for API orchestration                               │  │
-│  │  - HttpClient for REST calls                                    │  │
+│  │  - HttpClient for REST + SSE calls                              │  │
 │  └─────────────────────────────────────────────────────────────────┘  │
 │                               ↕                                        │
 │  ┌─────────────────────────────────────────────────────────────────┐  │
@@ -116,17 +116,24 @@ The Jules API endpoints are served under `/api/jules/` (see `jules_backend/jules
 - `POST /api/jules/sessions/` → create a session
 - `GET /api/jules/sessions/:id/` → retrieve a session
 - `DELETE /api/jules/sessions/:id/` → delete a session
+- `GET /api/jules/sessions/cached-events/` → SSE for cached session list updates
+- `GET /api/jules/sessions/events/` → SSE for live session list updates
 
 ### Session Actions
 - `POST /api/jules/sessions/:id/approve_plan/` → approve a generated plan
 - `POST /api/jules/sessions/:id/send_message/` → send a message to the agent
 - `GET /api/jules/sessions/:id/activities/` → list session activities (paginated)
+- `GET /api/jules/sessions/:id/cached-events/` → SSE for cached session/activity updates
+- `GET /api/jules/sessions/:id/events/` → SSE for live session/activity updates
+- `GET /api/jules/sessions/:id/activity-stream/` → SSE stream for activity events
 
 ### Settings & Health
 - `GET /api/jules/settings/` → current API key status
 - `POST /api/jules/settings/api-key/` → update API key
 - `POST /api/jules/settings/test/` → test API connectivity
 - `GET /api/jules/health/` → Jules API health check
+- `GET /api/jules/sync/` → current background sync status
+- `GET /api/jules/sync/events/` → SSE stream for sync updates
 
 Additional system health checks are exposed at `/health` via `jules_backend/health`.
 
