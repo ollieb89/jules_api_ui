@@ -20,13 +20,17 @@ def test_api_key_storage_security():
     stored_value = db_obj._encrypted_api_key
 
     # Verify it is NOT just base64 encoded
-    # Attempting to base64 decode it should result in garbage or failure
-    # and definitely not the original key.
+    # The stored value should not match the plaintext key
+    assert stored_value != api_key
+    
+    # Additionally, if we attempt to base64 decode it, it should not yield the original key
+    # (Fernet tokens are base64-encoded but contain more than just the plaintext)
     try:
         decoded_attempt = base64.b64decode(stored_value).decode()
-        assert decoded_attempt != api_key
-    except Exception:
-        # If decoding fails or returns garbage, that's good!
+        # Even if decode succeeds, the result should not be the plaintext key
+        assert decoded_attempt != api_key, "Stored value appears to be plain base64 encoded key"
+    except (ValueError, UnicodeDecodeError):
+        # Expected: Fernet tokens when base64-decoded don't yield valid UTF-8 strings
         pass
 
     # Verify the getter works (decrypts correctly)

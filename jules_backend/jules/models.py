@@ -8,8 +8,17 @@ from cryptography.fernet import Fernet, InvalidToken
 
 def get_cipher_suite():
     """Derive a Fernet key from the Django SECRET_KEY."""
+    # Validate SECRET_KEY is present and meets minimum security requirements
+    # Django recommends 50+ characters for production keys
+    # While SHA256 produces consistent output length, short keys are vulnerable to brute-force
+    secret_key = getattr(settings, 'SECRET_KEY', None)
+    if not secret_key or len(secret_key) < 32:
+        raise ValidationError(
+            "Django SECRET_KEY must be at least 32 characters for secure encryption."
+        )
+    
     # SHA256 the secret key to get 32 bytes
-    key = hashlib.sha256(settings.SECRET_KEY.encode()).digest()
+    key = hashlib.sha256(secret_key.encode()).digest()
     # Base64 encode it for Fernet
     return Fernet(base64.urlsafe_b64encode(key))
 
@@ -41,11 +50,15 @@ class JulesSettings(models.Model):
             self._encrypted_api_key = None
             return
 
+        # ValidationError from get_cipher_suite() should propagate
+        cipher = get_cipher_suite()
+        
         try:
-            cipher = get_cipher_suite()
             self._encrypted_api_key = cipher.encrypt(api_key.encode()).decode()
-        except Exception as e:
-            raise ValidationError(f"Failed to encrypt API key: {e}")
+        except (TypeError, AttributeError):
+            # TypeError: if api_key is not a string
+            # AttributeError: if api_key doesn't have encode method
+            raise ValidationError("Invalid API key format")
 
     def get_api_key(self) -> str | None:
         """Decrypt and return API key."""
@@ -60,9 +73,11 @@ class JulesSettings(models.Model):
             # InvalidToken is raised by Fernet if decryption fails
             # ValueError might be raised if encoding is messed up
             try:
-                return base64.b64decode(self._encrypted_api_key.encode()).decode()
-            except Exception as e:
-                raise ValidationError(f"Failed to decrypt API key: {e}")
+                legacy_key = base64.b64decode(self._encrypted_api_key.encode()).decode()
+                return legacy_key
+            except (ValueError, UnicodeDecodeError):
+                # Generic error message to avoid exposing decryption mechanism
+                raise ValidationError("Failed to decrypt API key")
 
     def get_masked_api_key(self) -> str | None:
         """Return masked version of API key for display."""
