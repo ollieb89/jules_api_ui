@@ -443,8 +443,9 @@ export class SessionListComponent implements OnInit {
   }
 
   onDeleteConfirmed(): void {
-    const sessionId = this.sessionToDelete();
-    if (sessionId) {
+    const sessionPath = this.sessionToDelete();
+    if (sessionPath) {
+      const sessionId = this.sessionUtils.extractSessionId(sessionPath);
       this.cacheService.deleteSession(sessionId).subscribe({
         next: () => {
           this.confirmationDialog.reset();
