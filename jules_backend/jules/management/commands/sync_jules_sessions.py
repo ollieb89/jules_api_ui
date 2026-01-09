@@ -30,14 +30,28 @@ class Command(BaseCommand):
         page_token = None
         synced_sessions = 0
         synced_activities = 0
+        max_session_retries = 3
+        session_fetch_retries = 0
 
         while True:
             try:
                 data = client.list_sessions(page_size=page_size, page_token=page_token)
+                # Reset retry counter after a successful fetch
+                session_fetch_retries = 0
             except Exception as e:
+                session_fetch_retries += 1
+                if session_fetch_retries < max_session_retries:
+                    self.stdout.write(
+                        self.style.WARNING(
+                            f"Failed to fetch sessions (attempt {session_fetch_retries} of {max_session_retries}) "
+                            f"after syncing {synced_sessions} sessions. Retrying. Error: {e}"
+                        )
+                    )
+                    continue
                 self.stdout.write(
                     self.style.ERROR(
-                        f"Failed to fetch sessions after syncing {synced_sessions} sessions. Error: {e}"
+                        f"Failed to fetch sessions after {max_session_retries} attempts "
+                        f"and syncing {synced_sessions} sessions. Error: {e}"
                     )
                 )
                 break
