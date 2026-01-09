@@ -7,7 +7,7 @@ import { Subscription } from 'rxjs';
 import { MarkdownComponent } from 'ngx-markdown';
 import { JulesService } from '../../services/jules.service';
 import { JulesStreamService } from '../../services/jules-stream.service';
-import { JulesApiError, PlanState, Session, SessionState } from '../../models/jules.model';
+import { PlanState, Session, SessionState } from '../../models/jules.model';
 import { ActivityTimelineComponent } from '../activity-timeline/activity-timeline.component';
 import { CodeBlockStyleDirective } from '../../directives/code-block-style.directive';
 import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
@@ -108,7 +108,7 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
           this.loading.set(false);
         }
       },
-      error: (err: JulesApiError) => {
+      error: (err: unknown) => {
         this.error.set(getApiErrorMessage(err, 'Failed to load session'));
         this.loading.set(false);
       }
@@ -141,7 +141,7 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
             this.sendingMessage.set(false);
           }
         },
-        error: (err: JulesApiError) => {
+        error: (err: unknown) => {
           this.error.set(getApiErrorMessage(err, 'Failed to send message'));
           this.sendingMessage.set(false);
         }
@@ -167,7 +167,7 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
           this.approvingPlan.set(false);
         }
       },
-      error: (err: JulesApiError) => {
+      error: (err: unknown) => {
         this.error.set(getApiErrorMessage(err, 'Failed to approve plan'));
         this.approvingPlan.set(false);
       }
@@ -184,7 +184,7 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
         this.deleteDialog.reset();
         this.router.navigate(['/jules']);
       },
-      error: (err: JulesApiError) => {
+      error: (err: unknown) => {
         this.deleteDialog.reset();
         this.error.set(getApiErrorMessage(err, 'Failed to delete session'));
       }
