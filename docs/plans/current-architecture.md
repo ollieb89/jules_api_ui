@@ -1,43 +1,51 @@
-# Current Architecture Snapshot
+# Current Architecture Snapshot (Angular 21 SSR + Django)
 
-## Purpose
-This document captures the current high-level architecture for the Jules API UI,
-reflecting the Angular 21 SSR frontend and the Django REST backend endpoints.
+## Goal
+Maintain a single reference for the live application architecture, reflecting the Angular 21 SSR
+frontend and Django REST backend as implemented today.
 
-## Frontend (Angular 21 + SSR)
-- **Routing**: Standalone component routes are defined in `jules_api/src/app/app.routes.ts` and
-  lazily load feature components with `loadComponent`.
-- **SSR configuration**: Server rendering modes live in `jules_api/src/app/app.routes.server.ts`,
-  enabling SSR for detail/edit routes and prerendering for catch-all paths.
-- **State**: UI state uses Angular **signals** and computed values, with services orchestrating
-  API calls through `HttpClient`.
+## Frontend Overview (Angular 21 SSR)
+- **Standalone components** with `loadComponent` routing and no NgModules.
+- **Signals** and computed state for UI/data modeling.
+- **SSR render modes** configured in `jules_api/src/app/app.routes.server.ts`:
+  - Server-rendered: `users/:id/edit`, `jules/:id`
+  - Prerendered: `**` catch-all
+- **Route map** from `jules_api/src/app/app.routes.ts`:
+  - `/` → `/dashboard`
+  - `/dashboard`
+  - `/users`, `/users/new`, `/users/:id/edit`
+  - `/jules`, `/jules/create`, `/jules/:id`, `/jules/settings`
+  - `/jules/integrations`
 
-### Route map (client)
-- `/` → redirect to `/dashboard`
-- `/dashboard` → dashboard overview
-- `/users` → user list
-- `/users/new` → user creation
-- `/users/:id/edit` → user edit
-- `/jules` → session list
-- `/jules/create` → session creation
-- `/jules/:id` → session detail
-- `/jules/settings` → settings
-- `/jules/integrations` → integrations placeholder
+## Backend Overview (Django REST Framework)
+Routes are registered via the router in `jules_backend/jules/urls.py` and implemented in
+`jules_backend/jules/views.py`.
 
-## Backend (Django + DRF)
-- **Base API namespace**: `/api/jules/`
-- **Core resources**:
-  - `sources/` for connected source repositories
-  - `sessions/` for session list/create/retrieve/delete
-  - `settings/` for API key configuration
-  - `health/` for upstream connectivity checks
-  - `sync/` for background sync status
-- **SSE endpoints**:
-  - `sessions/cached-events/` and `sessions/events/` for session list updates
-  - `sessions/:id/cached-events/`, `sessions/:id/events/`, `sessions/:id/activity-stream/` for
-    per-session activity streaming
-  - `sync/events/` for sync status updates
+### Core APIs
+- `GET /api/jules/sources/`
+- `GET /api/jules/sessions/`
+- `POST /api/jules/sessions/`
+- `GET /api/jules/sessions/:id/`
+- `DELETE /api/jules/sessions/:id/`
+- `GET /api/jules/sessions/cached-events/`
+- `GET /api/jules/sessions/events/`
 
-## Integrations
-- External Jules API client (server-side service in `jules_backend/jules/services.py`).
-- GitHub as a source integration for repositories.
+### Session Actions
+- `POST /api/jules/sessions/:id/approve_plan/`
+- `POST /api/jules/sessions/:id/send_message/`
+- `GET /api/jules/sessions/:id/activities/`
+- `GET /api/jules/sessions/:id/cached-events/`
+- `GET /api/jules/sessions/:id/events/`
+- `GET /api/jules/sessions/:id/activity-stream/`
+
+### Settings, Health, Sync
+- `GET /api/jules/settings/`
+- `POST /api/jules/settings/api-key/`
+- `POST /api/jules/settings/test/`
+- `GET /api/jules/health/`
+- `GET /api/jules/sync/`
+- `GET /api/jules/sync/events/`
+
+## Notes
+- Keep frontend API services aligned with `/api/jules/*` routes.
+- When introducing new SSR-only components, ensure browser-only APIs are guarded.
