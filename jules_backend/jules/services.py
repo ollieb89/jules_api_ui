@@ -81,6 +81,7 @@ class SharedHttpClient:
         timeout = _resolve_timeout(timeout_policy)
         request_headers = {**self._default_headers, **(headers or {})}
         correlation_id = get_correlation_id()
+        log_metadata = bool(getattr(settings, "JULES_API_LOG_METADATA", False))
         if correlation_id and not (
             request_headers.get("X-Correlation-ID") or request_headers.get("X-Request-ID")
         ):
@@ -110,6 +111,9 @@ class SharedHttpClient:
                     status_code=response.status_code,
                     duration_s=time.monotonic() - start_time,
                     response_bytes=len(response.content),
+                    request_headers=request_headers if log_metadata else None,
+                    response_headers=dict(response.headers) if log_metadata else None,
+                    request_params=params if log_metadata else None,
                 )
                 return response
             except httpx.HTTPStatusError as exc:
@@ -124,6 +128,9 @@ class SharedHttpClient:
                     duration_s=time.monotonic() - start_time,
                     response_bytes=len(exc.response.content),
                     error=exc.__class__.__name__,
+                    request_headers=request_headers if log_metadata else None,
+                    response_headers=dict(exc.response.headers) if log_metadata else None,
+                    request_params=params if log_metadata else None,
                 )
                 raise self._map_http_status_error(exc, attempt) from exc
             except httpx.RequestError as exc:
@@ -135,6 +142,8 @@ class SharedHttpClient:
                     url=url,
                     duration_s=time.monotonic() - start_time,
                     error=exc.__class__.__name__,
+                    request_headers=request_headers if log_metadata else None,
+                    request_params=params if log_metadata else None,
                 )
                 raise ApiRequestError(
                     "Upstream request failed.",

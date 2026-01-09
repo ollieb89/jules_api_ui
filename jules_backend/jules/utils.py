@@ -1,7 +1,7 @@
 import json
 import logging
 from contextvars import ContextVar, Token
-from typing import Any
+from typing import Any, Mapping
 
 from django.conf import settings
 import httpx
@@ -16,6 +16,16 @@ from .exceptions.api_error import ApiRequestError
 logger = logging.getLogger(__name__)
 
 _correlation_id: ContextVar[str | None] = ContextVar("correlation_id", default=None)
+_SENSITIVE_KEY_MARKERS = ("token", "secret", "password", "auth", "key")
+_SENSITIVE_HEADER_KEYS = {
+    "authorization",
+    "cookie",
+    "set-cookie",
+    "x-api-key",
+    "x-auth-token",
+    "x-csrf-token",
+    "x-goog-api-key",
+}
 
 
 def set_correlation_id(value: str | None) -> Token[str | None]:
@@ -38,6 +48,25 @@ def get_correlation_id(request: Request | None = None) -> str | None:
     )
 
 
+def _is_sensitive_key(key: str) -> bool:
+    lowered = key.lower()
+    if lowered in _SENSITIVE_HEADER_KEYS:
+        return True
+    return any(marker in lowered for marker in _SENSITIVE_KEY_MARKERS)
+
+
+def _sanitize_metadata(metadata: Mapping[str, Any] | None) -> dict[str, Any] | None:
+    if not metadata:
+        return None
+    sanitized: dict[str, Any] = {}
+    for key, value in metadata.items():
+        if _is_sensitive_key(str(key)):
+            sanitized[key] = "[redacted]"
+        else:
+            sanitized[key] = value
+    return sanitized
+
+
 def log_jules_api_call(
     *,
     method: str,
@@ -46,6 +75,9 @@ def log_jules_api_call(
     duration_s: float | None = None,
     response_bytes: int | None = None,
     error: str | None = None,
+    request_headers: Mapping[str, Any] | None = None,
+    response_headers: Mapping[str, Any] | None = None,
+    request_params: Mapping[str, Any] | None = None,
 ) -> None:
     log_extra: dict[str, Any] = {"method": method, "url": url}
     correlation_id = get_correlation_id()
@@ -59,6 +91,18 @@ def log_jules_api_call(
         log_extra["response_bytes"] = response_bytes
     if error is not None:
         log_extra["error"] = error
+    if request_headers:
+        sanitized_headers = _sanitize_metadata(request_headers)
+        if sanitized_headers:
+            log_extra["request_headers"] = sanitized_headers
+    if response_headers:
+        sanitized_headers = _sanitize_metadata(response_headers)
+        if sanitized_headers:
+            log_extra["response_headers"] = sanitized_headers
+    if request_params:
+        sanitized_params = _sanitize_metadata(request_params)
+        if sanitized_params:
+            log_extra["request_params"] = sanitized_params
     logger.info("Jules API request metadata", extra=log_extra)
 
 
