@@ -52,6 +52,8 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
   streamConnected = signal<boolean>(false);
 
   private streamSubscription: Subscription | null = null;
+  private lastSessionUpdateTime: string | null = null;
+  private lastActivityId: number | null = null;
 
   messageForm: FormGroup = this.fb.group({
     message: ['', [Validators.required, Validators.minLength(1)]]
@@ -101,6 +103,7 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
         try {
           const parsed = parseSessionResponse(session);
           this.session.set(parsed);
+          this.lastSessionUpdateTime = parsed.update_time ?? null;
           this.loading.set(false);
           // Extract PR info from session if available (placeholder)
           // this.extractPRInfo(session);
@@ -136,7 +139,6 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
             this.session.set(parsed);
             this.messageForm.reset();
             this.sendingMessage.set(false);
-            this.refreshSession();
           } catch (error) {
             this.error.set(getParserErrorMessage(error, 'Invalid session response.'));
             this.sendingMessage.set(false);
@@ -162,7 +164,6 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
           const parsed = parseSessionResponse(session);
           this.session.set(parsed);
           this.approvingPlan.set(false);
-          this.refreshSession();
         } catch (error) {
           this.error.set(getParserErrorMessage(error, 'Invalid session response.'));
           this.approvingPlan.set(false);
@@ -206,7 +207,11 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
     }
 
     this.streamSubscription = this.streamService
-      .sessionStream(this.sessionId(), { pollIntervalSeconds: 60 })
+      .sessionStream(this.sessionId(), {
+        pollIntervalSeconds: 60,
+        lastUpdate: this.lastSessionUpdateTime,
+        lastActivityId: this.lastActivityId
+      })
       .subscribe({
         next: event => {
           if (event.type === 'open') {
@@ -219,10 +224,14 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
           }
           if (event.type === 'session_update') {
             this.session.set(event.session);
+            this.lastSessionUpdateTime = event.session.update_time ?? null;
             return;
           }
           if (event.type === 'activity_update') {
-            this.activityTimeline?.loadActivities(null);
+            if (!event.latestActivityId || event.latestActivityId !== this.lastActivityId) {
+              this.lastActivityId = event.latestActivityId ?? this.lastActivityId;
+              this.activityTimeline?.loadActivities(null);
+            }
           }
         },
         complete: () => {

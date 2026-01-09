@@ -14,7 +14,7 @@ export type SessionStreamEvent =
   | { type: 'open' }
   | { type: 'error' }
   | { type: 'session_update'; session: Session }
-  | { type: 'activity_update' };
+  | { type: 'activity_update'; latestActivityId?: number | null };
 
 type StreamEventHandler<T> = {
   eventType: string;
@@ -126,7 +126,11 @@ export class JulesStreamService {
 
   sessionStream(
     sessionId: string,
-    { pollIntervalSeconds = 5 }: { pollIntervalSeconds?: number } = {}
+    {
+      pollIntervalSeconds = 5,
+      lastUpdate,
+      lastActivityId
+    }: { pollIntervalSeconds?: number; lastUpdate?: string | null; lastActivityId?: number | null } = {}
   ): Observable<SessionStreamEvent> {
     if (!isPlatformBrowser(this.platformId)) {
       return EMPTY;
@@ -142,6 +146,14 @@ export class JulesStreamService {
       poll_interval: pollIntervalSeconds.toString()
     });
 
+    if (lastUpdate) {
+      params.set('last_update', lastUpdate);
+    }
+
+    if (lastActivityId) {
+      params.set('last_activity_id', lastActivityId.toString());
+    }
+
     const streamUrl = this.julesService.getSessionEventStreamUrl(sessionId, params);
 
     return this.createEventSourceObservable<SessionStreamEvent>(streamUrl, [
@@ -155,7 +167,14 @@ export class JulesStreamService {
       {
         eventType: 'activity_update',
         handler: (event: Event, observer) => {
-          observer.next({ type: 'activity_update' });
+          let latestActivityId: number | null | undefined;
+          try {
+            const data = JSON.parse((event as MessageEvent).data) as { latest_activity_id?: number };
+            latestActivityId = data.latest_activity_id ?? null;
+          } catch (error) {
+            latestActivityId = null;
+          }
+          observer.next({ type: 'activity_update', latestActivityId });
         }
       }
     ]);
