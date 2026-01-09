@@ -9,24 +9,27 @@ from django.db import models
 from django.utils import timezone
 
 
+def _derive_fernet_key(secret: str) -> bytes:
+    digest = hashlib.sha256(secret.encode()).digest()
+    return base64.urlsafe_b64encode(digest)
+
+
 @lru_cache(maxsize=1)
 def get_api_key_fernet():
     """
-    Get Fernet instance using JULES_ENCRYPTION_KEY.
+    Get Fernet instance using dedicated JULES_API_KEY_ENCRYPTION_KEY.
     Cached to avoid re-deriving key on every call.
 
-    WARNING: The encryption key is derived from settings.JULES_ENCRYPTION_KEY.
-    If JULES_ENCRYPTION_KEY is rotated, all encrypted API keys will become unreadable
-    until re-encrypted.
+    WARNING: The encryption key is derived from settings.JULES_API_KEY_ENCRYPTION_KEY.
+    If JULES_API_KEY_ENCRYPTION_KEY is rotated, all encrypted API keys will become
+    unreadable until re-encrypted.
     """
-    if not settings.JULES_ENCRYPTION_KEY:
-        raise ValidationError("JULES_ENCRYPTION_KEY must be set to encrypt API keys.")
+    if not settings.JULES_API_KEY_ENCRYPTION_KEY:
+        raise ValidationError(
+            "JULES_API_KEY_ENCRYPTION_KEY must be set to encrypt API keys."
+        )
 
-    # Ensure JULES_ENCRYPTION_KEY is 32 bytes for url-safe base64 encoding
-    # We hash it to get 32 bytes, then base64 encode it to satisfy Fernet
-    key = hashlib.sha256(settings.JULES_ENCRYPTION_KEY.encode()).digest()
-    key_b64 = base64.urlsafe_b64encode(key)
-    return Fernet(key_b64)
+    return Fernet(_derive_fernet_key(settings.JULES_API_KEY_ENCRYPTION_KEY))
 
 
 @lru_cache(maxsize=1)
@@ -40,9 +43,7 @@ def get_legacy_fernets() -> list[Fernet]:
 
     fernets: list[Fernet] = []
     for secret in secrets:
-        key = hashlib.sha256(secret.encode()).digest()
-        key_b64 = base64.urlsafe_b64encode(key)
-        fernets.append(Fernet(key_b64))
+        fernets.append(Fernet(_derive_fernet_key(secret)))
     return fernets
 
 
@@ -78,7 +79,7 @@ class JulesSettings(models.Model):
             encrypted = f.encrypt(api_key.encode()).decode()
             self._encrypted_api_key = encrypted
         except Exception as e:
-            raise ValidationError(f"Failed to encrypt API key: {e}")
+            raise ValidationError("Failed to encrypt API key.") from e
     
     def get_api_key(self) -> str | None:
         """Decrypt and return API key."""
@@ -150,6 +151,9 @@ class JulesSession(models.Model):
 
     class Meta:
         db_table = "jules_sessions"
+        indexes = [
+            models.Index(fields=["last_synced_at"]),
+        ]
 
     def __str__(self) -> str:
         return self.display_name or self.name
@@ -192,6 +196,7 @@ class JulesActivity(models.Model):
         indexes = [
             models.Index(fields=["session", "create_time"]),
             models.Index(fields=["activity_type"]),
+            models.Index(fields=["last_synced_at"]),
         ]
 
     def __str__(self) -> str:

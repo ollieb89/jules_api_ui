@@ -15,17 +15,78 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = os.getenv("DEBUG", "False").lower() == "true"
+TESTING = os.getenv("TESTING", "False").lower() == "true" or "pytest" in sys.modules
+
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-change-this-in-production")
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
+if not SECRET_KEY:
+    if not DEBUG and not TESTING:
+        raise RuntimeError("DJANGO_SECRET_KEY must be set in production")
+    SECRET_KEY = "django-insecure-dev-only"
+
 JULES_ENCRYPTION_KEY = os.getenv("JULES_ENCRYPTION_KEY", SECRET_KEY)
 JULES_API_KEY_ENCRYPTION_KEY = os.getenv(
     "JULES_API_KEY_ENCRYPTION_KEY", JULES_ENCRYPTION_KEY
 )
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DEBUG", "False").lower() == "true"
+# Security Headers
+if not DEBUG:
+    # Force HTTPS
+    # Use SECURE_SSL_REDIRECT = True in production, but we need to disable it for tests running without HTTPS
+    # or ensure tests override it.
+    if os.getenv("TESTING") != "true":
+        SECURE_SSL_REDIRECT = True
+    # Secure cookies
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    # HSTS settings
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    # Content type security
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    # Referrer policy
+    SECURE_REFERRER_POLICY = "same-origin"
+
+# Security Settings
+# https://docs.djangoproject.com/en/5.0/topics/security/
+
+# Always set these headers to protect against common attacks
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = "DENY"
+
+if not DEBUG:
+    # Production security settings
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+
+# Security settings
+if not DEBUG:
+    # Set to True to avoid transmitting the session cookie over HTTP accidentally.
+    SESSION_COOKIE_SECURE = True
+    # Set to True to avoid transmitting the CSRF cookie over HTTP accidentally.
+    CSRF_COOKIE_SECURE = True
+    # Redirect all non-HTTPS requests to HTTPS.
+    SECURE_SSL_REDIRECT = not TESTING
+    # Trust the X-Forwarded-Proto header for SSL termination proxies
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    # HTTP Strict Transport Security (HSTS)
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+    SECURE_HSTS_PRELOAD = False
+else:
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+    SECURE_SSL_REDIRECT = False
 
 # Application definition
 INSTALLED_APPS = [
@@ -138,8 +199,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Django REST Framework
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "jules.authentication.QueryParamJWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",
@@ -149,10 +211,12 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_CLASSES": (
         "rest_framework.throttling.AnonRateThrottle",
         "rest_framework.throttling.UserRateThrottle",
+        "rest_framework.throttling.ScopedRateThrottle",
     ),
     "DEFAULT_THROTTLE_RATES": {
         "anon": os.getenv("DRF_THROTTLE_ANON", "30/min"),
         "user": os.getenv("DRF_THROTTLE_USER", "60/min"),
+        "jules_api": os.getenv("DRF_THROTTLE_JULES_API", "120/min"),
     },
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",
@@ -164,6 +228,7 @@ REST_FRAMEWORK = {
 }
 
 # CORS settings
+# Keep origins minimal in production. Do not use wildcard origins with credentials.
 CORS_ALLOWED_ORIGINS = [
     origin.strip()
     for origin in os.getenv(
@@ -173,7 +238,8 @@ CORS_ALLOWED_ORIGINS = [
     if origin.strip()
 ]
 
-CORS_ALLOW_CREDENTIALS = os.getenv("CORS_ALLOW_CREDENTIALS", "True").lower() == "true"
+# Allow credentials only when required by the frontend auth flow (cookies/HTTP auth).
+CORS_ALLOW_CREDENTIALS = os.getenv("CORS_ALLOW_CREDENTIALS", "False").lower() == "true"
 
 CORS_ALLOW_METHODS = [
     method.strip()
@@ -194,9 +260,15 @@ CORS_ALLOW_HEADERS = [
     if header.strip()
 ]
 
+# SSE streaming safeguards
+# Keep these limits conservative to avoid long-lived busy loops in production.
+SSE_MAX_CONNECTION_SECONDS = int(os.getenv("SSE_MAX_CONNECTION_SECONDS", "300"))
+SSE_MIN_POLL_INTERVAL_SECONDS = float(os.getenv("SSE_MIN_POLL_INTERVAL_SECONDS", "1"))
+SSE_MAX_POLL_INTERVAL_SECONDS = float(os.getenv("SSE_MAX_POLL_INTERVAL_SECONDS", "60"))
+
 # Jules API Configuration
-JULES_API_BASE_URL = os.getenv("JULES_API_BASE_URL", "https://jules.googleapis.com")
-JULES_API_VERSION = os.getenv("JULES_API_VERSION", "v1alpha")
+JULES_API_BASE_URL = os.getenv("JULES_API_BASE_URL", "https://jules.googleapis.com").rstrip("/")
+JULES_API_VERSION = os.getenv("JULES_API_VERSION", "v1alpha").strip("/")
 JULES_API_KEY = os.getenv("JULES_API_KEY", "")
 
 Q_CLUSTER = {

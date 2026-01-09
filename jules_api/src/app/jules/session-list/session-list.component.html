@@ -17,7 +17,7 @@
     </div>
   } @else if (error()) {
     <div 
-      class="bg-[var(--color-error-50)] border border-[var(--color-error-200)] text-[var(--color-error-700)] px-4 py-3 rounded mb-4"
+      class="bg-[var(--color-surface-error)] border border-[var(--color-border-error)] text-[var(--color-text-error)] px-4 py-3 rounded mb-4"
       role="alert"
       aria-live="assertive"
     >
@@ -44,8 +44,8 @@
       </button>
     </div>
   } @else {
-    <div class="bg-white shadow-md rounded-lg overflow-hidden">
-      <div class="divide-y divide-gray-200">
+    <div class="bg-[var(--color-surface-primary)] shadow-md rounded-lg overflow-hidden">
+      <div class="divide-y divide-[var(--color-border-default)]">
         @for (session of formattedSessions(); track session.name) {
           <div class="p-6 hover:bg-[var(--color-surface-secondary)] transition-colors">
             <div class="flex justify-between items-start">
@@ -78,7 +78,7 @@
                   (click)="deleteSession(session.name)"
                   type="button"
                   [aria-label]="'Delete session ' + session.display_name"
-                  class="text-[var(--color-error-700)] hover:text-[var(--color-error-800)] font-medium text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+                  class="text-[var(--color-text-error)] hover:text-[var(--color-text-error-strong)] font-medium text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
                 >
                   Delete
                 </button>

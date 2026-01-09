@@ -16,7 +16,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatPaginatorModule, MatPaginator, PageEvent } from '@angular/material/paginator';
 import { JulesService } from '../../services/jules.service';
-import { Activity, JulesApiError, Plan, PlanState } from '../../models/jules.model';
+import { Activity, Plan, PlanState } from '../../models/jules.model';
 import { PlanApprovalComponent } from '../plan-approval/plan-approval.component';
 import { getApiErrorMessage } from '../../utils/api-error';
 import { getParserErrorMessage } from '../../utils/api-parsers';
@@ -86,7 +86,7 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
         activityType = 'Plan Generated';
         description = `${this.getPlanStateLabel(plan.state)} plan with ${plan.steps.length} steps`;
         originator = 'agent';
-        iconClass = 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400';
+        iconClass = 'bg-[var(--color-surface-info)] text-[var(--color-text-info)]';
         return {
           ...activity,
           formattedTime: time.toLocaleString(),
@@ -94,30 +94,30 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
           description,
           originator,
           iconClass,
-          originatorBadgeClass: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200',
+          originatorBadgeClass: 'bg-[var(--color-surface-info)] text-[var(--color-text-info-strong)]',
           plan
         };
       } else if (activity.plan_approved) {
         activityType = 'Plan Approved';
         description = 'Plan has been approved';
         originator = 'user';
-        iconClass = 'bg-[var(--color-success-50)] text-[var(--color-success-700)]';
+        iconClass = 'bg-[var(--color-surface-success)] text-[var(--color-text-success)]';
       } else if (activity.progress_updated) {
         activityType = 'Progress Updated';
         const step = activity.progress_updated;
         description = step.title || step.description || 'Progress updated';
         originator = 'agent';
-        iconClass = 'bg-[var(--color-warning-50)] text-[var(--color-warning-700)]';
+        iconClass = 'bg-[var(--color-surface-warning)] text-[var(--color-text-warning)]';
       } else if (activity.session_completed) {
         activityType = 'Session Completed';
         description = 'Session has been completed';
         originator = 'agent';
-        iconClass = 'bg-[var(--color-secondary-50)] text-[var(--color-secondary-700)]';
+        iconClass = 'bg-[var(--color-surface-accent)] text-[var(--color-text-accent)]';
       }
 
       const originatorBadgeClass = originator === 'agent'
-        ? 'bg-[var(--color-info-50)] text-[var(--color-info-800)]'
-        : 'bg-[var(--color-success-50)] text-[var(--color-success-800)]';
+        ? 'bg-[var(--color-surface-info)] text-[var(--color-text-info-strong)]'
+        : 'bg-[var(--color-surface-success)] text-[var(--color-text-success-strong)]';
 
       return {
         ...activity,
@@ -139,6 +139,9 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
   });
 
   ngOnInit(): void {
+    if (!this.showPagination) {
+      this.pageSize.set(100);
+    }
     this.loadActivities();
     this.previousSessionId = this.sessionId;
   }
@@ -174,63 +177,66 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
     this.loading.set(true);
     this.error.set(null);
 
+    if (!this.showPagination) {
+      this.loadAllActivities(null, []);
+      return;
+    }
+
     this.julesService.getActivities(this.sessionId, this.pageSize(), pageToken || null).subscribe({
       next: (response) => {
-        this.activities.set(response.activities);
-        this.currentPageActivities.set(response.activities);
-        const snapshot = this.derivePlanSnapshot(response.activities);
-        this.planSnapshot.set(snapshot);
-        this.planStateChange.emit(snapshot?.plan.state ?? null);
-        const nextToken = response.next_page_token || null;
-        this.nextPageToken.set(nextToken);
-        
-        const currentIndex = this.currentPageIndex();
-        const tokens = this.pageTokens();
-        const nexts = this.nextTokens();
-        
-        // Store the token used for this page and the next token from this page
-        if (tokens.length <= currentIndex) {
-          const newTokens = [...tokens];
-          const newNexts = [...nexts];
-          while (newTokens.length <= currentIndex) {
-            newTokens.push(null);
-            newNexts.push(null);
-          }
-          newTokens[currentIndex] = pageToken || null;
-          newNexts[currentIndex] = nextToken;
-          this.pageTokens.set(newTokens);
-          this.nextTokens.set(newNexts);
-        } else {
-          const newNexts = [...nexts];
-          newNexts[currentIndex] = nextToken;
-          this.nextTokens.set(newNexts);
-        }
-        
-        if (this.paginator) {
-          if (nextToken) {
-            this.paginator.length = 10000;
+        try {
+          this.activities.set(response.activities);
+          this.currentPageActivities.set(response.activities);
+          const snapshot = this.derivePlanSnapshot(response.activities);
+          this.planSnapshot.set(snapshot);
+          this.planStateChange.emit(snapshot?.plan.state ?? null);
+          const nextToken = response.next_page_token || null;
+          this.nextPageToken.set(nextToken);
+          
+          const currentIndex = this.currentPageIndex();
+          const tokens = this.pageTokens();
+          const nexts = this.nextTokens();
+          
+          // Store the token used for this page and the next token from this page
+          if (tokens.length <= currentIndex) {
+            const newTokens = [...tokens];
+            const newNexts = [...nexts];
+            while (newTokens.length <= currentIndex) {
+              newTokens.push(null);
+              newNexts.push(null);
+            }
+            newTokens[currentIndex] = pageToken || null;
+            newNexts[currentIndex] = nextToken;
+            this.pageTokens.set(newTokens);
+            this.nextTokens.set(newNexts);
           } else {
             const newNexts = [...nexts];
             newNexts[currentIndex] = nextToken;
             this.nextTokens.set(newNexts);
           }
-
+          
           if (this.paginator) {
             if (nextToken) {
               this.paginator.length = 10000;
             } else {
-              this.paginator.length = (currentIndex + 1) * this.pageSize();
+              const newNexts = [...nexts];
+              newNexts[currentIndex] = nextToken;
+              this.nextTokens.set(newNexts);
             }
-            this.paginator.pageIndex = currentIndex;
-          }
 
-          this.loading.set(false);
-        } catch (error) {
-          this.error.set(getParserErrorMessage(error, 'Invalid activities response.'));
+            if (this.paginator) {
+              if (nextToken) {
+                this.paginator.length = 10000;
+              } else {
+                this.paginator.length = (currentIndex + 1) * this.pageSize();
+              }
+              this.paginator.pageIndex = currentIndex;
+            }
+          }
           this.loading.set(false);
         }
       },
-      error: (err: JulesApiError) => {
+      error: (err: unknown) => {
         this.error.set(getApiErrorMessage(err, 'Failed to load activities'));
         this.planSnapshot.set(null);
         this.planStateChange.emit(null);
@@ -303,43 +309,117 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
   }
 
   private derivePlanSnapshot(activities: Activity[]): PlanSnapshot | null {
-    const planActivities = activities.filter(activity => activity.plan_generated?.plan);
-    if (planActivities.length === 0) {
+    const planGeneratedActivities = activities.filter(activity => activity.plan_generated?.plan);
+    const planApprovedActivities = activities.filter(activity => activity.plan_approved);
+    if (planGeneratedActivities.length === 0 && planApprovedActivities.length === 0) {
       return null;
     }
 
-    const latestPlanActivity = planActivities.reduce((latest, current) => {
+    const latestPlanGenerated = planGeneratedActivities.reduce<Activity | null>((latest, current) => {
+      if (!latest) {
+        return current;
+      }
       const latestTime = new Date(latest.create_time).getTime();
       const currentTime = new Date(current.create_time).getTime();
       return currentTime > latestTime ? current : latest;
-    });
+    }, null);
 
-    const basePlan = latestPlanActivity.plan_generated?.plan;
+    const latestPlanApprovedWithPlan = planApprovedActivities
+      .filter(activity => activity.plan_approved?.plan)
+      .reduce<Activity | null>((latest, current) => {
+        if (!latest) {
+          return current;
+        }
+        const latestTime = new Date(latest.create_time).getTime();
+        const currentTime = new Date(current.create_time).getTime();
+        return currentTime > latestTime ? current : latest;
+      }, null);
+
+    const basePlan = latestPlanApprovedWithPlan?.plan_approved?.plan
+      ?? latestPlanGenerated?.plan_generated?.plan;
     if (!basePlan) {
       return null;
     }
 
+    const approvalPlan = latestPlanApprovedWithPlan?.plan_approved?.plan;
+    const planSteps = approvalPlan?.steps?.length ? approvalPlan.steps : basePlan.steps;
+    const planState = this.derivePlanState(
+      approvalPlan?.state ?? basePlan.state,
+      activities,
+      latestPlanGenerated ? new Date(latestPlanGenerated.create_time).getTime() : null
+    );
     const plan: Plan = {
       ...basePlan,
-      state: basePlan.state || 'STATE_UNSPECIFIED',
-      steps: basePlan.steps.map(step => ({ ...step }))
+      ...approvalPlan,
+      state: planState,
+      steps: planSteps.map(step => ({ ...step }))
     };
 
+    return {
+      plan,
+      planGeneratedAt:
+        latestPlanGenerated?.create_time ?? latestPlanApprovedWithPlan?.create_time ?? ''
+    };
+  }
+
+  private derivePlanState(
+    baseState: PlanState,
+    activities: Activity[],
+    latestPlanTime: number | null
+  ): PlanState {
     const planApprovedAfter = activities.some(activity => {
       if (!activity.plan_approved) {
         return false;
       }
-      return new Date(activity.create_time).getTime() >= new Date(latestPlanActivity.create_time).getTime();
+      if (latestPlanTime === null) {
+        return true;
+      }
+      return new Date(activity.create_time).getTime() >= latestPlanTime;
     });
 
-    if (planApprovedAfter && plan.state !== 'REJECTED') {
-      plan.state = 'APPROVED';
+    if (planApprovedAfter && baseState !== 'REJECTED') {
+      return 'APPROVED';
     }
 
-    return {
-      plan,
-      planGeneratedAt: latestPlanActivity.create_time
-    };
+    if (baseState === 'STATE_UNSPECIFIED') {
+      return 'PENDING';
+    }
+
+    return baseState;
+  }
+
+  private loadAllActivities(pageToken: string | null, collected: Activity[]): void {
+    this.julesService.getActivities(this.sessionId, this.pageSize(), pageToken || null).subscribe({
+      next: (response) => {
+        try {
+          const mergedActivities = [...collected, ...response.activities];
+          const nextToken = response.next_page_token || null;
+          if (nextToken) {
+            this.loadAllActivities(nextToken, mergedActivities);
+            return;
+          }
+          this.activities.set(mergedActivities);
+          this.currentPageActivities.set(mergedActivities);
+          const snapshot = this.derivePlanSnapshot(mergedActivities);
+          this.planSnapshot.set(snapshot);
+          this.planStateChange.emit(snapshot?.plan.state ?? null);
+          this.currentPageIndex.set(0);
+          this.pageTokens.set([]);
+          this.nextTokens.set([]);
+          this.nextPageToken.set(null);
+          this.loading.set(false);
+        } catch (error) {
+          this.error.set(getParserErrorMessage(error, 'Invalid activities response.'));
+          this.loading.set(false);
+        }
+      },
+      error: (err: unknown) => {
+        this.error.set(getApiErrorMessage(err, 'Failed to load activities'));
+        this.planSnapshot.set(null);
+        this.planStateChange.emit(null);
+        this.loading.set(false);
+      }
+    });
   }
 
   private getPlanStateLabel(state: PlanState): string {

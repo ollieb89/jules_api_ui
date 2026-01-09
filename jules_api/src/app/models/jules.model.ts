@@ -61,7 +61,7 @@ export interface PlanGeneratedActivity {
 }
 
 export interface PlanApprovedActivity {
-  // Empty, just indicates approval
+  plan?: Plan;
 }
 
 export interface ProgressUpdatedActivity {
@@ -128,6 +128,12 @@ export interface TestConnectionResponse {
 
 // API Error types
 export interface JulesApiError {
-  error: string;
+  error:
+    | string
+    | {
+        message?: string;
+        detail?: unknown;
+      };
+  retry_after_seconds?: number;
   fieldErrors?: ApiError;
 }

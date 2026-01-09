@@ -60,4 +60,35 @@ describe('ActivityCardComponent', () => {
     const chipText = fixture.debugElement.query(By.css('mat-chip')).nativeElement.textContent;
     expect(chipText).toContain('User');
   });
+
+  it('should render progress updates with artifacts when expanded', () => {
+    fixture.componentRef.setInput('activity', {
+      name: 'activities/progress-updated',
+      progress_updated: {
+        title: 'Running tests',
+        description: 'Executed unit suite',
+        artifacts: [
+          {
+            bash_output: 'npm test',
+            git_patch: '@@ -1,1 +1,1 @@\n-old\n+new'
+          }
+        ]
+      },
+      create_time: '2024-01-01T00:00:00Z'
+    });
+
+    component.toggleBashOutput(0);
+    component.toggleDiffExpanded(0);
+    fixture.detectChanges();
+
+    const title = fixture.debugElement.query(By.css('h3')).nativeElement.textContent;
+    const description = fixture.debugElement.query(By.css('p')).nativeElement.textContent;
+    const bashOutput = fixture.debugElement.query(By.css('pre')).nativeElement.textContent;
+    const diffLines = fixture.debugElement.queryAll(By.css('.diff-line'));
+
+    expect(title).toContain('Progress Updated');
+    expect(description).toContain('Running tests');
+    expect(bashOutput).toContain('npm test');
+    expect(diffLines.length).toBeGreaterThan(0);
+  });
 });

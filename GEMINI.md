@@ -68,7 +68,8 @@ Located in `jules_backend/`.
 - **Environment Manager:** Pixi
 
 **Status:** The Django backend is the active runtime. The legacy FastAPI prototype has been removed
-from the repository and is not part of deployment or development workflows.
+from the repository (there is no `jules_backend/app/` runtime) and is not part of deployment or
+development workflows.
 
 ### Development Commands
 
