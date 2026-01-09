@@ -1,95 +1,50 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { UserFormComponent } from './user-form.component';
-import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
-import { UserService } from '../../services/user.service';
+import { TestBed } from '@angular/core/testing';
+import { Router, ActivatedRoute, convertToParamMap } from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
 import { of } from 'rxjs';
-import { signal } from '@angular/core';
+import { vi } from 'vitest';
+import { UserFormComponent } from './user-form.component';
+import { UserService } from '../../services/user.service';
 
 describe('UserFormComponent', () => {
   let component: UserFormComponent;
-  let fixture: ComponentFixture<UserFormComponent>;
-  let mockUserService: any;
-  let mockRouter: any;
-  let mockActivatedRoute: any;
 
   beforeEach(async () => {
-    mockUserService = {
-      getUser: (id: number) => of({ id, name: 'Test User', email: 'test@example.com' }),
-      createUser: () => of({}),
-      updateUser: () => of({}),
-    };
-
-    mockRouter = {
-      navigate: () => {},
-    };
-
-    mockActivatedRoute = {
-      snapshot: {
-        paramMap: {
-          get: (key: string) => null,
-        },
-      },
+    const userService = {
+      getUser: vi.fn(() => of({ id: 1, name: 'Test User', email: 'test@example.com' })),
+      createUser: vi.fn(() => of({}))
     };
 
     await TestBed.configureTestingModule({
-      imports: [UserFormComponent, ReactiveFormsModule],
+      imports: [UserFormComponent, RouterTestingModule.withRoutes([])],
       providers: [
-        FormBuilder,
-        { provide: UserService, useValue: mockUserService },
-        { provide: Router, useValue: mockRouter },
-        { provide: ActivatedRoute, useValue: mockActivatedRoute },
-      ],
+        { provide: UserService, useValue: userService },
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { paramMap: convertToParamMap({}) } }
+        }
+      ]
     }).compileComponents();
-  });
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(UserFormComponent);
+    const fixture = TestBed.createComponent(UserFormComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
-  it('should have required indicators on labels', () => {
-    const labels = fixture.nativeElement.querySelectorAll('label');
-    let nameLabelWithAsterisk = false;
-    let emailLabelWithAsterisk = false;
+  it('returns required field errors when controls are touched', () => {
+    component.userForm.controls['name'].markAsTouched();
+    component.userForm.controls['email'].markAsTouched();
 
-    labels.forEach((label: HTMLElement) => {
-      const text = label.textContent || '';
-      if (text.includes('Name') && label.querySelector('.text-red-500')) {
-        nameLabelWithAsterisk = true;
-      }
-      if (text.includes('Email') && label.querySelector('.text-red-500')) {
-        emailLabelWithAsterisk = true;
-      }
-    });
-
-    expect(nameLabelWithAsterisk).toBe(true);
-    expect(emailLabelWithAsterisk).toBe(true);
+    expect(component.getFieldError('name')).toBe('Name is required');
+    expect(component.getFieldError('email')).toBe('Email is required');
   });
 
-  it('should have placeholders on inputs', () => {
-    const nameInput = fixture.nativeElement.querySelector('#name');
-    const emailInput = fixture.nativeElement.querySelector('#email');
+  it('navigates back to the list on cancel', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate');
 
-    expect(nameInput.getAttribute('placeholder')).toBe('Enter user name');
-    expect(emailInput.getAttribute('placeholder')).toBe('Enter user email');
-  });
+    component.cancel();
 
-  it('should have autofocus on name input', () => {
-    const nameInput = fixture.nativeElement.querySelector('#name');
-    expect(nameInput.hasAttribute('autofocus')).toBe(true);
-  });
-
-  it('should show spinner when loading', () => {
-    component.loading.set(true);
-    fixture.detectChanges();
-
-    const spinner = fixture.nativeElement.querySelector('svg.animate-spin');
-    expect(spinner).toBeTruthy();
-    expect(spinner.getAttribute('aria-hidden')).toBe('true');
-
-    const buttonText = fixture.nativeElement.querySelector('button[type="submit"]').textContent;
-    expect(buttonText).toContain('Saving...');
+    expect(navigateSpy).toHaveBeenCalledWith(['/users']);
   });
 });

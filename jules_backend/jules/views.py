@@ -2,6 +2,7 @@ import json
 import time
 from queue import Empty
 
+from django.conf import settings
 from django.http import StreamingHttpResponse
 from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -37,6 +38,7 @@ from .store import (
     upsert_activity_from_api,
     upsert_session_from_api,
 )
+from .sse import clamp_interval, should_close_stream
 from .utils import handle_api_exception
 from .streaming import publish, subscribe, unsubscribe
 
@@ -74,8 +76,14 @@ class SessionViewSet(JulesAuthenticatedViewSet):
     )
     def cached_session_events(self, request):
         """Stream cached session list updates via SSE."""
-        heartbeat = float(request.query_params.get("poll_interval", 20))
+        # Clamp polling intervals and cap stream lifetime to avoid busy loops.
+        heartbeat = clamp_interval(
+            float(request.query_params.get("poll_interval", 20)),
+            settings.SSE_MIN_POLL_INTERVAL_SECONDS,
+            settings.SSE_MAX_POLL_INTERVAL_SECONDS,
+        )
         last_update = request.query_params.get("last_update")
+        stream_started_at = time.monotonic()
 
         def event_stream():
             nonlocal last_update
@@ -93,6 +101,12 @@ class SessionViewSet(JulesAuthenticatedViewSet):
                     yield f"data: {json.dumps(serializer.data)}\n\n"
                     last_update = latest_update
                 while True:
+                    if should_close_stream(
+                        stream_started_at,
+                        settings.SSE_MAX_CONNECTION_SECONDS,
+                        "sessions.cached",
+                    ):
+                        break
                     try:
                         event = queue.get(timeout=heartbeat)
                         yield f"event: {event.event_type}\n"
@@ -167,12 +181,22 @@ class SessionViewSet(JulesAuthenticatedViewSet):
     def session_events(self, request):
         """Stream session list updates via SSE."""
         client = JulesApiClient()
-        poll_interval = float(request.query_params.get("poll_interval", 10))
+        # Clamp polling intervals and cap stream lifetime to avoid busy loops.
+        poll_interval = clamp_interval(
+            float(request.query_params.get("poll_interval", 10)),
+            settings.SSE_MIN_POLL_INTERVAL_SECONDS,
+            settings.SSE_MAX_POLL_INTERVAL_SECONDS,
+        )
         last_update = request.query_params.get("last_update")
+        stream_started_at = time.monotonic()
 
         def event_stream():
             nonlocal last_update
             while True:
+                if should_close_stream(
+                    stream_started_at, settings.SSE_MAX_CONNECTION_SECONDS, "sessions.live"
+                ):
+                    break
                 try:
                     data = client.list_sessions(page_size=100)
                     sessions = data.get("sessions", [])
@@ -319,11 +343,17 @@ class SessionViewSet(JulesAuthenticatedViewSet):
     )
     def cached_events(self, request, pk=None):  # noqa: ARG002
         """Stream cached session/activity updates via SSE."""
-        heartbeat = float(request.query_params.get("poll_interval", 15))
+        # Clamp polling intervals and cap stream lifetime to avoid busy loops.
+        heartbeat = clamp_interval(
+            float(request.query_params.get("poll_interval", 15)),
+            settings.SSE_MIN_POLL_INTERVAL_SECONDS,
+            settings.SSE_MAX_POLL_INTERVAL_SECONDS,
+        )
         session_name = normalize_session_name(pk)
         last_update = request.query_params.get("last_update")
         last_activity_id_param = request.query_params.get("last_activity_id")
         last_activity_id = int(last_activity_id_param) if last_activity_id_param else None
+        stream_started_at = time.monotonic()
 
         def get_latest_activity_id() -> int | None:
             latest_activity = (
@@ -361,6 +391,12 @@ class SessionViewSet(JulesAuthenticatedViewSet):
                 yield from emit_cached_updates()
 
                 while True:
+                    if should_close_stream(
+                        stream_started_at,
+                        settings.SSE_MAX_CONNECTION_SECONDS,
+                        f"session.cached.{session_name}",
+                    ):
+                        break
                     try:
                         event = queue.get(timeout=heartbeat)
                         if event.event_type == "session_update":
@@ -400,13 +436,25 @@ class SessionViewSet(JulesAuthenticatedViewSet):
     def events(self, request, pk=None):  # noqa: ARG002
         """Stream session/activity updates via SSE."""
         client = JulesApiClient()
-        poll_interval = float(request.query_params.get("poll_interval", 5))
+        # Clamp polling intervals and cap stream lifetime to avoid busy loops.
+        poll_interval = clamp_interval(
+            float(request.query_params.get("poll_interval", 5)),
+            settings.SSE_MIN_POLL_INTERVAL_SECONDS,
+            settings.SSE_MAX_POLL_INTERVAL_SECONDS,
+        )
         last_update = request.query_params.get("last_update")
         last_activity_time = request.query_params.get("last_activity_time")
+        stream_started_at = time.monotonic()
 
         def event_stream():
             nonlocal last_update, last_activity_time
             while True:
+                if should_close_stream(
+                    stream_started_at,
+                    settings.SSE_MAX_CONNECTION_SECONDS,
+                    f"session.live.{pk}",
+                ):
+                    break
                 try:
                     session_data = client.get_session(pk)
                     session = upsert_session_from_api(session_data)
@@ -458,13 +506,25 @@ class SessionViewSet(JulesAuthenticatedViewSet):
         last_event_id = request.headers.get("Last-Event-ID")
         if not last_event_id:
             last_event_id = request.query_params.get("last_event_id")
-        heartbeat = int(request.query_params.get("heartbeat", 15))
+        # Clamp polling intervals and cap stream lifetime to avoid busy loops.
+        heartbeat = clamp_interval(
+            float(request.query_params.get("heartbeat", 15)),
+            settings.SSE_MIN_POLL_INTERVAL_SECONDS,
+            settings.SSE_MAX_POLL_INTERVAL_SECONDS,
+        )
         session_name = normalize_session_name(pk)
+        stream_started_at = time.monotonic()
 
         def event_generator():
             yield "retry: 5000\n\n"
             last_seen = int(last_event_id) if last_event_id and last_event_id.isdigit() else 0
             while True:
+                if should_close_stream(
+                    stream_started_at,
+                    settings.SSE_MAX_CONNECTION_SECONDS,
+                    f"activity.stream.{session_name}",
+                ):
+                    break
                 activities = (
                     JulesActivity.objects.filter(session__name=session_name, id__gt=last_seen)
                     .order_by("id")[:100]
@@ -629,12 +689,22 @@ class SyncStatusViewSet(JulesAuthenticatedViewSet):
     )
     def events(self, request):
         """Stream background sync status updates via SSE."""
-        poll_interval = float(request.query_params.get("poll_interval", 5))
+        # Clamp polling intervals and cap stream lifetime to avoid busy loops.
+        poll_interval = clamp_interval(
+            float(request.query_params.get("poll_interval", 5)),
+            settings.SSE_MIN_POLL_INTERVAL_SECONDS,
+            settings.SSE_MAX_POLL_INTERVAL_SECONDS,
+        )
         last_update = request.query_params.get("last_update")
+        stream_started_at = time.monotonic()
 
         def event_stream():
             nonlocal last_update
             while True:
+                if should_close_stream(
+                    stream_started_at, settings.SSE_MAX_CONNECTION_SECONDS, "sync.status"
+                ):
+                    break
                 try:
                     status_payload = get_sync_status()
                     updated_at = status_payload.get("updated_at")

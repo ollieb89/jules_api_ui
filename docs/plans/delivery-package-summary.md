@@ -1,5 +1,8 @@
 # Jules API UI - Complete Delivery Package
 
+> **Stack alignment:** This repo is **Angular 21 SSR + Django** with Bun/Pixi tooling. Any prior
+> references to React, Turborepo, Prisma, or module federation are legacy and superseded.
+
 ## 📦 WHAT YOU NOW HAVE
 
 Congratulations! Your complete Jules API UI project package is ready. Here's everything included:
@@ -56,7 +59,7 @@ Congratulations! Your complete Jules API UI project package is ready. Here's eve
 - Data flow patterns
 - API integration patterns
 - Component patterns (Container/Presenter, Compound Components)
-- State management patterns (TanStack Query, Zustand, Local)
+- State management patterns (signals, services, local state)
 - Deployment architecture
 - Environment variables
 - Security considerations
@@ -146,15 +149,13 @@ Congratulations! Your complete Jules API UI project package is ready. Here's eve
 
 ### Step 1: Set Up Your Project (Today)
 ```bash
-# Initialize project with Vite
-npm create vite@latest jules-api-ui -- --template react-ts
+# Install frontend dependencies
+cd jules_api
+bun install
 
-# Install dependencies
-cd jules-api-ui
-npm install
-
-# Install key packages
-npm install react-router-dom @tanstack/react-query zustand axios zod react-hook-form tailwindcss next-auth socket.io-client
+# Install backend dependencies
+cd ../jules_backend
+pixi install
 ```
 
 ### Step 2: Create Folder Structure
@@ -217,19 +218,19 @@ Use the **Development Roadmap** checklist to mark completed items
 ## 🎓 LEARNING PATH
 
 ### Must Learn First (Weeks 1-8)
-- React fundamentals
+- Angular fundamentals
 - TypeScript basics
-- Next.js/Vite routing
-- Authentication (NextAuth.js)
-- TanStack Query basics
+- Angular routing
+- Authentication (Django REST + JWT)
+- RxJS basics
 - Tailwind CSS
 
 ### Learn in Phase 2 (Weeks 9-16)
 - GitHub API integration
 - OAuth flows
-- WebSocket/real-time updates
+- SSE/real-time updates
 - Complex component patterns
-- Zustand state management
+- Signals + services state management
 
 ### Learn in Phase 3 (Weeks 17-24)
 - Testing best practices
