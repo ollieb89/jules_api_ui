@@ -181,7 +181,7 @@ class SessionViewSet(viewsets.ViewSet):
                 session = upsert_session(session_data)
             except Exception as e:
                 logger.warning(
-                    "Failed to fetch or upsert session '%s'; using placeholder session instead.",
+                    "Failed to fetch or upsert session '%s': using placeholder session instead.",
                     pk,
                     exc_info=True,
                 )
