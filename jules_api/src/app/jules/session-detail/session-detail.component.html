@@ -46,7 +46,7 @@
           }
         </button>
         
-        @if (hasPendingPlan()) {
+        @if (canApprovePlan()) {
           <button
             (click)="approvePlan()"
             type="button"

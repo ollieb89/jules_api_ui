@@ -62,10 +62,11 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
   refreshing = signal<boolean>(false);
   planStateFromActivities = signal<PlanState | null>(null);
 
-  // Check if session has a pending plan
-  hasPendingPlan = computed(() => {
+  canApprovePlan = computed(() => {
+    const currentSession = this.session();
     const state = this.planStateFromActivities();
-    return state === 'PENDING' || state === 'STATE_UNSPECIFIED';
+    const hasPendingPlan = state === 'PENDING' || state === 'STATE_UNSPECIFIED';
+    return Boolean(currentSession && currentSession.state === 'ACTIVE' && hasPendingPlan);
   });
 
   ngOnInit(): void {
@@ -150,7 +151,7 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
   }
 
   approvePlan(): void {
-    if (!this.hasPendingPlan()) return;
+    if (!this.canApprovePlan()) return;
     
     this.approvingPlan.set(true);
     this.error.set(null);

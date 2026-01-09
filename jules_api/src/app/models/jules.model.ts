@@ -61,7 +61,7 @@ export interface PlanGeneratedActivity {
 }
 
 export interface PlanApprovedActivity {
-  // Empty, just indicates approval
+  plan?: Plan;
 }
 
 export interface ProgressUpdatedActivity {
