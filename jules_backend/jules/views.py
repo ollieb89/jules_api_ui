@@ -148,7 +148,7 @@ class SessionViewSet(viewsets.ViewSet):
                 session_id=pk, page_size=page_size, page_token=page_token
             )
             activities = data.get("activities", [])
-            session_name = pk if pk.startswith("sessions/") else f"sessions/{pk}"
+            session_name = client._normalize_session_id(pk)
             try:
                 session = JulesSession.objects.get(name=session_name)
             except JulesSession.DoesNotExist:
