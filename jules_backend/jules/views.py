@@ -121,9 +121,10 @@ class SessionViewSet(JulesAuthenticatedViewSet):
                 prompt=serializer.validated_data["prompt"],
                 source=serializer.validated_data["source"],
             )
-            upsert_session_from_api(data)
+            session = upsert_session_from_api(data)
             mark_sessions_synced()
-            session_serializer = SessionSerializer(data=data)
+            session_payload = session_to_api_dict(session)
+            session_serializer = SessionSerializer(data=session_payload)
             session_serializer.is_valid(raise_exception=True)
             return Response(session_serializer.data, status=status.HTTP_201_CREATED)
         except Exception as e:
@@ -221,9 +222,10 @@ class SessionViewSet(JulesAuthenticatedViewSet):
         client = JulesApiClient()
         try:
             data = client.get_session(pk)
-            upsert_session_from_api(data)
+            session = upsert_session_from_api(data)
             mark_sessions_synced()
-            serializer = SessionSerializer(data=data)
+            payload = session_to_api_dict(session)
+            serializer = SessionSerializer(data=payload)
             serializer.is_valid(raise_exception=True)
             return Response(serializer.data)
         except Exception as e:
@@ -250,9 +252,10 @@ class SessionViewSet(JulesAuthenticatedViewSet):
         client = JulesApiClient()
         try:
             data = client.approve_plan(pk)
-            upsert_session_from_api(data)
+            session = upsert_session_from_api(data)
             mark_sessions_synced()
-            session_serializer = SessionSerializer(data=data)
+            session_payload = session_to_api_dict(session)
+            session_serializer = SessionSerializer(data=session_payload)
             session_serializer.is_valid(raise_exception=True)
             return Response(session_serializer.data)
         except Exception as e:
@@ -266,9 +269,10 @@ class SessionViewSet(JulesAuthenticatedViewSet):
         client = JulesApiClient()
         try:
             data = client.send_message(pk, serializer.validated_data["message"])
-            upsert_session_from_api(data)
+            session = upsert_session_from_api(data)
             mark_sessions_synced()
-            session_serializer = SessionSerializer(data=data)
+            session_payload = session_to_api_dict(session)
+            session_serializer = SessionSerializer(data=session_payload)
             session_serializer.is_valid(raise_exception=True)
             return Response(session_serializer.data)
         except Exception as e:

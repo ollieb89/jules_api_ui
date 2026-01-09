@@ -149,6 +149,9 @@ class JulesSession(models.Model):
 
     class Meta:
         db_table = "jules_sessions"
+        indexes = [
+            models.Index(fields=["last_synced_at"]),
+        ]
 
     def __str__(self) -> str:
         return self.display_name or self.name
@@ -191,6 +194,7 @@ class JulesActivity(models.Model):
         indexes = [
             models.Index(fields=["session", "create_time"]),
             models.Index(fields=["activity_type"]),
+            models.Index(fields=["last_synced_at"]),
         ]
 
     def __str__(self) -> str:
