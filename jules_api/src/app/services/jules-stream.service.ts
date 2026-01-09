@@ -4,6 +4,7 @@ import { Observable, EMPTY, Observer } from 'rxjs';
 import { AuthTokenService } from './auth-token.service';
 import { JulesService } from './jules.service';
 import { Session } from '../models/jules.model';
+import { parseSessionResponse, parseSessionsList } from '../utils/api-parsers';
 
 export type SessionsStreamEvent =
   | { type: 'open' }
@@ -117,8 +118,9 @@ export class JulesStreamService {
       {
         eventType: 'sessions_update',
         handler: (event: Event, observer) => {
-          const data = JSON.parse((event as MessageEvent).data) as Session[];
-          observer.next({ type: 'sessions_update', sessions: data });
+          const data = JSON.parse((event as MessageEvent).data) as unknown;
+          const sessions = parseSessionsList(data);
+          observer.next({ type: 'sessions_update', sessions });
         }
       }
     ]);
@@ -160,8 +162,9 @@ export class JulesStreamService {
       {
         eventType: 'session_update',
         handler: (event: Event, observer) => {
-          const data = JSON.parse((event as MessageEvent).data) as Session;
-          observer.next({ type: 'session_update', session: data });
+          const data = JSON.parse((event as MessageEvent).data) as unknown;
+          const session = parseSessionResponse(data);
+          observer.next({ type: 'session_update', session });
         }
       },
       {

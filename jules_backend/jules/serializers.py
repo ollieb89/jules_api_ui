@@ -191,6 +191,12 @@ class SessionCreateSerializer(serializers.Serializer):
         },
     )
 
+    def validate_prompt(self, value: str) -> str:
+        return sanitize_text(value, "Prompt")
+
+    def validate_source(self, value: str) -> str:
+        return sanitize_text(value, "Source")
+
 
 class ArtifactSerializer(serializers.Serializer):
     """Serializer for Artifact."""
@@ -516,6 +522,9 @@ class SendMessageSerializer(serializers.Serializer):
         },
     )
 
+    def validate_message(self, value: str) -> str:
+        return sanitize_text(value, "Message")
+
 
 class JulesSettingsSerializer(serializers.Serializer):
     """Serializer for Jules settings (read-only, returns masked API key)."""
@@ -539,18 +548,66 @@ class ApiKeyUpdateSerializer(serializers.Serializer):
         },
     )
 
+    def validate_api_key(self, value: str) -> str:
+        return sanitize_text(value, "API key")
+
 
 class SyncStatusSerializer(serializers.Serializer):
     """Serializer for polling sync status payloads."""
 
-    state = serializers.CharField()
-    started_at = serializers.CharField(allow_null=True, required=False)
-    finished_at = serializers.CharField(allow_null=True, required=False)
-    sessions = serializers.IntegerField()
-    new_activities = serializers.IntegerField()
-    skipped = serializers.BooleanField()
-    error = serializers.CharField(allow_null=True, required=False)
-    updated_at = serializers.CharField(allow_null=True, required=False)
+    state = serializers.ChoiceField(
+        choices=["idle", "running", "completed", "skipped", "error"],
+        error_messages={
+            "required": "Sync state is required.",
+            "invalid_choice": "Sync state is invalid.",
+        },
+    )
+    started_at = serializers.CharField(
+        allow_null=True,
+        required=False,
+        allow_blank=True,
+        error_messages={"blank": "Sync started time cannot be blank."},
+    )
+    finished_at = serializers.CharField(
+        allow_null=True,
+        required=False,
+        allow_blank=True,
+        error_messages={"blank": "Sync finished time cannot be blank."},
+    )
+    sessions = serializers.IntegerField(
+        min_value=0,
+        error_messages={
+            "required": "Sessions count is required.",
+            "invalid": "Sessions count must be an integer.",
+            "min_value": "Sessions count cannot be negative.",
+        },
+    )
+    new_activities = serializers.IntegerField(
+        min_value=0,
+        error_messages={
+            "required": "New activities count is required.",
+            "invalid": "New activities count must be an integer.",
+            "min_value": "New activities count cannot be negative.",
+        },
+    )
+    skipped = serializers.BooleanField(
+        error_messages={
+            "required": "Sync skipped flag is required.",
+            "invalid": "Sync skipped flag must be a boolean.",
+        }
+    )
+    error = serializers.CharField(
+        allow_null=True,
+        required=False,
+        allow_blank=True,
+        error_messages={"blank": "Sync error cannot be blank."},
+    )
+    updated_at = serializers.CharField(
+        allow_null=True,
+        required=False,
+        allow_blank=True,
+        error_messages={"blank": "Sync updated time cannot be blank."},
+    )
 
 
 class JulesActivitySerializer(serializers.ModelSerializer):
