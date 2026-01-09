@@ -78,6 +78,17 @@ def _extract_upstream_error(response: httpx.Response) -> dict[str, Any]:
         return {"detail": text}
 
 
+def _normalize_error_detail(detail: Any) -> tuple[str | None, Any | None]:
+    if not isinstance(detail, dict):
+        return None, detail
+    error_payload = detail.get("error")
+    if isinstance(error_payload, dict):
+        message = error_payload.get("message") or error_payload.get("detail")
+        return message, detail
+    message = detail.get("message") or detail.get("detail")
+    return message, detail
+
+
 def handle_api_exception(e: Exception, request: Request | None = None) -> Response:
     """
     Log the exception and return a secure error response.
@@ -93,7 +104,8 @@ def handle_api_exception(e: Exception, request: Request | None = None) -> Respon
     if isinstance(e, httpx.HTTPStatusError):
         status_code = e.response.status_code
         error_detail = _extract_upstream_error(e.response)
-        message = "Upstream service error"
+        message, error_detail = _normalize_error_detail(error_detail)
+        message = message or "Upstream service error"
     elif isinstance(e, httpx.TimeoutException):
         status_code = status.HTTP_504_GATEWAY_TIMEOUT
         error_detail = {"detail": str(e)}
@@ -104,12 +116,14 @@ def handle_api_exception(e: Exception, request: Request | None = None) -> Respon
         message = "Upstream request failed"
     elif isinstance(e, ApiRequestError):
         if isinstance(details, dict):
-            upstream_status = details.get("upstream_status")
-            if upstream_status:
-                status_code = upstream_status
-        if details:
+            status_code = details.get("upstream_status") or status_code
             error_detail = details
-        message = getattr(e, "user_message", None) or str(e)
+            detail_message, _ = _normalize_error_detail(details)
+            if detail_message:
+                message = detail_message
+        elif details:
+            error_detail = details
+        message = getattr(e, "user_message", None) or message or str(e)
     elif isinstance(e, Throttled):
         status_code = e.status_code
         error_detail = {"detail": str(e)}
@@ -167,7 +181,10 @@ def drf_exception_handler(exc: Exception, context: dict[str, Any] | None) -> Res
         return None
     if isinstance(exc, Throttled):
         response.data = {
-            "error": str(exc) or "Request rate limit exceeded. Please retry shortly.",
+            "error": {
+                "message": str(exc) or "Request rate limit exceeded. Please retry shortly.",
+                "detail": {"retry_after_seconds": exc.wait},
+            },
             "retry_after_seconds": exc.wait,
         }
     return response
