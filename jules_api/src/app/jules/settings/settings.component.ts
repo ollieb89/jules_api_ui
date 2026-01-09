@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { JulesService } from '../../services/jules.service';
-import { JulesApiError } from '../../models/jules.model';
 import { getApiErrorMessage } from '../../utils/api-error';
 
 interface SettingsResponse {
@@ -189,7 +188,7 @@ export class SettingsComponent implements OnInit {
           this.loading.set(false);
         }
       },
-      error: (err: JulesApiError) => {
+      error: (err: unknown) => {
         this.error.set(getApiErrorMessage(err, 'Failed to load settings'));
         this.loading.set(false);
       }
@@ -216,7 +215,7 @@ export class SettingsComponent implements OnInit {
             this.saving.set(false);
           }
         },
-        error: (err: JulesApiError) => {
+        error: (err: unknown) => {
           this.error.set(getApiErrorMessage(err, 'Failed to save API key'));
           this.saving.set(false);
         }
@@ -247,7 +246,7 @@ export class SettingsComponent implements OnInit {
           this.testing.set(false);
         }
       },
-      error: (err: JulesApiError) => {
+      error: (err: unknown) => {
         this.error.set(getApiErrorMessage(err, 'Failed to test connection'));
         this.connectionStatus.set('error');
         this.testing.set(false);

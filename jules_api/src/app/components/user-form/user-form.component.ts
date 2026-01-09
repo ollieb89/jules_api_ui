@@ -4,7 +4,6 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractContro
 import { Router, ActivatedRoute } from '@angular/router';
 
 import { UserService } from '../../services/user.service';
-import { JulesApiError } from '../../models/jules.model';
 import { ApiError, hasFieldErrors } from '../../models/user.model';
 import { getApiErrorMessage } from '../../utils/api-error';
 
@@ -55,7 +54,7 @@ export class UserFormComponent implements OnInit {
         });
         this.loading.set(false);
       },
-      error: (err: JulesApiError) => {
+      error: (err: unknown) => {
         this.error.set(getApiErrorMessage(err, 'Failed to load user'));
         this.loading.set(false);
       }
@@ -83,7 +82,7 @@ export class UserFormComponent implements OnInit {
       next: () => {
         this.router.navigate(['/users']);
       },
-      error: (err: JulesApiError) => {
+      error: (err: unknown) => {
         this.loading.set(false);
         this.error.set(getApiErrorMessage(err, 'Failed to save user'));
         

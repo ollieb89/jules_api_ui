@@ -5,7 +5,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { JulesService } from '../../services/jules.service';
-import { JulesApiError, Plan, Step, StepState, PlanState } from '../../models/jules.model';
+import { Plan, Step, StepState, PlanState } from '../../models/jules.model';
 import { getApiErrorMessage } from '../../utils/api-error';
 
 @Component({
@@ -103,7 +103,7 @@ export class PlanApprovalComponent {
         // Reload the page to show updated state
         window.location.reload();
       },
-      error: (err: JulesApiError) => {
+      error: (err: unknown) => {
         this.error.set(getApiErrorMessage(err, 'Failed to approve plan'));
         this.approving.set(false);
       }

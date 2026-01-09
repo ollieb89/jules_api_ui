@@ -16,7 +16,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatPaginatorModule, MatPaginator, PageEvent } from '@angular/material/paginator';
 import { JulesService } from '../../services/jules.service';
-import { Activity, JulesApiError, Plan, PlanState } from '../../models/jules.model';
+import { Activity, Plan, PlanState } from '../../models/jules.model';
 import { PlanApprovalComponent } from '../plan-approval/plan-approval.component';
 import { getApiErrorMessage } from '../../utils/api-error';
 import { getParserErrorMessage } from '../../utils/api-parsers';
@@ -236,7 +236,7 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
           this.loading.set(false);
         }
       },
-      error: (err: JulesApiError) => {
+      error: (err: unknown) => {
         this.error.set(getApiErrorMessage(err, 'Failed to load activities'));
         this.planSnapshot.set(null);
         this.planStateChange.emit(null);
@@ -387,7 +387,7 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
           this.loading.set(false);
         }
       },
-      error: (err: JulesApiError) => {
+      error: (err: unknown) => {
         this.error.set(getApiErrorMessage(err, 'Failed to load activities'));
         this.planSnapshot.set(null);
         this.planStateChange.emit(null);
