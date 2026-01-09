@@ -56,6 +56,10 @@ def upsert_session(session_data: dict) -> JulesSession:
             # Manually set last_synced_at since auto_now won't trigger with update_fields
             session.last_synced_at = timezone.now()
             session.save(update_fields=update_fields)
+        else:
+            # Even when no data changes, update last_synced_at to track sync time
+            session.last_synced_at = timezone.now()
+            session.save(update_fields=["last_synced_at"])
     
     return session
 

@@ -105,7 +105,7 @@ class SessionViewSet(viewsets.ViewSet):
             try:
                 upsert_session(data)
             except Exception as e:
-                logger.error(f"Failed to persist session locally: {e}", exc_info=True)
+                logger.error(f"Failed to persist session {data.get('name')} locally: {e}", exc_info=True)
             
             serializer = SessionSerializer(data=data)
             serializer.is_valid(raise_exception=True)
@@ -135,7 +135,7 @@ class SessionViewSet(viewsets.ViewSet):
             try:
                 upsert_session(data)
             except Exception as e:
-                logger.error(f"Failed to persist session locally: {e}", exc_info=True)
+                logger.error(f"Failed to persist session {data.get('name')} locally: {e}", exc_info=True)
             
             session_serializer = SessionSerializer(data=data)
             session_serializer.is_valid(raise_exception=True)
@@ -154,7 +154,7 @@ class SessionViewSet(viewsets.ViewSet):
             try:
                 upsert_session(data)
             except Exception as e:
-                logger.error(f"Failed to persist session locally: {e}", exc_info=True)
+                logger.error(f"Failed to persist session {data.get('name')} locally: {e}", exc_info=True)
             
             session_serializer = SessionSerializer(data=data)
             session_serializer.is_valid(raise_exception=True)
