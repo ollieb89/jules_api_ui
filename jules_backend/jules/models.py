@@ -144,4 +144,4 @@ class JulesActivity(models.Model):
         ]
 
     def __str__(self) -> str:
-        return f"{self.session_id}:{self.name}"
+        return f"{self.session.name}:{self.name}"

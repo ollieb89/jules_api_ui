@@ -149,16 +149,12 @@ class SessionViewSet(viewsets.ViewSet):
             )
             activities = data.get("activities", [])
             session_name = pk if pk.startswith("sessions/") else f"sessions/{pk}"
-            session, _ = JulesSession.objects.get_or_create(
-                name=session_name,
-                defaults={
-                    "display_name": session_name,
-                    "state": "STATE_UNSPECIFIED",
-                    "prompt": "",
-                    "source": "",
-                    "raw_payload": {},
-                },
-            )
+            try:
+                session = JulesSession.objects.get(name=session_name)
+            except JulesSession.DoesNotExist:
+                # Fetch the full session details from the API and upsert locally
+                api_session = client.get_session(session_name)
+                session = upsert_session(api_session)
             upsert_activities(session, activities)
             serializer = ActivitySerializer(data=activities, many=True)
             serializer.is_valid(raise_exception=True)
