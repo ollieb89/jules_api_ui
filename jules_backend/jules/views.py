@@ -64,7 +64,7 @@ class SessionViewSet(viewsets.ViewSet):
                 upsert_session(data)
             except Exception as e:
                 # Log the error but don't fail the request since API call succeeded
-                logger.error(f"Failed to persist session locally: {e}", exc_info=True)
+                logger.error(f"Failed to persist session {data.get('name')} locally: {e}", exc_info=True)
             
             session_serializer = SessionSerializer(data=data)
             session_serializer.is_valid(raise_exception=True)
