@@ -52,6 +52,7 @@ class JulesAuthenticatedViewSet(viewsets.ViewSet):
 class SourceViewSet(JulesAuthenticatedViewSet):
     """ViewSet for listing sources (GitHub repositories)."""
 
+    authentication_classes = [SessionAuthentication, JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def list(self, request):  # noqa: ARG002
@@ -70,6 +71,7 @@ class SourceViewSet(JulesAuthenticatedViewSet):
 class SessionViewSet(JulesAuthenticatedViewSet):
     """ViewSet for managing Jules sessions."""
 
+    authentication_classes = [SessionAuthentication, JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     @action(
@@ -457,6 +459,7 @@ class SessionViewSet(JulesAuthenticatedViewSet):
 class JulesHealthViewSet(JulesAuthenticatedViewSet):
     """ViewSet for Jules API health check."""
 
+    authentication_classes = [SessionAuthentication, JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def list(self, request):  # noqa: ARG002
@@ -500,6 +503,7 @@ class JulesHealthViewSet(JulesAuthenticatedViewSet):
 class SettingsViewSet(JulesAuthenticatedViewSet):
     """ViewSet for managing Jules settings (API key configuration)."""
 
+    authentication_classes = [SessionAuthentication, JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def list(self, request):  # noqa: ARG002
