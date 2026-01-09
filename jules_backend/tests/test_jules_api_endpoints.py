@@ -184,3 +184,20 @@ def test_settings_test_connection_handles_failure(api_client, monkeypatch):
     assert payload['status'] == 'error'
     assert payload['api_connectivity'] == 'failed'
     assert payload['error'] == 'service down'
+
+
+@pytest.mark.parametrize(
+    'path',
+    [
+        '/api/jules/sources/',
+        '/api/jules/sessions/',
+        '/api/jules/settings/',
+        '/api/jules/health/',
+    ],
+)
+def test_jules_endpoints_require_authentication(path):
+    client = APIClient()
+
+    response = client.get(path)
+
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
