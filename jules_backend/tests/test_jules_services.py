@@ -5,7 +5,7 @@ from unittest.mock import Mock, patch
 import httpx
 import pytest
 
-from jules.services import ApiRequestError, JulesApiClient, SharedHttpClient
+from jules.services import ApiRequestError, JulesApiClient, SharedHttpClient, RetryPolicy
 
 
 @pytest.fixture
@@ -29,41 +29,48 @@ def mock_jules_settings():
 @pytest.fixture
 def shared_client(monkeypatch):
     """Create a SharedHttpClient with deterministic settings."""
-    monkeypatch.setattr(SharedHttpClient, "MAX_RETRIES", 1)
-    monkeypatch.setattr(SharedHttpClient, "BACKOFF_SECONDS", 0.1)
-    monkeypatch.setattr(SharedHttpClient, "RETRY_STATUS_CODES", {429, 503})
+    monkeypatch.setattr("jules.services.MAX_RETRIES", 1)
+    monkeypatch.setattr("jules.services.BACKOFF_SECONDS", 0.1)
+    monkeypatch.setattr("jules.services.RETRY_STATUS_CODES", {429, 503})
     monkeypatch.setattr(
-        SharedHttpClient,
-        "TIMEOUT_POLICIES",
+        "jules.services.TIMEOUT_POLICIES",
         {"default": httpx.Timeout(5.0, connect=1.0), "long": httpx.Timeout(10.0)},
     )
-    return SharedHttpClient({"X-Test": "true"})
+    # We need to ensure that the SharedHttpClient uses these mocked values if they are read at init or call time.
+    # However, SharedHttpClient reads them via _resolve_retry_policy which uses the module level constants or settings.
+    # The monkeypatch of module level constants above should work if they are read after this point.
 
+    return SharedHttpClient({"X-Test": "true"})
 
 @pytest.fixture
 def client(mock_settings, mock_jules_settings):
     """Create a JulesApiClient instance with mocked settings."""
     return JulesApiClient()
 
+@pytest.fixture
+def retry_policy():
+    return RetryPolicy(max_retries=1, backoff_seconds=0.1, status_codes={429, 503})
+
 
 class TestSharedHttpClientBackoff:
     """Test backoff delay calculation and retry handling."""
 
-    def test_retry_after_header_takes_precedence(self, shared_client):
+    def test_retry_after_header_takes_precedence(self, shared_client, retry_policy):
         response = httpx.Response(
             429,
             request=httpx.Request("GET", "http://example.com"),
             headers={"Retry-After": "2.5"},
         )
-        assert shared_client._calculate_backoff(0, response) == 2.5
+        assert shared_client._calculate_backoff(0, response, retry_policy) == 2.5
 
-    def test_invalid_retry_after_falls_back_to_exponential(self, shared_client):
+    def test_invalid_retry_after_falls_back_to_exponential(self, shared_client, retry_policy):
         response = httpx.Response(
             503,
             request=httpx.Request("GET", "http://example.com"),
             headers={"Retry-After": "invalid"},
         )
-        assert shared_client._calculate_backoff(1, response) == 0.2
+        # 0.1 * (2^1) = 0.2
+        assert shared_client._calculate_backoff(1, response, retry_policy) == 0.2
 
 
 class TestSharedHttpClientRequest:
@@ -92,13 +99,17 @@ class TestSharedHttpClientRequest:
         success_response.content = b"ok"
         success_response.raise_for_status = Mock()
 
-        with patch.object(
-            shared_client._client,
-            "request",
-            side_effect=[retry_response, success_response],
-        ):
-            with patch("jules.services.time.sleep") as mock_sleep:
-                response = shared_client.request("GET", "http://example.com")
+        # Mock _resolve_retry_policy to return our desired policy
+        with patch("jules.services._resolve_retry_policy") as mock_resolve:
+             mock_resolve.return_value = RetryPolicy(max_retries=1, backoff_seconds=0.1, status_codes={503})
+
+             with patch.object(
+                shared_client._client,
+                "request",
+                side_effect=[retry_response, success_response],
+            ):
+                with patch("jules.services.time.sleep") as mock_sleep:
+                    response = shared_client.request("GET", "http://example.com")
 
         assert response == success_response
         mock_sleep.assert_called_once_with(0.1)
@@ -114,13 +125,16 @@ class TestSharedHttpClientRequest:
         success_response.content = b"ok"
         success_response.raise_for_status = Mock()
 
-        with patch.object(
-            shared_client._client,
-            "request",
-            side_effect=[retry_response, success_response],
-        ):
-            with patch("jules.services.time.sleep") as mock_sleep:
-                shared_client.request("GET", "http://example.com")
+        with patch("jules.services._resolve_retry_policy") as mock_resolve:
+             mock_resolve.return_value = RetryPolicy(max_retries=1, backoff_seconds=0.1, status_codes={429})
+
+             with patch.object(
+                shared_client._client,
+                "request",
+                side_effect=[retry_response, success_response],
+            ):
+                with patch("jules.services.time.sleep") as mock_sleep:
+                    shared_client.request("GET", "http://example.com")
 
         mock_sleep.assert_called_once_with(1.5)
 
@@ -141,16 +155,19 @@ class TestSharedHttpClientRequest:
         assert "Bad request" in err.user_message
 
     def test_request_error_maps_to_service_unavailable(self, shared_client, monkeypatch):
-        monkeypatch.setattr(SharedHttpClient, "MAX_RETRIES", 0)
-        request = httpx.Request("GET", "http://example.com")
+        # Instead of monkeypatching the class attribute which doesn't exist, we mock _resolve_retry_policy
+        with patch("jules.services._resolve_retry_policy") as mock_resolve:
+            mock_resolve.return_value = RetryPolicy(max_retries=0, backoff_seconds=0.1, status_codes=set())
 
-        with patch.object(
-            shared_client._client,
-            "request",
-            side_effect=httpx.RequestError("boom", request=request),
-        ):
-            with pytest.raises(ApiRequestError) as excinfo:
-                shared_client.request("GET", "http://example.com")
+            request = httpx.Request("GET", "http://example.com")
+
+            with patch.object(
+                shared_client._client,
+                "request",
+                side_effect=httpx.RequestError("boom", request=request),
+            ):
+                with pytest.raises(ApiRequestError) as excinfo:
+                    shared_client.request("GET", "http://example.com")
 
         err = excinfo.value
         assert err.status_code == 503
@@ -176,6 +193,11 @@ class TestJulesApiClientMethods:
     def test_list_sources_uses_shared_client(self, client):
         mock_response = Mock()
         mock_response.json = Mock(return_value={"sources": []})
+
+        # In the original file 'client' fixture returns JulesApiClient.
+        # JulesApiClient sets self._client = SharedHttpClient(...)
+        # However, due to mocking or changes, it seems self._client might be something else or the test environment is confusing it.
+        # Let's verify what `client` is. It should be JulesApiClient.
 
         with patch.object(client._client, "request", return_value=mock_response) as mock_req:
             result = client.list_sources()
