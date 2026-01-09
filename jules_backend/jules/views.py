@@ -4,9 +4,7 @@ from queue import Empty
 
 from django.http import StreamingHttpResponse
 from rest_framework import status, viewsets
-from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -22,7 +20,6 @@ from .serializers import (
     SyncStatusSerializer,
     SourceSerializer,
 )
-from .authentication import QueryParamJWTAuthentication
 from .models import JulesActivity, JulesSession, JulesSettings
 from .services import JulesApiClient
 from .store import (
@@ -47,15 +44,11 @@ from .streaming import publish, subscribe, unsubscribe
 class JulesAuthenticatedViewSet(viewsets.ViewSet):
     """Base ViewSet that enforces JWT or session authentication."""
 
-    authentication_classes = [SessionAuthentication, JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
 
 class SourceViewSet(JulesAuthenticatedViewSet):
     """ViewSet for listing sources (GitHub repositories)."""
-
-    authentication_classes = [SessionAuthentication, JWTAuthentication]
-    permission_classes = [IsAuthenticated]
 
     def list(self, request):  # noqa: ARG002
         """List all connected GitHub repositories."""
@@ -73,14 +66,10 @@ class SourceViewSet(JulesAuthenticatedViewSet):
 class SessionViewSet(JulesAuthenticatedViewSet):
     """ViewSet for managing Jules sessions."""
 
-    authentication_classes = [SessionAuthentication, JWTAuthentication]
-    permission_classes = [IsAuthenticated]
-
     @action(
         detail=False,
         methods=["get"],
         url_path="cached-events",
-        authentication_classes=[SessionAuthentication, JWTAuthentication, QueryParamJWTAuthentication],
     )
     def cached_session_events(self, request):
         """Stream cached session list updates via SSE."""
@@ -172,7 +161,6 @@ class SessionViewSet(JulesAuthenticatedViewSet):
         detail=False,
         methods=["get"],
         url_path="events",
-        authentication_classes=[SessionAuthentication, JWTAuthentication, QueryParamJWTAuthentication],
     )
     def session_events(self, request):
         """Stream session list updates via SSE."""
@@ -323,7 +311,6 @@ class SessionViewSet(JulesAuthenticatedViewSet):
         detail=True,
         methods=["get"],
         url_path="cached-events",
-        authentication_classes=[SessionAuthentication, JWTAuthentication, QueryParamJWTAuthentication],
     )
     def cached_events(self, request, pk=None):  # noqa: ARG002
         """Stream cached session/activity updates via SSE."""
@@ -398,7 +385,6 @@ class SessionViewSet(JulesAuthenticatedViewSet):
         detail=True,
         methods=["get"],
         url_path="events",
-        authentication_classes=[SessionAuthentication, JWTAuthentication, QueryParamJWTAuthentication],
     )
     def events(self, request, pk=None):  # noqa: ARG002
         """Stream session/activity updates via SSE."""
@@ -488,9 +474,6 @@ class SessionViewSet(JulesAuthenticatedViewSet):
 class JulesHealthViewSet(JulesAuthenticatedViewSet):
     """ViewSet for Jules API health check."""
 
-    authentication_classes = [SessionAuthentication, JWTAuthentication]
-    permission_classes = [IsAuthenticated]
-
     def list(self, request):  # noqa: ARG002
         """Check Jules API connectivity and configuration."""
         try:
@@ -531,9 +514,6 @@ class JulesHealthViewSet(JulesAuthenticatedViewSet):
 
 class SettingsViewSet(JulesAuthenticatedViewSet):
     """ViewSet for managing Jules settings (API key configuration)."""
-
-    authentication_classes = [SessionAuthentication, JWTAuthentication]
-    permission_classes = [IsAuthenticated]
 
     def list(self, request):  # noqa: ARG002
         """Get current settings (masked API key)."""
@@ -624,8 +604,6 @@ class SettingsViewSet(JulesAuthenticatedViewSet):
 class SyncStatusViewSet(JulesAuthenticatedViewSet):
     """ViewSet for background sync status."""
 
-    permission_classes = [IsAuthenticated]
-
     def list(self, request):  # noqa: ARG002
         """Return the latest background sync status."""
         status_payload = get_sync_status()
@@ -637,7 +615,6 @@ class SyncStatusViewSet(JulesAuthenticatedViewSet):
         detail=False,
         methods=["get"],
         url_path="events",
-        authentication_classes=[SessionAuthentication, JWTAuthentication, QueryParamJWTAuthentication],
     )
     def events(self, request):
         """Stream background sync status updates via SSE."""
