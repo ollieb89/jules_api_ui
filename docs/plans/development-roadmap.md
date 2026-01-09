@@ -1,5 +1,8 @@
 # Jules API UI - Development Roadmap (3-6 Month Plan)
 
+> **Stack alignment:** This repo is **Angular 21 SSR + Django** with Bun/Pixi tooling. Any prior
+> references to React, Turborepo, Prisma, or module federation are legacy and superseded.
+
 ## 📅 OVERVIEW
 
 **Total Duration:** 3-6 months
@@ -18,18 +21,18 @@ MVP with essential Jules task management, real-time progress updates, and modern
 ### Week 1-2: Project Setup & Authentication (40 hours)
 
 #### Deliverables
-- [ ] Project scaffolding (Vite + React + TypeScript)
+- [ ] Project scaffolding (Angular 21 SSR + TypeScript)
 - [ ] Development environment setup (ESLint, Prettier, Tailwind)
-- [ ] NextAuth.js configuration
+- [ ] Django JWT configuration
 - [ ] Basic authentication (email/password + optional 2FA)
 - [ ] Login/register pages
 - [ ] Protected route middleware
 - [ ] User session management
 
 #### Tasks
-1. Initialize Vite React TS project
+1. Initialize Angular 21 SSR project
 2. Configure Tailwind CSS and design tokens
-3. Set up NextAuth.js with email provider
+3. Set up Django auth + JWT with email/password
 4. Create login/register pages
 5. Implement session persistence
 6. Add loading states for auth
@@ -78,20 +81,20 @@ MVP with essential Jules task management, real-time progress updates, and modern
 - [ ] Jules API client wrapper (Axios)
 - [ ] Create task form component
 - [ ] Task list view (searchable, sortable)
-- [ ] Real-time task status updates (WebSocket/SSE)
+- [ ] Real-time task status updates (SSE)
 - [ ] Task detail panel
 - [ ] Cancel/pause task functionality
-- [ ] TanStack Query integration for caching
+- [ ] Service-layer caching for sessions/activities
 
 #### Tasks
 1. Create julesClient wrapper with error handling
-2. Set up TanStack Query with providers
+2. Set up service-based caching and refresh strategies
 3. Build create task form (Zod validation)
 4. Implement task list view
 5. Add search/filter functionality
 6. Build task detail view
-7. Set up WebSocket connection for live updates
-8. Create useJulesAPI custom hook
+7. Set up SSE connection for live updates
+8. Create Angular service for Jules API
 
 #### API Endpoints Used
 - `POST /tasks` - Create task
@@ -99,7 +102,7 @@ MVP with essential Jules task management, real-time progress updates, and modern
 - `GET /tasks/:id` - Get task detail
 - `PATCH /tasks/:id` - Update task
 - `DELETE /tasks/:id` - Cancel task
-- `WebSocket /tasks/:id/status` - Live updates
+- `GET /tasks/:id/status` (SSE) - Live updates
 
 #### Tests
 - [ ] Task creation works with validation
@@ -126,7 +129,7 @@ MVP with essential Jules task management, real-time progress updates, and modern
 1. Add loading skeletons to all pages
 2. Implement toast notification system
 3. Global error boundary
-4. Lazy load components with React.lazy
+4. Lazy load feature routes with Angular routing
 5. Code splitting by route
 6. Set up Vercel deployment
 7. Configure environment variables
@@ -166,7 +169,7 @@ Full GitHub integration with PR management, code review workflow, webhooks, and 
 - [ ] PR status display in task detail
 
 #### Tasks
-1. Implement GitHub OAuth with NextAuth.js
+1. Implement GitHub OAuth via Django backend
 2. Create GitHub API client wrapper
 3. Build GitHub connect component
 4. Store GitHub token securely (HttpOnly)
@@ -332,7 +335,7 @@ Production-ready application with comprehensive testing, optimization, documenta
 5. Implement service worker (optional)
 6. Database query optimization
 7. Add request debouncing
-8. Cache optimization (TanStack Query)
+8. Cache optimization (Angular services + signals)
 
 #### Metrics
 - [ ] Bundle size < 200KB
@@ -539,8 +542,8 @@ Production-ready application with comprehensive testing, optimization, documenta
 
 ## 🎓 LEARNING PRIORITIES
 
-**Weeks 1-8:** React fundamentals, Next.js, authentication
-**Weeks 9-16:** GitHub API, WebSocket, real-time updates
+**Weeks 1-8:** Angular fundamentals, SSR, authentication
+**Weeks 9-16:** GitHub API, SSE, real-time updates
 **Weeks 17-24:** Testing, performance optimization, DevOps
 
 ---

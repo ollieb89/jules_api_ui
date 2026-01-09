@@ -7,7 +7,7 @@ import { Subscription } from 'rxjs';
 import { MarkdownComponent } from 'ngx-markdown';
 import { JulesService } from '../../services/jules.service';
 import { JulesStreamService } from '../../services/jules-stream.service';
-import { JulesApiError, PlanState, Session, SessionState } from '../../models/jules.model';
+import { PlanState, Session, SessionState } from '../../models/jules.model';
 import { ActivityTimelineComponent } from '../activity-timeline/activity-timeline.component';
 import { CodeBlockStyleDirective } from '../../directives/code-block-style.directive';
 import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
@@ -52,6 +52,8 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
   streamConnected = signal<boolean>(false);
 
   private streamSubscription: Subscription | null = null;
+  private lastSessionUpdateTime: string | null = null;
+  private lastActivityId: number | null = null;
 
   messageForm: FormGroup = this.fb.group({
     message: ['', [Validators.required, Validators.minLength(1)]]
@@ -62,9 +64,11 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
   refreshing = signal<boolean>(false);
   planStateFromActivities = signal<PlanState | null>(null);
 
-  // Check if session has a pending plan
-  hasPendingPlan = computed(() => {
-    return this.planStateFromActivities() === 'PENDING';
+  canApprovePlan = computed(() => {
+    const currentSession = this.session();
+    const state = this.planStateFromActivities();
+    const hasPendingPlan = state === 'PENDING' || state === 'STATE_UNSPECIFIED';
+    return Boolean(currentSession && currentSession.state === 'ACTIVE' && hasPendingPlan);
   });
 
   ngOnInit(): void {
@@ -99,6 +103,7 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
         try {
           const parsed = parseSessionResponse(session);
           this.session.set(parsed);
+          this.lastSessionUpdateTime = parsed.update_time ?? null;
           this.loading.set(false);
           // Extract PR info from session if available (placeholder)
           // this.extractPRInfo(session);
@@ -107,7 +112,7 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
           this.loading.set(false);
         }
       },
-      error: (err: JulesApiError) => {
+      error: (err: unknown) => {
         this.error.set(getApiErrorMessage(err, 'Failed to load session'));
         this.loading.set(false);
       }
@@ -134,13 +139,12 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
             this.session.set(parsed);
             this.messageForm.reset();
             this.sendingMessage.set(false);
-            this.refreshSession();
           } catch (error) {
             this.error.set(getParserErrorMessage(error, 'Invalid session response.'));
             this.sendingMessage.set(false);
           }
         },
-        error: (err: JulesApiError) => {
+        error: (err: unknown) => {
           this.error.set(getApiErrorMessage(err, 'Failed to send message'));
           this.sendingMessage.set(false);
         }
@@ -149,7 +153,7 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
   }
 
   approvePlan(): void {
-    if (!this.hasPendingPlan()) return;
+    if (!this.canApprovePlan()) return;
     
     this.approvingPlan.set(true);
     this.error.set(null);
@@ -160,13 +164,12 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
           const parsed = parseSessionResponse(session);
           this.session.set(parsed);
           this.approvingPlan.set(false);
-          this.refreshSession();
         } catch (error) {
           this.error.set(getParserErrorMessage(error, 'Invalid session response.'));
           this.approvingPlan.set(false);
         }
       },
-      error: (err: JulesApiError) => {
+      error: (err: unknown) => {
         this.error.set(getApiErrorMessage(err, 'Failed to approve plan'));
         this.approvingPlan.set(false);
       }
@@ -183,7 +186,7 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
         this.deleteDialog.reset();
         this.router.navigate(['/jules']);
       },
-      error: (err: JulesApiError) => {
+      error: (err: unknown) => {
         this.deleteDialog.reset();
         this.error.set(getApiErrorMessage(err, 'Failed to delete session'));
       }
@@ -204,7 +207,11 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
     }
 
     this.streamSubscription = this.streamService
-      .sessionStream(this.sessionId(), { pollIntervalSeconds: 15 })
+      .sessionStream(this.sessionId(), {
+        pollIntervalSeconds: 60,
+        lastUpdate: this.lastSessionUpdateTime,
+        lastActivityId: this.lastActivityId
+      })
       .subscribe({
         next: event => {
           if (event.type === 'open') {
@@ -217,10 +224,14 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
           }
           if (event.type === 'session_update') {
             this.session.set(event.session);
+            this.lastSessionUpdateTime = event.session.update_time ?? null;
             return;
           }
           if (event.type === 'activity_update') {
-            this.activityTimeline?.loadActivities(null);
+            if (!event.latestActivityId || event.latestActivityId !== this.lastActivityId) {
+              this.lastActivityId = event.latestActivityId ?? this.lastActivityId;
+              this.activityTimeline?.loadActivities(null);
+            }
           }
         },
         complete: () => {
@@ -243,9 +254,9 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
   getStateBadgeClass(state: SessionState): string {
     const classes: Record<SessionState, string> = {
       'STATE_UNSPECIFIED': 'bg-[var(--color-background-tertiary)] text-[var(--color-text-secondary)]',
-      'ACTIVE': 'bg-[var(--color-info-50)] text-[var(--color-info-800)]',
-      'COMPLETED': 'bg-[var(--color-success-50)] text-[var(--color-success-800)]',
-      'FAILED': 'bg-[var(--color-error-50)] text-[var(--color-error-800)]'
+      'ACTIVE': 'bg-[var(--color-surface-info)] text-[var(--color-text-info-strong)]',
+      'COMPLETED': 'bg-[var(--color-surface-success)] text-[var(--color-text-success-strong)]',
+      'FAILED': 'bg-[var(--color-surface-error)] text-[var(--color-text-error-strong)]'
     };
     return classes[state] || 'bg-[var(--color-background-tertiary)] text-[var(--color-text-secondary)]';
   }
@@ -254,11 +265,11 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
     if (!status) return 'bg-[var(--color-background-tertiary)] text-[var(--color-text-secondary)]';
     switch (status) {
       case 'open':
-        return 'bg-[var(--color-success-50)] text-[var(--color-success-800)]';
+        return 'bg-[var(--color-surface-success)] text-[var(--color-text-success-strong)]';
       case 'merged':
-        return 'bg-[var(--color-secondary-50)] text-[var(--color-secondary-800)]';
+        return 'bg-[var(--color-surface-accent)] text-[var(--color-text-accent-strong)]';
       case 'closed':
-        return 'bg-[var(--color-error-50)] text-[var(--color-error-800)]';
+        return 'bg-[var(--color-surface-error)] text-[var(--color-text-error-strong)]';
       default:
         return 'bg-[var(--color-background-tertiary)] text-[var(--color-text-secondary)]';
     }

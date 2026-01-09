@@ -223,7 +223,11 @@ const parseActivity = (value: unknown): Activity => {
   return {
     name: asString(value['name'], 'activity.name'),
     plan_generated: planGenerated ? { plan: parsePlan(planGenerated['plan']) } : null,
-    plan_approved: planApproved ? {} : null,
+    plan_approved: planApproved
+      ? {
+          plan: planApproved['plan'] ? parsePlan(planApproved['plan']) : undefined
+        }
+      : null,
     progress_updated: progressUpdated
       ? {
           title: asNullableString(progressUpdated['title'], 'activity.progress_updated.title'),

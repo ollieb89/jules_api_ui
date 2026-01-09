@@ -6,7 +6,8 @@ from unittest.mock import Mock, PropertyMock, patch
 import httpx
 from rest_framework import status
 
-from jules.utils import _extract_upstream_error, handle_api_exception
+from rest_framework.exceptions import Throttled
+from jules.utils import _extract_upstream_error, handle_api_exception, drf_exception_handler
 
 
 class TestExtractUpstreamError:
@@ -259,3 +260,23 @@ class TestErrorResponseStructure:
                     assert isinstance(response.data["error"], dict)
                     # All should have message
                     assert "message" in response.data["error"]
+
+
+class TestDrfExceptionHandler:
+    """Test custom DRF exception handler."""
+
+    def test_drf_exception_handler_recursion(self):
+        """Test that drf_exception_handler does not cause infinite recursion."""
+        # This test ensures the fix for the infinite recursion bug works.
+        # If the bug exists, this will raise RecursionError.
+
+        # Using a Throttled exception as it triggers the custom logic
+        exc = Throttled(wait=60)
+        context = {}
+
+        response = drf_exception_handler(exc, context)
+
+        assert response is not None
+        assert response.status_code == 429
+        assert "retry_after_seconds" in response.data
+        assert response.data["retry_after_seconds"] == 60

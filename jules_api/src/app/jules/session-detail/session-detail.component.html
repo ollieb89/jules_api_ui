@@ -14,7 +14,7 @@
     </div>
   } @else if (error()) {
     <div 
-      class="bg-[var(--color-error-50)] border border-[var(--color-error-200)] text-[var(--color-error-700)] px-4 py-3 rounded mb-4"
+      class="bg-[var(--color-surface-error)] border border-[var(--color-border-error)] text-[var(--color-text-error)] px-4 py-3 rounded mb-4"
       role="alert"
       aria-live="assertive"
     >
@@ -46,13 +46,13 @@
           }
         </button>
         
-        @if (hasPendingPlan()) {
+        @if (canApprovePlan()) {
           <button
             (click)="approvePlan()"
             type="button"
             [disabled]="approvingPlan()"
             aria-label="Approve plan"
-            class="px-4 py-2 bg-[var(--color-success-600)] hover:bg-[var(--color-success-700)] text-[var(--color-text-inverse)] font-medium rounded-lg transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+            class="px-4 py-2 bg-[var(--color-interactive-success)] hover:bg-[var(--color-interactive-success-hover)] text-[var(--color-text-inverse)] font-medium rounded-lg transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
           >
             @if (approvingPlan()) {
               Approving...
@@ -78,7 +78,7 @@
           (click)="deleteSession()"
           type="button"
           aria-label="Delete session"
-          class="px-4 py-2 bg-[var(--color-error-600)] hover:bg-[var(--color-error-700)] text-[var(--color-text-inverse)] font-medium rounded-lg transition-colors ml-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+          class="px-4 py-2 bg-[var(--color-interactive-error)] hover:bg-[var(--color-interactive-error-hover)] text-[var(--color-text-inverse)] font-medium rounded-lg transition-colors ml-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
         >
           🗑️ Delete
         </button>
