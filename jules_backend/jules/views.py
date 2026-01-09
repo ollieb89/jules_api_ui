@@ -72,7 +72,11 @@ class SessionViewSet(viewsets.ViewSet):
             data = client.list_sessions(page_size=page_size, page_token=page_token)
             sessions = data.get("sessions", [])
             for session_data in sessions:
-                upsert_session(session_data)
+                try:
+                    upsert_session(session_data)
+                except ValueError:
+                    # Skip sessions that fail local upsert validation
+                    continue
             serializer = SessionSerializer(data=sessions, many=True)
             serializer.is_valid(raise_exception=True)
             return Response(
