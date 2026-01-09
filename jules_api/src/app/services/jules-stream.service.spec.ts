@@ -255,7 +255,11 @@ describe('JulesStreamService', () => {
       mockAuthTokenService.getToken.mockReturnValue('test-token');
       mockJulesService.getSessionEventStreamUrl.mockReturnValue('https://example.com/session-stream');
 
-      const observable = service.sessionStream('test-session-id', { pollIntervalSeconds: 10 });
+      const observable = service.sessionStream('test-session-id', {
+        pollIntervalSeconds: 10,
+        lastUpdate: '2024-01-02T00:00:00Z',
+        lastActivityId: 42
+      });
 
       const subscription = observable.subscribe();
 
@@ -267,6 +271,8 @@ describe('JulesStreamService', () => {
       const params = mockJulesService.getSessionEventStreamUrl.mock.calls[0][1];
       expect(params.get('token')).toBe('test-token');
       expect(params.get('poll_interval')).toBe('10');
+      expect(params.get('last_update')).toBe('2024-01-02T00:00:00Z');
+      expect(params.get('last_activity_id')).toBe('42');
 
       subscription.unsubscribe();
     });
@@ -321,7 +327,7 @@ describe('JulesStreamService', () => {
       const activityHandler = mockEventSource.addEventListener.mock.calls.find(
         (call: any[]) => call[0] === 'activity_update'
       )[1];
-      activityHandler();
+      activityHandler({ data: JSON.stringify({ latest_activity_id: 7 }) });
     });
 
     it('should handle JSON parse errors gracefully', (done) => {
