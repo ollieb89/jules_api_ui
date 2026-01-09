@@ -205,7 +205,7 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
     }
 
     this.streamSubscription = this.streamService
-      .sessionStream(this.sessionId(), { pollIntervalSeconds: 15 })
+      .sessionStream(this.sessionId(), { pollIntervalSeconds: 60 })
       .subscribe({
         next: event => {
           if (event.type === 'open') {

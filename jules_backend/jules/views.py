@@ -1,5 +1,6 @@
 import json
 import time
+from queue import Empty
 
 from django.http import StreamingHttpResponse
 from rest_framework import status, viewsets
@@ -40,6 +41,7 @@ from .store import (
     upsert_session_from_api,
 )
 from .utils import handle_api_exception
+from .streaming import publish, subscribe, unsubscribe
 
 
 class JulesAuthenticatedViewSet(viewsets.ViewSet):
@@ -82,34 +84,38 @@ class SessionViewSet(JulesAuthenticatedViewSet):
     )
     def cached_session_events(self, request):
         """Stream cached session list updates via SSE."""
-        poll_interval = float(request.query_params.get("poll_interval", 20))
+        heartbeat = float(request.query_params.get("poll_interval", 20))
         last_update = request.query_params.get("last_update")
 
         def event_stream():
             nonlocal last_update
-            while True:
-                try:
-                    sessions = get_cached_sessions_payload()
-                    latest_update = max(
-                        (session.get("updateTime") for session in sessions if session.get("updateTime")),
-                        default=None,
-                    )
-                    if latest_update and latest_update != last_update:
-                        serializer = SessionSerializer(data=sessions, many=True)
-                        serializer.is_valid(raise_exception=True)
-                        yield "event: sessions_update\n"
-                        yield f"data: {json.dumps(serializer.data)}\n\n"
-                        last_update = latest_update
-
-                    yield "event: heartbeat\n"
-                    yield "data: {}\n\n"
-                except Exception as e:
-                    error_payload = {"message": str(e)}
-                    yield "event: error\n"
-                    yield f"data: {json.dumps(error_payload)}\n\n"
-                    break
-
-                time.sleep(poll_interval)
+            queue = subscribe("sessions")
+            try:
+                sessions = get_cached_sessions_payload()
+                latest_update = max(
+                    (session.get("updateTime") for session in sessions if session.get("updateTime")),
+                    default=None,
+                )
+                if latest_update and latest_update != last_update:
+                    serializer = SessionSerializer(data=sessions, many=True)
+                    serializer.is_valid(raise_exception=True)
+                    yield "event: sessions_update\n"
+                    yield f"data: {json.dumps(serializer.data)}\n\n"
+                    last_update = latest_update
+                while True:
+                    try:
+                        event = queue.get(timeout=heartbeat)
+                        yield f"event: {event.event_type}\n"
+                        yield f"data: {json.dumps(event.data)}\n\n"
+                    except Empty:
+                        yield "event: heartbeat\n"
+                        yield "data: {}\n\n"
+            except Exception as e:
+                error_payload = {"message": str(e)}
+                yield "event: error\n"
+                yield f"data: {json.dumps(error_payload)}\n\n"
+            finally:
+                unsubscribe("sessions", queue)
 
         response = StreamingHttpResponse(event_stream(), content_type="text/event-stream")
         response["Cache-Control"] = "no-cache"
@@ -243,6 +249,7 @@ class SessionViewSet(JulesAuthenticatedViewSet):
             session_name = normalize_session_name(pk)
             JulesSession.objects.filter(name=session_name).delete()
             mark_sessions_synced()
+            publish("sessions", "sessions_update", get_cached_sessions_payload())
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
             return handle_api_exception(e, request=request)
@@ -320,7 +327,7 @@ class SessionViewSet(JulesAuthenticatedViewSet):
     )
     def cached_events(self, request, pk=None):  # noqa: ARG002
         """Stream cached session/activity updates via SSE."""
-        poll_interval = float(request.query_params.get("poll_interval", 15))
+        heartbeat = float(request.query_params.get("poll_interval", 15))
         session_name = normalize_session_name(pk)
         last_update = request.query_params.get("last_update")
         last_activity_id_param = request.query_params.get("last_activity_id")
@@ -336,34 +343,51 @@ class SessionViewSet(JulesAuthenticatedViewSet):
             nonlocal last_update, last_activity_id
             if last_activity_id is None:
                 last_activity_id = get_latest_activity_id()
-            while True:
-                try:
-                    session = JulesSession.objects.filter(name=session_name).first()
-                    if session:
-                        payload = session_to_api_dict(session)
-                        session_update_time = payload.get("updateTime")
-                        if session_update_time and session_update_time != last_update:
-                            serializer = SessionSerializer(data=payload)
+            topic = f"session:{session_name}"
+            queue = subscribe(topic)
+            try:
+                session = JulesSession.objects.filter(name=session_name).first()
+                if session:
+                    payload = session_to_api_dict(session)
+                    session_update_time = payload.get("updateTime")
+                    if session_update_time and session_update_time != last_update:
+                        serializer = SessionSerializer(data=payload)
+                        serializer.is_valid(raise_exception=True)
+                        yield "event: session_update\n"
+                        yield f"data: {json.dumps(serializer.data)}\n\n"
+                        last_update = session_update_time
+
+                latest_activity_id = get_latest_activity_id()
+                if latest_activity_id and latest_activity_id != last_activity_id:
+                    yield "event: activity_update\n"
+                    yield f"data: {json.dumps({'latest_activity_id': latest_activity_id})}\n\n"
+                    last_activity_id = latest_activity_id
+
+                while True:
+                    try:
+                        event = queue.get(timeout=heartbeat)
+                        if event.event_type == "session_update":
+                            serializer = SessionSerializer(data=event.data)
                             serializer.is_valid(raise_exception=True)
                             yield "event: session_update\n"
                             yield f"data: {json.dumps(serializer.data)}\n\n"
-                            last_update = session_update_time
-
-                    latest_activity_id = get_latest_activity_id()
-                    if latest_activity_id and latest_activity_id != last_activity_id:
-                        yield "event: activity_update\n"
-                        yield f"data: {json.dumps({'latest_activity_id': latest_activity_id})}\n\n"
-                        last_activity_id = latest_activity_id
-
-                    yield "event: heartbeat\n"
-                    yield "data: {}\n\n"
-                except Exception as e:
-                    error_payload = {"message": str(e)}
-                    yield "event: error\n"
-                    yield f"data: {json.dumps(error_payload)}\n\n"
-                    break
-
-                time.sleep(poll_interval)
+                            last_update = serializer.data.get("updateTime")
+                        elif event.event_type == "activity_update":
+                            payload = event.data or {}
+                            activity_id = payload.get("latest_activity_id")
+                            if activity_id and activity_id != last_activity_id:
+                                yield "event: activity_update\n"
+                                yield f"data: {json.dumps(payload)}\n\n"
+                                last_activity_id = activity_id
+                    except Empty:
+                        yield "event: heartbeat\n"
+                        yield "data: {}\n\n"
+            except Exception as e:
+                error_payload = {"message": str(e)}
+                yield "event: error\n"
+                yield f"data: {json.dumps(error_payload)}\n\n"
+            finally:
+                unsubscribe(topic, queue)
 
         response = StreamingHttpResponse(event_stream(), content_type="text/event-stream")
         response["Cache-Control"] = "no-cache"
