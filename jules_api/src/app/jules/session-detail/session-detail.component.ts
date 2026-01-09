@@ -254,9 +254,9 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
   getStateBadgeClass(state: SessionState): string {
     const classes: Record<SessionState, string> = {
       'STATE_UNSPECIFIED': 'bg-[var(--color-background-tertiary)] text-[var(--color-text-secondary)]',
-      'ACTIVE': 'bg-[var(--color-info-50)] text-[var(--color-info-800)]',
-      'COMPLETED': 'bg-[var(--color-success-50)] text-[var(--color-success-800)]',
-      'FAILED': 'bg-[var(--color-error-50)] text-[var(--color-error-800)]'
+      'ACTIVE': 'bg-[var(--color-surface-info)] text-[var(--color-text-info-strong)]',
+      'COMPLETED': 'bg-[var(--color-surface-success)] text-[var(--color-text-success-strong)]',
+      'FAILED': 'bg-[var(--color-surface-error)] text-[var(--color-text-error-strong)]'
     };
     return classes[state] || 'bg-[var(--color-background-tertiary)] text-[var(--color-text-secondary)]';
   }
@@ -265,11 +265,11 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
     if (!status) return 'bg-[var(--color-background-tertiary)] text-[var(--color-text-secondary)]';
     switch (status) {
       case 'open':
-        return 'bg-[var(--color-success-50)] text-[var(--color-success-800)]';
+        return 'bg-[var(--color-surface-success)] text-[var(--color-text-success-strong)]';
       case 'merged':
-        return 'bg-[var(--color-secondary-50)] text-[var(--color-secondary-800)]';
+        return 'bg-[var(--color-surface-accent)] text-[var(--color-text-accent-strong)]';
       case 'closed':
-        return 'bg-[var(--color-error-50)] text-[var(--color-error-800)]';
+        return 'bg-[var(--color-surface-error)] text-[var(--color-text-error-strong)]';
       default:
         return 'bg-[var(--color-background-tertiary)] text-[var(--color-text-secondary)]';
     }

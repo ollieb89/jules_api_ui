@@ -59,7 +59,7 @@ type WizardStep = 1 | 2 | 3;
 
       @if (error()) {
         <div 
-          class="bg-[var(--color-error-50)] border border-[var(--color-error-200)] text-[var(--color-error-700)] px-4 py-3 rounded mb-4"
+          class="bg-[var(--color-surface-error)] border border-[var(--color-border-error)] text-[var(--color-text-error)] px-4 py-3 rounded mb-4"
           role="alert"
           aria-live="assertive"
         >
@@ -75,13 +75,13 @@ type WizardStep = 1 | 2 | 3;
           @if (loadingSources()) {
             <div class="text-[var(--color-text-secondary)]">Loading repositories...</div>
           } @else if (sources().length === 0) {
-            <div class="bg-[var(--color-warning-50)] border border-[var(--color-warning-200)] text-[var(--color-warning-700)] px-4 py-3 rounded mb-4">
+            <div class="bg-[var(--color-surface-warning)] border border-[var(--color-border-warning)] text-[var(--color-text-warning)] px-4 py-3 rounded mb-4">
               No repositories found. Please configure your GitHub connection.
             </div>
           } @else {
             <div class="mb-6">
               <label for="source" class="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-                Repository <span class="text-[var(--color-error-600)]">*</span>
+                Repository <span class="text-[var(--color-text-error)]">*</span>
                 <span class="text-xs text-[var(--color-text-tertiary)] ml-2">({{ sources().length }} available)</span>
               </label>
               <select
@@ -89,7 +89,7 @@ type WizardStep = 1 | 2 | 3;
                 formControlName="source"
                 class="w-full px-3 py-2 border border-[var(--color-border-strong)] rounded-lg bg-[var(--color-surface-primary)] text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
                 style="color-scheme: light dark;"
-                [style.borderColor]="source?.invalid && source?.touched ? 'var(--color-error-500)' : null"
+                [style.borderColor]="source?.invalid && source?.touched ? 'var(--color-validation-error)' : null"
               >
                 <option value="">Select a repository</option>
                 @for (sourceOption of sources(); track sourceOption.name) {
@@ -97,7 +97,7 @@ type WizardStep = 1 | 2 | 3;
                 }
               </select>
               @if (source?.invalid && source?.touched) {
-                <p class="mt-1 text-sm text-[var(--color-error-700)]">Please select a source repository</p>
+                <p class="mt-1 text-sm text-[var(--color-text-error)]">Please select a source repository</p>
               }
             </div>
 
@@ -145,22 +145,22 @@ type WizardStep = 1 | 2 | 3;
           
           <div class="mb-6">
             <label for="prompt" class="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-              Prompt <span class="text-[var(--color-error-600)]">*</span>
+              Prompt <span class="text-[var(--color-text-error)]">*</span>
             </label>
             <textarea
               id="prompt"
               formControlName="prompt"
               rows="8"
               class="w-full px-3 py-2 border border-[var(--color-border-strong)] rounded-lg bg-[var(--color-surface-primary)] text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
-              [style.borderColor]="prompt?.invalid && prompt?.touched ? 'var(--color-error-500)' : null"
+              [style.borderColor]="prompt?.invalid && prompt?.touched ? 'var(--color-validation-error)' : null"
               placeholder="Describe what you want Jules to do... Be specific about the task, files to modify, and expected outcome."
             ></textarea>
             @if (prompt?.invalid && prompt?.touched) {
               @if (prompt?.errors?.['required']) {
-                <p class="mt-1 text-sm text-[var(--color-error-700)]">Prompt is required</p>
+                <p class="mt-1 text-sm text-[var(--color-text-error)]">Prompt is required</p>
               }
               @if (prompt?.errors?.['minlength']) {
-                <p class="mt-1 text-sm text-[var(--color-error-700)]">Prompt must be at least 10 characters</p>
+                <p class="mt-1 text-sm text-[var(--color-text-error)]">Prompt must be at least 10 characters</p>
               }
             }
             <p class="mt-1 text-xs text-[var(--color-text-tertiary)]">{{ prompt?.value?.length || 0 }} characters</p>
@@ -240,7 +240,7 @@ type WizardStep = 1 | 2 | 3;
               type="button"
               (click)="onSubmit()"
               [disabled]="form.invalid || loading()"
-              class="px-4 py-2 bg-[var(--color-success-600)] hover:bg-[var(--color-success-700)] disabled:bg-[var(--color-interactive-primary-disabled)] text-[var(--color-text-inverse)] font-semibold rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+              class="px-4 py-2 bg-[var(--color-interactive-success)] hover:bg-[var(--color-interactive-success-hover)] disabled:bg-[var(--color-interactive-primary-disabled)] text-[var(--color-text-inverse)] font-semibold rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
             >
               @if (loading()) {
                 Creating...
@@ -322,7 +322,7 @@ export class SessionCreateComponent {
     if (this.currentStep() === step) {
       return 'bg-[var(--color-interactive-primary)] text-[var(--color-text-inverse)]';
     } else if (this.currentStep() > step) {
-      return 'bg-[var(--color-success-600)] text-[var(--color-text-inverse)]';
+      return 'bg-[var(--color-interactive-success)] text-[var(--color-text-inverse)]';
     }
     return 'bg-[var(--color-background-secondary)] text-[var(--color-text-tertiary)]';
   }

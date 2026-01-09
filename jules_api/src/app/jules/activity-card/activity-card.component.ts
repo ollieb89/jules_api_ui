@@ -83,7 +83,7 @@ interface DiffLine {
                   
                   @if (isBashOutputExpanded($index)) {
                     <div class="mt-2 relative">
-                      <pre class="bg-[var(--color-background-tertiary)] text-[var(--color-success-300)] p-4 rounded-lg overflow-x-auto text-xs font-mono max-h-96 overflow-y-auto">{{ artifact.bash_output }}</pre>
+                      <pre class="bg-[var(--color-background-tertiary)] text-[var(--color-text-primary)] p-4 rounded-lg overflow-x-auto text-xs font-mono max-h-96 overflow-y-auto">{{ artifact.bash_output }}</pre>
                       <button
                         (click)="copyToClipboard(artifact.bash_output || '')"
                         type="button"
@@ -211,9 +211,9 @@ export class ActivityCardComponent {
 
   getOriginatorBadgeClass(): string {
     if (this.getOriginator() === 'agent') {
-      return 'bg-[var(--color-info-50)] text-[var(--color-info-800)]';
+      return 'bg-[var(--color-surface-info)] text-[var(--color-text-info-strong)]';
     }
-    return 'bg-[var(--color-success-50)] text-[var(--color-success-800)]';
+    return 'bg-[var(--color-surface-success)] text-[var(--color-text-success-strong)]';
   }
 
   getFormattedTime(): string {

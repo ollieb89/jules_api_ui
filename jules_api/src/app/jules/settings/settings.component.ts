@@ -34,7 +34,7 @@ interface SettingsResponse {
         <h2 class="text-xl font-semibold text-[var(--color-text-primary)] mb-4">Connection Status</h2>
         <div class="flex items-center gap-3">
           <div 
-            [class]="'w-3 h-3 rounded-full ' + (connectionStatus() === 'connected' ? 'bg-[var(--color-success-500)]' : connectionStatus() === 'error' ? 'bg-[var(--color-error-500)]' : 'bg-[var(--color-warning-500)]')"
+            [class]="'w-3 h-3 rounded-full ' + (connectionStatus() === 'connected' ? 'bg-[var(--color-state-success)]' : connectionStatus() === 'error' ? 'bg-[var(--color-state-error)]' : 'bg-[var(--color-state-warning)]')"
             [title]="getConnectionStatusText()"
           ></div>
           <span class="text-sm font-medium text-[var(--color-text-secondary)]">
@@ -58,7 +58,7 @@ interface SettingsResponse {
         
         @if (error()) {
           <div 
-            class="bg-[var(--color-error-50)] border border-[var(--color-error-200)] text-[var(--color-error-700)] px-4 py-3 rounded mb-4"
+            class="bg-[var(--color-surface-error)] border border-[var(--color-border-error)] text-[var(--color-text-error)] px-4 py-3 rounded mb-4"
             role="alert"
             aria-live="assertive"
           >
@@ -68,7 +68,7 @@ interface SettingsResponse {
         
         @if (successMessage()) {
           <div 
-            class="bg-[var(--color-success-50)] border border-[var(--color-success-200)] text-[var(--color-success-700)] px-4 py-3 rounded mb-4"
+            class="bg-[var(--color-surface-success)] border border-[var(--color-border-success)] text-[var(--color-text-success)] px-4 py-3 rounded mb-4"
             role="alert"
             aria-live="polite"
           >
@@ -87,7 +87,7 @@ interface SettingsResponse {
               formControlName="apiKey"
               placeholder="Enter your Jules API key"
               class="w-full px-3 py-2 border border-[var(--color-border-strong)] rounded-lg bg-[var(--color-surface-primary)] text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
-              [style.borderColor]="apiKey?.invalid && apiKey?.touched ? 'var(--color-error-500)' : null"
+              [style.borderColor]="apiKey?.invalid && apiKey?.touched ? 'var(--color-validation-error)' : null"
             />
             <p class="mt-1 text-xs text-[var(--color-text-tertiary)]">
               Your API key is stored securely and never displayed in plaintext.
@@ -110,7 +110,7 @@ interface SettingsResponse {
               type="button"
               (click)="testConnection()"
               [disabled]="testing() || !settings()?.api_key_configured"
-              class="px-4 py-2 bg-[var(--color-success-600)] hover:bg-[var(--color-success-700)] disabled:bg-[var(--color-interactive-primary-disabled)] text-[var(--color-text-inverse)] font-semibold rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+              class="px-4 py-2 bg-[var(--color-interactive-success)] hover:bg-[var(--color-interactive-success-hover)] disabled:bg-[var(--color-interactive-primary-disabled)] text-[var(--color-text-inverse)] font-semibold rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
             >
               @if (testing()) {
                 Testing...

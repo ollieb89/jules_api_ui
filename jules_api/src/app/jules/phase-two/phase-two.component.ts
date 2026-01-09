@@ -315,20 +315,20 @@ export class PhaseTwoComponent {
       case 'open':
       case 'active':
       case 'completed':
-        return 'bg-[var(--color-success-50)] text-[var(--color-success-800)]';
+        return 'bg-[var(--color-surface-success)] text-[var(--color-text-success-strong)]';
       case 'merged':
-        return 'bg-[var(--color-secondary-50)] text-[var(--color-secondary-800)]';
+        return 'bg-[var(--color-surface-accent)] text-[var(--color-text-accent-strong)]';
       case 'failed':
       case 'closed':
       case 'changes_requested':
-        return 'bg-[var(--color-error-50)] text-[var(--color-error-800)]';
+        return 'bg-[var(--color-surface-error)] text-[var(--color-text-error-strong)]';
       case 'canceled':
       case 'revoked':
         return 'bg-[var(--color-background-tertiary)] text-[var(--color-text-secondary)]';
       case 'paused':
-        return 'bg-[var(--color-warning-50)] text-[var(--color-warning-800)]';
+        return 'bg-[var(--color-surface-warning)] text-[var(--color-text-warning-strong)]';
       default:
-        return 'bg-[var(--color-info-50)] text-[var(--color-info-800)]';
+        return 'bg-[var(--color-surface-info)] text-[var(--color-text-info-strong)]';
     }
   }
 

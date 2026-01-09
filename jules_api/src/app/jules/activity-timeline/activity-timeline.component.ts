@@ -86,7 +86,7 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
         activityType = 'Plan Generated';
         description = `${this.getPlanStateLabel(plan.state)} plan with ${plan.steps.length} steps`;
         originator = 'agent';
-        iconClass = 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400';
+        iconClass = 'bg-[var(--color-surface-info)] text-[var(--color-text-info)]';
         return {
           ...activity,
           formattedTime: time.toLocaleString(),
@@ -94,30 +94,30 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
           description,
           originator,
           iconClass,
-          originatorBadgeClass: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200',
+          originatorBadgeClass: 'bg-[var(--color-surface-info)] text-[var(--color-text-info-strong)]',
           plan
         };
       } else if (activity.plan_approved) {
         activityType = 'Plan Approved';
         description = 'Plan has been approved';
         originator = 'user';
-        iconClass = 'bg-[var(--color-success-50)] text-[var(--color-success-700)]';
+        iconClass = 'bg-[var(--color-surface-success)] text-[var(--color-text-success)]';
       } else if (activity.progress_updated) {
         activityType = 'Progress Updated';
         const step = activity.progress_updated;
         description = step.title || step.description || 'Progress updated';
         originator = 'agent';
-        iconClass = 'bg-[var(--color-warning-50)] text-[var(--color-warning-700)]';
+        iconClass = 'bg-[var(--color-surface-warning)] text-[var(--color-text-warning)]';
       } else if (activity.session_completed) {
         activityType = 'Session Completed';
         description = 'Session has been completed';
         originator = 'agent';
-        iconClass = 'bg-[var(--color-secondary-50)] text-[var(--color-secondary-700)]';
+        iconClass = 'bg-[var(--color-surface-accent)] text-[var(--color-text-accent)]';
       }
 
       const originatorBadgeClass = originator === 'agent'
-        ? 'bg-[var(--color-info-50)] text-[var(--color-info-800)]'
-        : 'bg-[var(--color-success-50)] text-[var(--color-success-800)]';
+        ? 'bg-[var(--color-surface-info)] text-[var(--color-text-info-strong)]'
+        : 'bg-[var(--color-surface-success)] text-[var(--color-text-success-strong)]';
 
       return {
         ...activity,
