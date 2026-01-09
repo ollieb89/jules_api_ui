@@ -45,6 +45,7 @@ class JulesAuthenticatedViewSet(viewsets.ViewSet):
     """Base ViewSet that enforces JWT or session authentication."""
 
     permission_classes = [IsAuthenticated]
+    throttle_scope = "jules_api"
 
 
 class SourceViewSet(JulesAuthenticatedViewSet):
