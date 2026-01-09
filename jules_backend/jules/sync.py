@@ -20,7 +20,7 @@ def parse_api_datetime(value: str | None) -> timezone.datetime | None:
 def upsert_session(session_data: dict) -> JulesSession:
     name = session_data.get("name", "")
     if not name or not str(name).strip():
-        raise ValueError("JulesSession 'name' is required and must be non-empty in session_data")
+        raise ValueError("JulesSession 'name' is required and must be non-empty")
     defaults = {
         "display_name": session_data.get(
             "displayName", session_data.get("display_name", "")
