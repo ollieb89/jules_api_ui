@@ -8,10 +8,13 @@ Jules API UI is a comprehensive task management and code review platform that in
 
 - **Modern Frontend**: Angular 21 with SSR, standalone components, and signals
 - **Robust Backend**: Django REST Framework with PostgreSQL
-- **Real-time Updates**: WebSocket support for live task status
+- **Real-time Updates**: Server-Sent Events (SSE) for live task status
 - **GitHub Integration**: OAuth, PRs, and code review workflows
 - **Design System**: Custom color tokens and accessible component library
 - **AI-Powered**: Integration with Jules coding agent for automated tasks
+
+> **Stack alignment:** This repository is **Angular 21 SSR + Django** with Bun/Pixi tooling. Any
+> prior references to React, Turborepo, Prisma, or module federation are legacy and superseded.
 
 ## 📋 Table of Contents
 
@@ -153,7 +156,7 @@ Edit `jules_api/src/environments/environment.ts` for development and `environmen
 export const environment = {
   production: false,
   apiUrl: 'http://localhost:8444/api',
-  wsUrl: 'ws://localhost:8444/ws'
+  sseUrl: 'http://localhost:8444/api'
 };
 ```
 
@@ -415,8 +418,8 @@ The build artifacts will be in `dist/jules_api/`.
 
 **Environment Variables** (Production):
 Set these in your deployment platform:
-- `API_URL`: Backend API URL
-- `WS_URL`: WebSocket URL (if applicable)
+- `JULES_API_URL`: Backend API URL
+- `JULES_SSE_URL`: SSE base URL (typically the same as `JULES_API_URL`)
 
 ### Backend Deployment
 
@@ -473,10 +476,10 @@ gunicorn jules_backend.wsgi:application --bind 0.0.0.0:8444
 │         Port: 4700                      │
 └───────────────┬─────────────────────────┘
                 │ HTTP/REST
-                │ WebSocket
+                │ SSE
 ┌───────────────▼─────────────────────────┐
 │         Django Backend                  │
-│    (REST API, WebSockets)               │
+│    (REST API, SSE Streams)              │
 │         Port: 8444                      │
 └───────────────┬─────────────────────────┘
                 │

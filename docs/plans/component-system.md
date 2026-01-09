@@ -1,5 +1,8 @@
 # Jules API UI - Component System Specification
 
+> **Stack alignment:** This repo is **Angular 21 SSR + Django** with Bun/Pixi tooling. Any prior
+> references to React, Turborepo, Prisma, or module federation are legacy and superseded.
+
 ## 🎨 DESIGN SYSTEM OVERVIEW
 
 This document defines all components, their props, usage patterns, and design specifications for the Jules API UI application.
@@ -74,20 +77,20 @@ This document defines all components, their props, usage patterns, and design sp
 **Purpose:** Primary interactive element
 **Variants:** primary, secondary, outline, ghost, danger
 
-```typescript
-<Button variant="primary" size="md" disabled={false}>
+```html
+<app-button variant="primary" size="md">
   Create Task
-</Button>
+</app-button>
+```
 
-// Props
+```typescript
+// Inputs (Angular)
 interface ButtonProps {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger'
   size?: 'sm' | 'md' | 'lg'
   disabled?: boolean
   loading?: boolean
-  icon?: React.ReactNode
-  onClick?: () => void
-  children: React.ReactNode
+  icon?: TemplateRef<unknown> | string
 }
 ```
 
@@ -108,25 +111,26 @@ interface ButtonProps {
 **Purpose:** Form input field
 **Variants:** text, email, password, number, search
 
-```typescript
-<Input
+```html
+<app-input
   type="text"
   placeholder="Task description"
-  value={value}
-  onChange={(e) => setValue(e.target.value)}
-  error={error}
-/>
+  [value]="value"
+  (valueChange)="onValueChange($event)"
+  [error]="error"
+></app-input>
+```
 
-// Props
+```typescript
+// Inputs (Angular)
 interface InputProps {
   type?: string
   placeholder?: string
   value?: string
-  onChange?: (e: ChangeEvent<HTMLInputElement>) => void
   error?: string
   disabled?: boolean
   size?: 'sm' | 'md' | 'lg'
-  icon?: React.ReactNode
+  icon?: TemplateRef<unknown> | string
 }
 ```
 
@@ -143,16 +147,18 @@ interface InputProps {
 **Purpose:** Display status or tags
 **Variants:** success, error, warning, info, neutral
 
-```typescript
-<Badge variant="success" size="md">
+```html
+<app-badge variant="success" size="md">
   Completed
-</Badge>
+</app-badge>
+```
 
-// Props
+```typescript
+// Inputs (Angular)
 interface BadgeProps {
   variant?: 'success' | 'error' | 'warning' | 'info' | 'neutral'
   size?: 'sm' | 'md' | 'lg'
-  children: React.ReactNode
+  content?: TemplateRef<unknown> | string
 }
 ```
 
@@ -216,25 +222,26 @@ interface IconProps {
 **Purpose:** Container for content groups
 **Features:** Header, body, footer, shadow states
 
-```typescript
-<Card hover={true}>
-  <Card.Header>
+```html
+<app-card [hover]="true">
+  <app-card-header>
     <h3>Task Title</h3>
-  </Card.Header>
-  <Card.Body>
+  </app-card-header>
+  <app-card-body>
     <p>Task description</p>
-  </Card.Body>
-  <Card.Footer>
-    <Button>Action</Button>
-  </Card.Footer>
-</Card>
+  </app-card-body>
+  <app-card-footer>
+    <app-button>Action</app-button>
+  </app-card-footer>
+</app-card>
+```
 
-// Props
+```typescript
+// Inputs (Angular)
 interface CardProps {
   hover?: boolean
   selected?: boolean
-  children: React.ReactNode
-  onClick?: () => void
+  content?: TemplateRef<unknown> | string
 }
 ```
 
@@ -277,22 +284,20 @@ interface StatusBadgeProps {
 **Purpose:** Label + Input + Error message
 **Validation:** Inline error display
 
-```typescript
-<FormField
-  label="Task Description"
-  error={errors.description}
-  required={true}
->
-  <Input placeholder="Describe the task..." />
-</FormField>
+```html
+<app-form-field label="Task Description" [error]="errors.description" [required]="true">
+  <app-input placeholder="Describe the task..."></app-input>
+</app-form-field>
+```
 
-// Props
+```typescript
+// Inputs (Angular)
 interface FormFieldProps {
   label: string
   required?: boolean
   error?: string
   help?: string
-  children: React.ReactNode
+  content?: TemplateRef<unknown> | string
 }
 ```
 

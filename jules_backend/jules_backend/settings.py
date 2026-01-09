@@ -15,16 +15,21 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = os.getenv("DEBUG", "False").lower() == "true"
+TESTING = os.getenv("TESTING", "False").lower() == "true" or "pytest" in sys.modules
+
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-change-this-in-production")
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
+if not SECRET_KEY:
+    if not DEBUG and not TESTING:
+        raise RuntimeError("DJANGO_SECRET_KEY must be set in production")
+    SECRET_KEY = "django-insecure-dev-only"
+
 JULES_ENCRYPTION_KEY = os.getenv("JULES_ENCRYPTION_KEY", SECRET_KEY)
 JULES_API_KEY_ENCRYPTION_KEY = os.getenv(
     "JULES_API_KEY_ENCRYPTION_KEY", JULES_ENCRYPTION_KEY
 )
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DEBUG", "False").lower() == "true"
-TESTING = os.getenv("TESTING", "False").lower() == "true" or "pytest" in sys.modules
 
 # Security Headers
 if not DEBUG:
@@ -206,6 +211,7 @@ REST_FRAMEWORK = {
 }
 
 # CORS settings
+# Keep origins minimal in production. Do not use wildcard origins with credentials.
 CORS_ALLOWED_ORIGINS = [
     origin.strip()
     for origin in os.getenv(
@@ -215,7 +221,8 @@ CORS_ALLOWED_ORIGINS = [
     if origin.strip()
 ]
 
-CORS_ALLOW_CREDENTIALS = os.getenv("CORS_ALLOW_CREDENTIALS", "True").lower() == "true"
+# Allow credentials only when required by the frontend auth flow (cookies/HTTP auth).
+CORS_ALLOW_CREDENTIALS = os.getenv("CORS_ALLOW_CREDENTIALS", "False").lower() == "true"
 
 CORS_ALLOW_METHODS = [
     method.strip()
@@ -235,6 +242,12 @@ CORS_ALLOW_HEADERS = [
     ).split(",")
     if header.strip()
 ]
+
+# SSE streaming safeguards
+# Keep these limits conservative to avoid long-lived busy loops in production.
+SSE_MAX_CONNECTION_SECONDS = int(os.getenv("SSE_MAX_CONNECTION_SECONDS", "300"))
+SSE_MIN_POLL_INTERVAL_SECONDS = float(os.getenv("SSE_MIN_POLL_INTERVAL_SECONDS", "1"))
+SSE_MAX_POLL_INTERVAL_SECONDS = float(os.getenv("SSE_MAX_POLL_INTERVAL_SECONDS", "60"))
 
 # Jules API Configuration
 JULES_API_BASE_URL = os.getenv("JULES_API_BASE_URL", "https://jules.googleapis.com").rstrip("/")

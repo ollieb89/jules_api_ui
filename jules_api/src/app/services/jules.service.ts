@@ -20,7 +20,7 @@ import {
 export class JulesService {
   private http = inject(HttpClient);
   private readonly apiUrl = `${environment.apiUrl}/jules`;
-  private readonly wsUrl = `${environment.wsUrl}/jules`;
+  private readonly sseUrl = `${environment.sseUrl}/jules`;
 
   getSessionsEventStreamUrl(params: URLSearchParams): string {
     return `${this.getStreamBaseUrl()}/sessions/cached-events/?${params.toString()}`;
@@ -106,13 +106,6 @@ export class JulesService {
   }
 
   private getStreamBaseUrl(): string {
-    return this.toHttpUrl(this.wsUrl);
-  }
-
-  private toHttpUrl(url: string): string {
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      return url;
-    }
-    return url.replace(/^ws/, 'http');
+    return this.sseUrl;
   }
 }

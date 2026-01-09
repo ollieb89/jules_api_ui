@@ -1,5 +1,8 @@
 # Jules API UI - Custom Implementation Prompt for AI Coding Tools
 
+> **Stack alignment:** This repo is **Angular 21 SSR + Django** with Bun/Pixi tooling. Any prior
+> references to React, Turborepo, Prisma, or module federation are legacy and superseded.
+
 ## 🎯 Your Project Context
 
 **Project Name:** Jules API UI Dashboard
@@ -15,8 +18,8 @@
 ## 📋 SYSTEM CONTEXT
 
 You are an expert full-stack frontend engineer specializing in modern web applications with deep expertise in:
-- React 18+ with TypeScript
-- Real-time UI updates and WebSocket integration
+- Angular 21 SSR with TypeScript
+- Real-time UI updates and Server-Sent Events (SSE)
 - GitHub API integration and OAuth flows
 - Webhook architecture and CI/CD pipeline integration
 - Beautiful, modern UI design with Tailwind CSS
@@ -45,87 +48,52 @@ Your mission: Build a production-grade Jules API UI dashboard that empowers solo
 ## 🏗️ CORE ARCHITECTURE
 
 ### Technology Stack (Fixed)
-- **Framework:** React 18+ with TypeScript (strict mode)
-- **Build Tool:** Vite (fastest build times)
-- **State Management:** TanStack Query (server state) + Zustand (client state)
-- **HTTP Client:** Axios with custom wrapper for Jules API
+- **Framework:** Angular 21 SSR with TypeScript (strict mode)
+- **Build Tool:** Angular CLI with Bun
+- **State Management:** Angular signals + services
+- **HTTP Client:** Angular HttpClient with typed API services
 - **Styling:** Tailwind CSS + custom design tokens
-- **UI Components:** Shadcn/ui + custom components
-- **Real-time Updates:** Socket.io or Server-Sent Events (SSE)
-- **Forms:** React Hook Form + Zod validation
-- **Code Diff Viewer:** react-diff-viewer or similar
+- **UI Components:** Angular Material + custom components
+- **Real-time Updates:** Server-Sent Events (SSE)
+- **Forms:** Angular Reactive Forms + validators
+- **Code Diff Viewer:** ngx-markdown + custom diff components
 - **Date/Time:** date-fns
-- **Testing:** Vitest + React Testing Library
-- **Hosting:** Vercel (primary) or Netlify (fallback)
-- **Database:** Supabase (PostgreSQL) or Firebase
-- **Authentication:** NextAuth.js or Auth0
+- **Testing:** Angular test runner + Vitest
+- **Hosting:** Node SSR or static build with CDN
+- **Database:** PostgreSQL (via Django)
+- **Authentication:** Django REST + JWT
 
 ### Folder Structure
 ```
 /src
   /app
-    /layout.tsx              (Root layout with providers)
-    /page.tsx                (Home page)
-    /dashboard
-      /page.tsx              (Dashboard view)
-      /layout.tsx            (Dashboard layout)
-    /tasks
-      /page.tsx              (Tasks list view)
-      /[id]
-        /page.tsx            (Task detail view)
-    /settings
-      /page.tsx              (User settings)
-  
-  /components
-    /common
-      /Header.tsx            (Navigation header)
-      /Sidebar.tsx           (Navigation sidebar)
-      /Footer.tsx            (Footer)
-    /dashboard
-      /TaskWidget.tsx        (Task overview widget)
-      /ProgressChart.tsx     (Task progress visualization)
-      /RecentTasks.tsx       (Recent tasks list)
-      /StatusIndicator.tsx   (Task status display)
-    /tasks
-      /TaskForm.tsx          (Create/edit task form)
-      /TaskList.tsx          (Searchable task list)
-      /TaskCard.tsx          (Individual task card)
-      /TaskDetail.tsx        (Full task detail view)
-      /TaskActions.tsx       (Cancel, Pause, etc.)
-    /code-review
-      /DiffViewer.tsx        (Code diff display)
-      /ApprovalPanel.tsx     (Approve/reject buttons)
-      /CodeEditor.tsx        (Embedded code editor)
-      /PRStatus.tsx          (GitHub PR status display)
-    /integrations
-      /GitHubConnect.tsx      (GitHub OAuth flow)
-      /WebhookConfig.tsx      (Webhook setup)
-      /GitHubPRList.tsx       (GitHub PR management)
-    /ui
-      /Button.tsx            (Shadcn button)
-      /Input.tsx             (Shadcn input)
-      /Card.tsx              (Shadcn card)
-      /Dialog.tsx            (Shadcn dialog)
-      /Badge.tsx             (Status badges)
-      /Skeleton.tsx          (Loading skeleton)
-  
-  /hooks
-    /useJulesAPI.ts          (Jules API integration)
-    /useGitHubAPI.ts         (GitHub API integration)
-    /useWebSocket.ts         (Real-time task updates)
-    /useAuth.ts              (Authentication)
-    /useLocalStorage.ts      (Persistent storage)
-    /useDebounce.ts          (Debounce utility)
-  
-  /services
+    /components
+      /dashboard             (Dashboard widgets)
+      /tasks                 (Task list + detail UI)
+      /shared                (Buttons, cards, dialogs)
+    /services
+      /jules.service.ts      (HTTP API integration)
+      /jules-stream.service.ts (SSE streams)
+      /auth.service.ts       (Authentication)
+    /routes
+      /jules                 (Session + activity routes)
+      /settings              (API settings)
+    /utils
+      /api-parsers.ts        (API normalization helpers)
+    app.routes.ts            (Standalone route config)
+    app.ts                   (Root component)
+  /styles
+    /components              (Component-level styles)
+    /colors                  (Design tokens)
+```
     /api
       /julesClient.ts        (Jules API wrapper)
       /githubClient.ts       (GitHub API wrapper)
       /webhookService.ts     (Webhook setup/management)
       /authService.ts        (Authentication service)
-    /socket
-      /socketClient.ts       (WebSocket connection)
-      /socketEvents.ts       (Event handlers)
+    /sse
+      /sseClient.ts          (SSE connection)
+      /sseEvents.ts          (Event handlers)
   
   /types
     /index.ts                (Global type definitions)
@@ -135,7 +103,7 @@ Your mission: Build a production-grade Jules API UI dashboard that empowers solo
     /user.ts                 (User types)
   
   /utils
-    /validators.ts           (Zod schemas)
+    /validators.ts           (Angular validators)
     /formatters.ts           (Date, status formatters)
     /errorHandler.ts         (Global error handling)
     /logger.ts               (Client-side logging)
@@ -146,10 +114,10 @@ Your mission: Build a production-grade Jules API UI dashboard that empowers solo
     /config.ts               (App configuration)
     /colors.ts               (Design tokens)
   
-  /store
-    /authStore.ts            (Zustand auth state)
-    /taskStore.ts            (Zustand task state)
-    /uiStore.ts              (Zustand UI state)
+  /state
+    /auth-state.service.ts   (Auth state)
+    /task-state.service.ts   (Task state)
+    /ui-state.service.ts     (UI state)
   
   /styles
     /globals.css             (Global styles)
@@ -170,7 +138,7 @@ Your mission: Build a production-grade Jules API UI dashboard that empowers solo
   /images
 
 /.env.example              (Environment variables template)
-/vite.config.ts           (Vite configuration)
+/angular.json             (Angular CLI configuration)
 /tsconfig.json            (TypeScript configuration)
 /tailwind.config.js       (Tailwind configuration)
 /postcss.config.js        (PostCSS configuration)
@@ -188,21 +156,21 @@ Your mission: Build a production-grade Jules API UI dashboard that empowers solo
 - Secure session management (JWT tokens)
 - User profile settings
 - Logout functionality
-- **Implementation:** NextAuth.js or Auth0
+- **Implementation:** Django REST + JWT
 
 #### Feature: Dashboard Overview
 - Real-time task status widgets
 - Quick-access buttons (New Task, Recent Tasks)
 - Task completion rate chart
 - Active tasks indicator
-- **Implementation:** React components with TanStack Query
+- **Implementation:** Angular components with services + signals
 
 #### Feature: Task Creation
 - Form to create new Jules task
 - Input validation (Zod)
 - Task description/parameters
 - Select coding language/framework
-- **Implementation:** React Hook Form + Modal
+- **Implementation:** Angular Reactive Forms + dialog
 
 #### Feature: Task Management
 - Create new Jules tasks
@@ -210,14 +178,14 @@ Your mission: Build a production-grade Jules API UI dashboard that empowers solo
 - Real-time task progress updates
 - Cancel/pause tasks mid-execution
 - Task details panel
-- **Implementation:** TanStack Query + WebSocket/SSE
+- **Implementation:** Angular services + SSE streams
 
 #### Feature: Real-time Updates
-- WebSocket connection to Jules API
+- SSE connection to Jules API
 - Live task progress updates (every 1-2 seconds)
 - Status change notifications
 - Error alerts
-- **Implementation:** Socket.io or Server-Sent Events
+- **Implementation:** Server-Sent Events (SSE)
 
 #### Feature: GitHub Authentication
 - OAuth flow for GitHub connection
@@ -279,7 +247,7 @@ Your mission: Build a production-grade Jules API UI dashboard that empowers solo
 - Filter by status/date/type
 - Rerun past tasks
 - Task execution details
-- **Implementation:** TanStack Query + search UI
+- **Implementation:** Angular services + search UI
 
 ---
 
@@ -306,7 +274,7 @@ Your mission: Build a production-grade Jules API UI dashboard that empowers solo
 - Integration tests for API flows
 - E2E tests for critical user journeys
 - 70%+ code coverage
-- **Tools:** Vitest, React Testing Library, Playwright
+- **Tools:** Vitest, Angular TestBed, Playwright
 
 #### Documentation
 - Component Storybook stories
@@ -412,8 +380,8 @@ Your mission: Build a production-grade Jules API UI dashboard that empowers solo
 ### Jules API Integration
 ```typescript
 // Base endpoint pattern
-const JULES_API_BASE = process.env.REACT_APP_JULES_API_URL
-const JULES_API_KEY = process.env.REACT_APP_JULES_API_KEY
+const JULES_API_BASE = process.env.JULES_API_URL
+const JULES_API_KEY = process.env.JULES_API_KEY
 
 // Axios instance with interceptors
 const julesClient = axios.create({
@@ -440,7 +408,7 @@ julesClient.interceptors.response.use(...)
 
 ### GitHub API Integration
 ```typescript
-// OAuth flow via NextAuth.js
+// OAuth flow via Django backend + JWT
 // Use GitHub API for:
 // - Creating PRs from Jules tasks
 // - Reading PR status
@@ -450,7 +418,7 @@ julesClient.interceptors.response.use(...)
 
 ### Real-time Updates Pattern
 ```typescript
-// Use WebSocket or Server-Sent Events
+// Use Server-Sent Events (SSE)
 // Listen for task status changes
 // Update UI in real-time without polling
 // Reconnect logic and error handling
@@ -498,16 +466,17 @@ julesClient.interceptors.response.use(...)
 - **Primary:** Vercel (automatic deployments from GitHub)
 - **Fallback:** Netlify
 - **Database:** Supabase (PostgreSQL) or Firebase
-- **Auth:** NextAuth.js or Auth0
+- **Auth:** Django REST + JWT
 
 ### Environment Setup
 ```env
-REACT_APP_JULES_API_URL=https://api.jules.google/v1
-REACT_APP_JULES_API_KEY=your_api_key
-REACT_APP_GITHUB_CLIENT_ID=your_client_id
-REACT_APP_GITHUB_CLIENT_SECRET=your_secret
+JULES_API_URL=https://api.jules.google/v1
+JULES_API_KEY=your_api_key
+JULES_SSE_URL=https://api.jules.google/v1
+GITHUB_CLIENT_ID=your_client_id
+GITHUB_CLIENT_SECRET=your_secret
 DATABASE_URL=your_database_url
-NEXTAUTH_SECRET=your_secret
+DJANGO_SECRET_KEY=your_secret
 ```
 
 ### CI/CD Pipeline
@@ -560,7 +529,7 @@ NEXTAUTH_SECRET=your_secret
 
 ### Best Practices
 1. **Component Architecture:** Small, single-responsibility components
-2. **State Management:** Local > Context > Zustand > TanStack Query
+2. **State Management:** Signals > Services > Component state
 3. **Error Handling:** Never fail silently; always inform user
 4. **Testing:** Test behavior, not implementation
 5. **Performance:** Lazy load, code split, optimize re-renders
@@ -588,13 +557,13 @@ NEXTAUTH_SECRET=your_secret
 ## 🎓 LEARNING RESOURCES
 
 ### Key Technologies
-- React 18+ Docs: https://react.dev
-- TanStack Query: https://tanstack.com/query
-- Zustand: https://zustand.bear.sh
+- Angular Docs: https://angular.dev
+- RxJS: https://rxjs.dev
+- Angular Testing: https://angular.dev/guide/testing
 - Tailwind CSS: https://tailwindcss.com
 - Shadcn/ui: https://ui.shadcn.com
 - Zod: https://zod.dev
-- React Hook Form: https://react-hook-form.com
+- Angular Reactive Forms: https://angular.dev/guide/forms
 - Jules API: https://developers.google.com/jules
 - GitHub API: https://docs.github.com/en/rest
 
@@ -605,7 +574,7 @@ NEXTAUTH_SECRET=your_secret
 This is your **custom, production-ready prompt** for building the Jules API UI. It incorporates:
 
 ✅ Your specific requirements (solo dev, GitHub integration, webhooks, real-time updates)
-✅ Modern tech stack (React, TypeScript, Vite, Tailwind)
+✅ Modern tech stack (Angular, TypeScript, Tailwind)
 ✅ Beautiful design system (custom color palette, modern aesthetics)
 ✅ Enterprise-grade architecture patterns
 ✅ Phased implementation plan (3-6 months)
