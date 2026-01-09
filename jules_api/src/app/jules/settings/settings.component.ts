@@ -5,6 +5,12 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { JulesService } from '../../services/jules.service';
 import { JulesApiError } from '../../models/jules.model';
 import { getApiErrorMessage } from '../../utils/api-error';
+import {
+  parseSettingsResponse,
+  parseUpdateApiKeyResponse,
+  parseTestConnectionResponse,
+  getParserErrorMessage
+} from '../../utils/api-parsers';
 
 interface SettingsResponse {
   api_key_configured: boolean;

@@ -3,18 +3,27 @@ import { SessionCreateComponent } from './session-create.component';
 import { JulesService } from '../../services/jules.service';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
+import { vi } from 'vitest';
 
 describe('SessionCreateComponent', () => {
   let component: SessionCreateComponent;
   let fixture: ComponentFixture<SessionCreateComponent>;
-  let julesService: jasmine.SpyObj<JulesService>;
-  let router: jasmine.SpyObj<Router>;
+  let julesService: {
+    getSources: ReturnType<typeof vi.fn>;
+    createSession: ReturnType<typeof vi.fn>;
+  };
+  let router: { navigate: ReturnType<typeof vi.fn> };
 
   beforeEach(async () => {
-    julesService = jasmine.createSpyObj('JulesService', ['getSources', 'createSession']);
-    router = jasmine.createSpyObj('Router', ['navigate']);
+    julesService = {
+      getSources: vi.fn(),
+      createSession: vi.fn()
+    };
+    router = {
+      navigate: vi.fn()
+    };
 
-    julesService.getSources.and.returnValue(
+    julesService.getSources.mockReturnValue(
       of({
         sources: [
           {
@@ -54,7 +63,7 @@ describe('SessionCreateComponent', () => {
       update_time: '2024-01-01T00:00:00Z'
     };
 
-    julesService.createSession.and.returnValue(of(sessionResponse));
+    julesService.createSession.mockReturnValue(of(sessionResponse));
 
     fixture.detectChanges();
 

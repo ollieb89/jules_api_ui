@@ -3,6 +3,8 @@ export type RuntimeEnvironment = {
   wsUrl?: string;
 };
 
+declare const process: any;
+
 export const runtimeEnv =
   (typeof process !== 'undefined' && process.env
     ? {

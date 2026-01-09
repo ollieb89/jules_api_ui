@@ -222,18 +222,25 @@ const parseActivity = (value: unknown): Activity => {
 
   return {
     name: asString(value['name'], 'activity.name'),
-    plan_generated: planGenerated ? { plan: parsePlan(planGenerated['plan']) } : null,
+    plan_generated: planGenerated
+      ? { plan: parsePlan((planGenerated as UnknownRecord)['plan']) }
+      : null,
     plan_approved: planApproved ? {} : null,
     progress_updated: progressUpdated
       ? {
-          title: asNullableString(progressUpdated['title'], 'activity.progress_updated.title'),
-          description: asNullableString(
-            progressUpdated['description'],
-            'activity.progress_updated.description'
-          ),
-          artifacts: progressUpdated['artifacts']
+          title:
+            asNullableString(
+              (progressUpdated as UnknownRecord)['title'],
+              'activity.progress_updated.title'
+            ) ?? undefined,
+          description:
+            asNullableString(
+              (progressUpdated as UnknownRecord)['description'],
+              'activity.progress_updated.description'
+            ) ?? undefined,
+          artifacts: (progressUpdated as UnknownRecord)['artifacts']
             ? asArray(
-                progressUpdated['artifacts'],
+                (progressUpdated as UnknownRecord)['artifacts'],
                 'activity.progress_updated.artifacts',
                 parseArtifact
               )
@@ -339,11 +346,10 @@ export const parseTestConnectionResponse = (value: unknown): TestConnectionRespo
     status,
     message,
     api_key_configured: apiKeyConfigured,
-    api_connectivity: asNullableString(
-      value['api_connectivity'],
-      'test_connection.api_connectivity'
-    ) ?? undefined,
-    sources_count: asOptionalNumber(value['sources_count'], 'test_connection.sources_count'),
+    api_connectivity:
+      asNullableString(value['api_connectivity'], 'test_connection.api_connectivity') ?? undefined,
+    sources_count:
+      asOptionalNumber(value['sources_count'], 'test_connection.sources_count') ?? undefined,
     error: asNullableString(value['error'], 'test_connection.error') ?? undefined
   };
 };
