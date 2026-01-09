@@ -1,6 +1,8 @@
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { retry, timer, throwError } from 'rxjs';
 
+import { getRetryAfterSeconds } from '../utils/api-error';
+
 const MAX_RETRY_ATTEMPTS = 2;
 const BASE_BACKOFF_MS = 300;
 const MAX_BACKOFF_MS = 2000;
@@ -26,6 +28,10 @@ export const retryInterceptor: HttpInterceptorFn = (req, next) => {
       delay: (error, retryCount) => {
         if (!(error instanceof HttpErrorResponse) || !shouldRetry(error)) {
           return throwError(() => error);
+        }
+        const retryAfterSeconds = getRetryAfterSeconds(error);
+        if (retryAfterSeconds && retryAfterSeconds > 0) {
+          return timer(retryAfterSeconds * 1000);
         }
         const backoff = Math.min(
           BASE_BACKOFF_MS * 2 ** (retryCount - 1),
