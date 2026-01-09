@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 from urllib.parse import urlparse
 
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -36,8 +37,9 @@ if not DEBUG:
     # Force HTTPS
     # Use SECURE_SSL_REDIRECT = True in production, but we need to disable it for tests running without HTTPS
     # or ensure tests override it.
-    if os.getenv("TESTING") != "true":
-        SECURE_SSL_REDIRECT = True
+    SECURE_SSL_REDIRECT = not TESTING
+    # Trust the X-Forwarded-Proto header for SSL termination proxies
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     # Secure cookies
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
@@ -87,6 +89,8 @@ else:
     SESSION_COOKIE_SECURE = False
     CSRF_COOKIE_SECURE = False
     SECURE_SSL_REDIRECT = False
+
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
 # Application definition
 INSTALLED_APPS = [
