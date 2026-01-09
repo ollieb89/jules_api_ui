@@ -127,6 +127,7 @@ class SessionViewSet(JulesAuthenticatedViewSet):
                 source=serializer.validated_data["source"],
             )
             upsert_session_from_api(data)
+            mark_sessions_synced()
             session_serializer = SessionSerializer(data=data)
             session_serializer.is_valid(raise_exception=True)
             return Response(session_serializer.data, status=status.HTTP_201_CREATED)
@@ -227,6 +228,7 @@ class SessionViewSet(JulesAuthenticatedViewSet):
         try:
             data = client.get_session(pk)
             upsert_session_from_api(data)
+            mark_sessions_synced()
             serializer = SessionSerializer(data=data)
             serializer.is_valid(raise_exception=True)
             return Response(serializer.data)
@@ -240,6 +242,7 @@ class SessionViewSet(JulesAuthenticatedViewSet):
             client.delete_session(pk)
             session_name = normalize_session_name(pk)
             JulesSession.objects.filter(name=session_name).delete()
+            mark_sessions_synced()
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
             return handle_api_exception(e, request=request)
@@ -253,6 +256,7 @@ class SessionViewSet(JulesAuthenticatedViewSet):
         try:
             data = client.approve_plan(pk)
             upsert_session_from_api(data)
+            mark_sessions_synced()
             session_serializer = SessionSerializer(data=data)
             session_serializer.is_valid(raise_exception=True)
             return Response(session_serializer.data)
@@ -268,6 +272,7 @@ class SessionViewSet(JulesAuthenticatedViewSet):
         try:
             data = client.send_message(pk, serializer.validated_data["message"])
             upsert_session_from_api(data)
+            mark_sessions_synced()
             session_serializer = SessionSerializer(data=data)
             session_serializer.is_valid(raise_exception=True)
             return Response(session_serializer.data)
