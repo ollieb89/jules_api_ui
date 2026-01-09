@@ -8,7 +8,7 @@ import httpx
 from django.conf import settings
 
 from .exceptions.api_error import ApiRequestError
-from .utils import get_correlation_id, log_jules_api_call
+from .utils import get_correlation_id, log_jules_api_call, sanitize_url
 
 logger = logging.getLogger(__name__)
 
@@ -226,7 +226,7 @@ class SharedHttpClient:
             "attempt": attempt + 1,
             "delay_seconds": delay,
             "status_code": status_code,
-            "url": url,
+            "url": sanitize_url(url),
         }
         correlation_id = get_correlation_id()
         if correlation_id:

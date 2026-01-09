@@ -156,6 +156,9 @@ class SessionSerializer(serializers.Serializer):
 
 
 CONTROL_CHAR_PATTERN = re.compile(r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]")
+MAX_PROMPT_LENGTH = 4000
+MAX_SOURCE_LENGTH = 512
+MAX_MESSAGE_LENGTH = 4000
 
 
 def sanitize_text(value: str, field_name: str) -> str:
@@ -175,19 +178,23 @@ class SessionCreateSerializer(serializers.Serializer):
     prompt = serializers.CharField(
         required=True,
         min_length=1,
+        max_length=MAX_PROMPT_LENGTH,
         error_messages={
             "required": "Prompt is required.",
             "blank": "Prompt cannot be blank.",
             "min_length": "Prompt must be at least 1 character.",
+            "max_length": f"Prompt must be at most {MAX_PROMPT_LENGTH} characters.",
         },
     )
     source = serializers.CharField(
         required=True,
         min_length=1,
+        max_length=MAX_SOURCE_LENGTH,
         error_messages={
             "required": "Source is required.",
             "blank": "Source cannot be blank.",
             "min_length": "Source must be at least 1 character.",
+            "max_length": f"Source must be at most {MAX_SOURCE_LENGTH} characters.",
         },
     )
 
@@ -515,10 +522,12 @@ class SendMessageSerializer(serializers.Serializer):
     message = serializers.CharField(
         required=True,
         min_length=1,
+        max_length=MAX_MESSAGE_LENGTH,
         error_messages={
             "required": "Message is required.",
             "blank": "Message cannot be blank.",
             "min_length": "Message must be at least 1 character.",
+            "max_length": f"Message must be at most {MAX_MESSAGE_LENGTH} characters.",
         },
     )
 

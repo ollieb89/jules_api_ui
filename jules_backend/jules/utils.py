@@ -1,5 +1,6 @@
 import json
 import logging
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from contextvars import ContextVar, Token
 from typing import Any, Mapping
 
@@ -67,6 +68,27 @@ def _sanitize_metadata(metadata: Mapping[str, Any] | None) -> dict[str, Any] | N
     return sanitized
 
 
+def sanitize_url(url: str) -> str:
+    """Redact sensitive query parameters from URLs before logging."""
+    try:
+        split_url = urlsplit(url)
+        if not split_url.query:
+            return url
+        query_params = parse_qsl(split_url.query, keep_blank_values=True)
+        sanitized_params = []
+        for key, value in query_params:
+            if _is_sensitive_key(key):
+                sanitized_params.append((key, "[redacted]"))
+            else:
+                sanitized_params.append((key, value))
+        sanitized_query = urlencode(sanitized_params, doseq=True)
+        return urlunsplit(
+            (split_url.scheme, split_url.netloc, split_url.path, sanitized_query, split_url.fragment)
+        )
+    except Exception:
+        return url
+
+
 def log_jules_api_call(
     *,
     method: str,
@@ -79,7 +101,7 @@ def log_jules_api_call(
     response_headers: Mapping[str, Any] | None = None,
     request_params: Mapping[str, Any] | None = None,
 ) -> None:
-    log_extra: dict[str, Any] = {"method": method, "url": url}
+    log_extra: dict[str, Any] = {"method": method, "url": sanitize_url(url)}
     correlation_id = get_correlation_id()
     if correlation_id:
         log_extra["correlation_id"] = correlation_id

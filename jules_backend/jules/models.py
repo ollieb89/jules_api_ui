@@ -17,17 +17,19 @@ def _derive_fernet_key(secret: str) -> bytes:
 @lru_cache(maxsize=1)
 def get_api_key_fernet():
     """
-    Get Fernet instance using dedicated JULES_ENCRYPTION_KEY.
+    Get Fernet instance using dedicated JULES_API_KEY_ENCRYPTION_KEY.
     Cached to avoid re-deriving key on every call.
 
-    WARNING: The encryption key is derived from settings.JULES_ENCRYPTION_KEY.
-    If JULES_ENCRYPTION_KEY is rotated, all encrypted API keys will become unreadable
-    until re-encrypted.
+    WARNING: The encryption key is derived from settings.JULES_API_KEY_ENCRYPTION_KEY.
+    If JULES_API_KEY_ENCRYPTION_KEY is rotated, all encrypted API keys will become
+    unreadable until re-encrypted.
     """
-    if not settings.JULES_ENCRYPTION_KEY:
-        raise ValidationError("JULES_ENCRYPTION_KEY must be set to encrypt API keys.")
+    if not settings.JULES_API_KEY_ENCRYPTION_KEY:
+        raise ValidationError(
+            "JULES_API_KEY_ENCRYPTION_KEY must be set to encrypt API keys."
+        )
 
-    return Fernet(_derive_fernet_key(settings.JULES_ENCRYPTION_KEY))
+    return Fernet(_derive_fernet_key(settings.JULES_API_KEY_ENCRYPTION_KEY))
 
 
 @lru_cache(maxsize=1)
@@ -77,7 +79,7 @@ class JulesSettings(models.Model):
             encrypted = f.encrypt(api_key.encode()).decode()
             self._encrypted_api_key = encrypted
         except Exception as e:
-            raise ValidationError(f"Failed to encrypt API key: {e}")
+            raise ValidationError("Failed to encrypt API key.") from e
     
     def get_api_key(self) -> str | None:
         """Decrypt and return API key."""
