@@ -9,7 +9,7 @@
     
     @if (error()) {
       <div 
-        class="bg-[var(--color-error-50)] border border-[var(--color-error-200)] text-[var(--color-error-700)] px-3 py-2 rounded text-sm mt-2"
+        class="bg-[var(--color-surface-error)] border border-[var(--color-border-error)] text-[var(--color-text-error)] px-3 py-2 rounded text-sm mt-2"
         role="alert"
       >
         {{ error() }}
@@ -50,8 +50,8 @@
     </button>
   } @else if (plan.state === 'APPROVED') {
     <div class="text-center py-3">
-      <mat-icon class="text-[var(--color-success-600)] mr-2 align-middle">check_circle</mat-icon>
-      <span class="text-base text-[var(--color-success-700)] font-medium">
+      <mat-icon class="text-[var(--color-text-success)] mr-2 align-middle">check_circle</mat-icon>
+      <span class="text-base text-[var(--color-text-success)] font-medium">
         Plan has been approved
       </span>
     </div>

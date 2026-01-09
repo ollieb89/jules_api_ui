@@ -190,7 +190,7 @@ interface FormattedSession extends Session {
       <!-- Error State -->
       @if (cacheService.error()) {
         <div 
-          class="bg-[var(--color-error-50)] border border-[var(--color-error-200)] text-[var(--color-error-700)] px-4 py-3 rounded mb-4"
+          class="bg-[var(--color-surface-error)] border border-[var(--color-border-error)] text-[var(--color-text-error)] px-4 py-3 rounded mb-4"
           role="alert"
           aria-live="assertive"
         >
@@ -268,7 +268,7 @@ interface FormattedSession extends Session {
                     (click)="viewSession(session.name)"
                     type="button"
                     [aria-label]="'View session ' + session.display_name"
-                    class="flex-1 text-[var(--color-interactive-primary)] hover:text-[var(--color-interactive-primary-hover)] font-medium text-sm py-1 px-2 rounded hover:bg-[var(--color-info-50)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+                    class="flex-1 text-[var(--color-interactive-primary)] hover:text-[var(--color-interactive-primary-hover)] font-medium text-sm py-1 px-2 rounded hover:bg-[var(--color-surface-info)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
                   >
                     View
                   </button>
@@ -277,7 +277,7 @@ interface FormattedSession extends Session {
                       (click)="sendMessage(session.name)"
                       type="button"
                       [aria-label]="'Send message to session ' + session.display_name"
-                      class="text-[var(--color-success-700)] hover:text-[var(--color-success-800)] font-medium text-sm py-1 px-2 rounded hover:bg-[var(--color-success-50)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+                      class="text-[var(--color-text-success)] hover:text-[var(--color-text-success-strong)] font-medium text-sm py-1 px-2 rounded hover:bg-[var(--color-surface-success)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
                     >
                       Message
                     </button>
@@ -286,7 +286,7 @@ interface FormattedSession extends Session {
                     (click)="deleteSession(session.name)"
                     type="button"
                     [aria-label]="'Delete session ' + session.display_name"
-                    class="text-[var(--color-error-700)] hover:text-[var(--color-error-800)] font-medium text-sm py-1 px-2 rounded hover:bg-[var(--color-error-50)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+                    class="text-[var(--color-text-error)] hover:text-[var(--color-text-error-strong)] font-medium text-sm py-1 px-2 rounded hover:bg-[var(--color-surface-error)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
                   >
                     Delete
                   </button>
@@ -331,11 +331,11 @@ export class SessionListComponent implements OnInit {
       
       let stateBadgeClass = 'bg-[var(--color-background-tertiary)] text-[var(--color-text-secondary)]';
       if (session.state === 'ACTIVE') {
-        stateBadgeClass = 'bg-[var(--color-info-50)] text-[var(--color-info-800)]';
+        stateBadgeClass = 'bg-[var(--color-surface-info)] text-[var(--color-text-info-strong)]';
       } else if (session.state === 'COMPLETED') {
-        stateBadgeClass = 'bg-[var(--color-success-50)] text-[var(--color-success-800)]';
+        stateBadgeClass = 'bg-[var(--color-surface-success)] text-[var(--color-text-success-strong)]';
       } else if (session.state === 'FAILED') {
-        stateBadgeClass = 'bg-[var(--color-error-50)] text-[var(--color-error-800)]';
+        stateBadgeClass = 'bg-[var(--color-surface-error)] text-[var(--color-text-error-strong)]';
       }
 
       return {
