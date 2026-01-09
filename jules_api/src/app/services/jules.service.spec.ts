@@ -68,6 +68,21 @@ describe('JulesService', () => {
       expect(req.request.body).toEqual({ prompt: 'Test prompt', source: 'sources/test-repo' });
       req.flush(mockSession);
     });
+
+    it('should propagate errors when session creation fails', done => {
+      service.createSession({ prompt: 'Test prompt', source: 'sources/test-repo' }).subscribe({
+        next: () => done.fail('Expected error'),
+        error: (err) => {
+          expect(err.status).toBe(500);
+          expect(err.error).toEqual({ error: 'Server error' });
+          done();
+        }
+      });
+
+      const req = httpMock.expectOne(`${environment.apiUrl}/jules/sessions/`);
+      expect(req.request.method).toBe('POST');
+      req.flush({ error: 'Server error' }, { status: 500, statusText: 'Server Error' });
+    });
   });
 
   describe('getSessions', () => {
@@ -239,6 +254,22 @@ describe('JulesService', () => {
       const req = httpMock.expectOne(`${environment.apiUrl}/jules/settings/api-key/`);
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual({ api_key: 'test-key' });
+      req.flush(mockResponse);
+    });
+
+    it('should surface masked API key responses', () => {
+      const mockResponse = {
+        status: 'success',
+        message: 'API key saved',
+        masked_api_key: '****9999'
+      };
+
+      service.updateApiKey('test-key').subscribe(response => {
+        expect(response.masked_api_key).toBe('****9999');
+      });
+
+      const req = httpMock.expectOne(`${environment.apiUrl}/jules/settings/api-key/`);
+      expect(req.request.method).toBe('POST');
       req.flush(mockResponse);
     });
   });
