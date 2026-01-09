@@ -336,7 +336,9 @@ class SessionViewSet(JulesAuthenticatedViewSet):
                 last_activity_id = get_latest_activity_id()
             topic = f"session:{session_name}"
             queue = subscribe(topic)
-            try:
+
+            def emit_cached_updates():
+                nonlocal last_update, last_activity_id
                 session = JulesSession.objects.filter(name=session_name).first()
                 if session:
                     payload = session_to_api_dict(session)
@@ -353,6 +355,9 @@ class SessionViewSet(JulesAuthenticatedViewSet):
                     yield "event: activity_update\n"
                     yield f"data: {json.dumps({'latest_activity_id': latest_activity_id})}\n\n"
                     last_activity_id = latest_activity_id
+
+            try:
+                yield from emit_cached_updates()
 
                 while True:
                     try:
@@ -371,6 +376,7 @@ class SessionViewSet(JulesAuthenticatedViewSet):
                                 yield f"data: {json.dumps(payload)}\n\n"
                                 last_activity_id = activity_id
                     except Empty:
+                        yield from emit_cached_updates()
                         yield "event: heartbeat\n"
                         yield "data: {}\n\n"
             except Exception as e:

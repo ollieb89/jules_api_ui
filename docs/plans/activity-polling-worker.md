@@ -9,6 +9,7 @@ expose a status stream endpoint the frontend can subscribe to.
 - Cache sessions and activities in new Django models.
 - Provide a Server-Sent Events (SSE) endpoint for activity updates.
 - Provide a Server-Sent Events (SSE) endpoint for background sync status updates.
+- Ensure cached-event streams fall back to database polling so background workers can drive updates.
 - Document configuration for the worker and polling cadence.
 
 ## Non-goals
