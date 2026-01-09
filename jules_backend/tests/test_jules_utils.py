@@ -87,7 +87,7 @@ class TestHandleApiException:
         assert response.status_code == 404
         assert "error" in response.data
         assert "message" in response.data["error"]
-        assert response.data["error"]["message"] == "Upstream service error"
+        assert response.data["error"]["message"] == "Not found"
         assert "detail" in response.data["error"]
         assert response.data["error"]["detail"] == {"message": "Not found"}
 

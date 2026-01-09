@@ -379,7 +379,8 @@ class PlanSerializer(serializers.Serializer):
 
         # Ensure plan state is valid
         plan_state = ret.get("state") or "STATE_UNSPECIFIED"
-        valid_plan_states = ["STATE_UNSPECIFIED", "PENDING", "APPROVED", "REJECTED"]
+        # COMPLETED is sometimes returned by the API but was not in the valid list
+        valid_plan_states = ["STATE_UNSPECIFIED", "PENDING", "APPROVED", "REJECTED", "COMPLETED"]
         if plan_state not in valid_plan_states:
             plan_state = "STATE_UNSPECIFIED"
 
@@ -407,7 +408,7 @@ class PlanGeneratedActivitySerializer(serializers.Serializer):
 class PlanApprovedActivitySerializer(serializers.Serializer):
     """Serializer for planApproved activity."""
 
-    pass  # Empty, just indicates approval
+    plan = PlanSerializer(required=False, allow_null=True)
 
 
 class ProgressUpdatedActivitySerializer(serializers.Serializer):

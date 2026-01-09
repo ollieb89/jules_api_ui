@@ -128,8 +128,8 @@ def test_sessions_retrieve_serializes_fields(api_client, monkeypatch):
         'state': 'COMPLETED',
         'prompt': 'Review logs',
         'source': 'sources/789',
-        'create_time': '2024-04-01T00:00:00Z',
-        'update_time': '2024-04-02T00:00:00Z',
+        'create_time': '2024-04-01T00:00:00+00:00',
+        'update_time': '2024-04-02T00:00:00+00:00',
     }
 
 

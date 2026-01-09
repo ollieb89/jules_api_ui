@@ -100,19 +100,6 @@ class JulesSettings(models.Model):
                 except Exception:
                     pass
 
-            # Fallback for migration: check if it's the old base64 format
-            try:
-                # Basic base64 check - if it decodes and looks reasonable
-                decoded = base64.b64decode(self._encrypted_api_key.encode()).decode()
-
-                # If we successfully decoded, we should probably re-encrypt it properly
-                # But we can't save here easily without triggering other things or needing self.save()
-                # Ideally, we'd upgrade it. For now, let's just return it.
-                # A proper migration script would be better, but this allows for lazy migration.
-                return decoded
-            except Exception:
-                pass
-
             # If both fail
             raise ValidationError("Failed to decrypt API key")
     
