@@ -309,44 +309,70 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
   }
 
   private derivePlanSnapshot(activities: Activity[]): PlanSnapshot | null {
-    const planActivities = activities.filter(activity => activity.plan_generated?.plan);
-    if (planActivities.length === 0) {
+    const planGeneratedActivities = activities.filter(activity => activity.plan_generated?.plan);
+    const planApprovedActivities = activities.filter(activity => activity.plan_approved);
+    if (planGeneratedActivities.length === 0 && planApprovedActivities.length === 0) {
       return null;
     }
 
-    const latestPlanActivity = planActivities.reduce((latest, current) => {
+    const latestPlanGenerated = planGeneratedActivities.reduce<Activity | null>((latest, current) => {
+      if (!latest) {
+        return current;
+      }
       const latestTime = new Date(latest.create_time).getTime();
       const currentTime = new Date(current.create_time).getTime();
       return currentTime > latestTime ? current : latest;
-    });
+    }, null);
 
-    const basePlan = latestPlanActivity.plan_generated?.plan;
+    const latestPlanApprovedWithPlan = planApprovedActivities
+      .filter(activity => activity.plan_approved?.plan)
+      .reduce<Activity | null>((latest, current) => {
+        if (!latest) {
+          return current;
+        }
+        const latestTime = new Date(latest.create_time).getTime();
+        const currentTime = new Date(current.create_time).getTime();
+        return currentTime > latestTime ? current : latest;
+      }, null);
+
+    const basePlan = latestPlanApprovedWithPlan?.plan_approved?.plan
+      ?? latestPlanGenerated?.plan_generated?.plan;
     if (!basePlan) {
       return null;
     }
 
-    const planState = this.derivePlanState(basePlan.state, activities, latestPlanActivity);
+    const approvalPlan = latestPlanApprovedWithPlan?.plan_approved?.plan;
+    const planSteps = approvalPlan?.steps?.length ? approvalPlan.steps : basePlan.steps;
+    const planState = this.derivePlanState(
+      approvalPlan?.state ?? basePlan.state,
+      activities,
+      latestPlanGenerated ? new Date(latestPlanGenerated.create_time).getTime() : null
+    );
     const plan: Plan = {
       ...basePlan,
+      ...approvalPlan,
       state: planState,
-      steps: basePlan.steps.map(step => ({ ...step }))
+      steps: planSteps.map(step => ({ ...step }))
     };
 
     return {
       plan,
-      planGeneratedAt: latestPlanActivity.create_time
+      planGeneratedAt:
+        latestPlanGenerated?.create_time ?? latestPlanApprovedWithPlan?.create_time ?? ''
     };
   }
 
   private derivePlanState(
     baseState: PlanState,
     activities: Activity[],
-    latestPlanActivity: Activity
+    latestPlanTime: number | null
   ): PlanState {
-    const latestPlanTime = new Date(latestPlanActivity.create_time).getTime();
     const planApprovedAfter = activities.some(activity => {
       if (!activity.plan_approved) {
         return false;
+      }
+      if (latestPlanTime === null) {
+        return true;
       }
       return new Date(activity.create_time).getTime() >= latestPlanTime;
     });
