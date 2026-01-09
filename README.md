@@ -163,8 +163,7 @@ export const environment = {
 ## 🔧 Backend Setup
 
 The backend uses Django with Pixi for environment management. The earlier FastAPI prototype has
-been removed from the repository (there is no `jules_backend/app/` runtime) and is not part of
-the runtime or deployment workflow.
+been removed from the repository and is not part of the runtime or deployment workflow.
 
 ### Installation
 
