@@ -103,8 +103,10 @@ def handle_api_exception(e: Exception, request: Request | None = None) -> Respon
         error_detail = {"detail": str(e)}
         message = "Upstream request failed"
     elif isinstance(e, ApiRequestError):
-        if status_code is None and isinstance(details, dict):
-            status_code = details.get("upstream_status")
+        if isinstance(details, dict):
+            upstream_status = details.get("upstream_status")
+            if upstream_status:
+                status_code = upstream_status
         if details:
             error_detail = details
         message = getattr(e, "user_message", None) or str(e)
@@ -121,6 +123,8 @@ def handle_api_exception(e: Exception, request: Request | None = None) -> Respon
         log_extra["correlation_id"] = correlation_id
     if isinstance(details, dict) and details.get("upstream_status"):
         log_extra["upstream_status"] = details["upstream_status"]
+    if isinstance(details, dict) and details.get("upstream_request_id"):
+        log_extra["upstream_request_id"] = details["upstream_request_id"]
 
     logger.error("API Error: %s", str(e), exc_info=True, extra=log_extra)
 

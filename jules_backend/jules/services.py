@@ -66,6 +66,11 @@ class SharedHttpClient:
     ) -> httpx.Response:
         timeout = self._resolve_timeout(timeout_policy)
         request_headers = {**self._default_headers, **(headers or {})}
+        correlation_id = get_correlation_id()
+        if correlation_id and not (
+            request_headers.get("X-Correlation-ID") or request_headers.get("X-Request-ID")
+        ):
+            request_headers["X-Correlation-ID"] = correlation_id
 
         for attempt in range(self.MAX_RETRIES + 1):
             start_time = time.monotonic()
