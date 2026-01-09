@@ -5,10 +5,13 @@ from queue import Empty
 from django.conf import settings
 from django.http import StreamingHttpResponse
 from rest_framework import status, viewsets
+from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from .authentication import QueryParamJWTAuthentication
 from .serializers import (
     ActivitySerializer,
     ApiKeyUpdateSerializer,
@@ -46,7 +49,12 @@ from .streaming import publish, subscribe, unsubscribe
 class JulesAuthenticatedViewSet(viewsets.ViewSet):
     """Base ViewSet that enforces JWT or session authentication."""
 
-    permission_classes = [IsAuthenticated]
+    authentication_classes = (
+        QueryParamJWTAuthentication,
+        SessionAuthentication,
+        JWTAuthentication,
+    )
+    permission_classes = (IsAuthenticated,)
     throttle_scope = "jules_api"
 
 
