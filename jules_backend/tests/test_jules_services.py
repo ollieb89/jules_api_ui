@@ -29,13 +29,23 @@ def mock_jules_settings():
 @pytest.fixture
 def shared_client(monkeypatch):
     """Create a SharedHttpClient with deterministic settings."""
-    monkeypatch.setattr(SharedHttpClient, "MAX_RETRIES", 1)
-    monkeypatch.setattr(SharedHttpClient, "BACKOFF_SECONDS", 0.1)
-    monkeypatch.setattr(SharedHttpClient, "RETRY_STATUS_CODES", {429, 503})
+    monkeypatch.setattr("jules.services.MAX_RETRIES", 1)
+    monkeypatch.setattr("jules.services.BACKOFF_SECONDS", 0.1)
+    monkeypatch.setattr("jules.services.RETRY_STATUS_CODES", {429, 503})
     monkeypatch.setattr(
-        SharedHttpClient,
-        "TIMEOUT_POLICIES",
+        "jules.services.TIMEOUT_POLICIES",
         {"default": httpx.Timeout(5.0, connect=1.0), "long": httpx.Timeout(10.0)},
+    )
+    # We also need to patch the lookup logic in the module for default policies
+    monkeypatch.setattr(
+        "jules.services.RETRY_POLICIES",
+        {
+            "default": {
+                "max_retries": 1,
+                "backoff_seconds": 0.1,
+                "status_codes": {429, 503},
+            }
+        },
     )
     return SharedHttpClient({"X-Test": "true"})
 
@@ -50,20 +60,24 @@ class TestSharedHttpClientBackoff:
     """Test backoff delay calculation and retry handling."""
 
     def test_retry_after_header_takes_precedence(self, shared_client):
+        from jules.services import _resolve_retry_policy
+        policy = _resolve_retry_policy("default")
         response = httpx.Response(
             429,
             request=httpx.Request("GET", "http://example.com"),
             headers={"Retry-After": "2.5"},
         )
-        assert shared_client._calculate_backoff(0, response) == 2.5
+        assert shared_client._calculate_backoff(0, response, policy) == 2.5
 
     def test_invalid_retry_after_falls_back_to_exponential(self, shared_client):
+        from jules.services import _resolve_retry_policy
+        policy = _resolve_retry_policy("default")
         response = httpx.Response(
             503,
             request=httpx.Request("GET", "http://example.com"),
             headers={"Retry-After": "invalid"},
         )
-        assert shared_client._calculate_backoff(1, response) == 0.2
+        assert shared_client._calculate_backoff(1, response, policy) == 0.2
 
 
 class TestSharedHttpClientRequest:
@@ -141,7 +155,18 @@ class TestSharedHttpClientRequest:
         assert "Bad request" in err.user_message
 
     def test_request_error_maps_to_service_unavailable(self, shared_client, monkeypatch):
-        monkeypatch.setattr(SharedHttpClient, "MAX_RETRIES", 0)
+        monkeypatch.setattr("jules.services.MAX_RETRIES", 0)
+        # Update retry policies as well since _resolve_retry_policy uses defaults from there if not found/updated
+        monkeypatch.setattr(
+            "jules.services.RETRY_POLICIES",
+            {
+                "default": {
+                    "max_retries": 0,
+                    "backoff_seconds": 0.1,
+                    "status_codes": {429, 503},
+                }
+            },
+        )
         request = httpx.Request("GET", "http://example.com")
 
         with patch.object(
