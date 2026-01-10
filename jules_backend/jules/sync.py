@@ -46,18 +46,11 @@ def upsert_session(session_data: dict) -> JulesSession:
         update_fields = []
         for field_name, value in defaults.items():
             current_value = getattr(session, field_name)
-            # Special handling for JSONField to avoid false positives from object instance differences
-            if field_name == "raw_payload":
-                # For JSONField, compare the actual dict contents
-                if current_value != value:
-                    setattr(session, field_name, value)
-                    has_changes = True
-                    update_fields.append(field_name)
-            else:
-                if current_value != value:
-                    setattr(session, field_name, value)
-                    has_changes = True
-                    update_fields.append(field_name)
+            # Compare values - JSONField comparison works correctly with !=
+            if current_value != value:
+                setattr(session, field_name, value)
+                has_changes = True
+                update_fields.append(field_name)
         
         if has_changes:
             # Include last_synced_at since auto_now=True doesn't work with update_fields
