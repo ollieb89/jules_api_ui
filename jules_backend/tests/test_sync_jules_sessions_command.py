@@ -216,7 +216,7 @@ class TestSyncJulesSessionsCommand:
         mock_client.list_sessions.return_value = {
             "sessions": [
                 {"name": "sessions/test1", "displayName": "Test 1", "state": "STATE_ACTIVE"},
-                {"name": "sessions/test2"},  # Missing required fields
+                {"name": "sessions/test2"},  # Missing optional fields like displayName/state
             ],
             "nextPageToken": None,
         }

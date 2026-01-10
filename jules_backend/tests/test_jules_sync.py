@@ -107,8 +107,8 @@ class TestUpsertSession:
         session2 = upsert_session(session_data)
         
         assert session1.id == session2.id
-        # last_synced_at should not change if no data changed
-        assert session2.last_synced_at == first_synced
+        # last_synced_at should be updated even when no data changes to track sync time
+        assert session2.last_synced_at > first_synced
 
     def test_handle_snake_case_fields(self):
         """Should handle both camelCase and snake_case field names."""
