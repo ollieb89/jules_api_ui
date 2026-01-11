@@ -69,19 +69,22 @@ describe('JulesService', () => {
       req.flush(mockSession);
     });
 
-    it('should propagate errors when session creation fails', done => {
-      service.createSession({ prompt: 'Test prompt', source: 'sources/test-repo' }).subscribe({
-        next: () => done.fail('Expected error'),
-        error: (err) => {
-          expect(err.status).toBe(500);
-          expect(err.error).toEqual({ error: 'Server error' });
-          done();
-        }
+    it('should propagate errors when session creation fails', async () => {
+      const errorPromise = new Promise<{ status: number; error: unknown }>((_, reject) => {
+        service.createSession({ prompt: 'Test prompt', source: 'sources/test-repo' }).subscribe({
+          next: () => reject(new Error('Expected error')),
+          error: (err) => reject(err)
+        });
       });
 
       const req = httpMock.expectOne(`${environment.apiUrl}/jules/sessions/`);
       expect(req.request.method).toBe('POST');
       req.flush({ error: 'Server error' }, { status: 500, statusText: 'Server Error' });
+
+      await expect(errorPromise).rejects.toMatchObject({
+        status: 500,
+        error: { error: 'Server error' }
+      });
     });
   });
 

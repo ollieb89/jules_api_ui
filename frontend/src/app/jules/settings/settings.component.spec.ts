@@ -2,20 +2,23 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SettingsComponent } from './settings.component';
 import { JulesService } from '../../services/jules.service';
 import { of } from 'rxjs';
+import { vi } from 'vitest';
+
+import { provideRouter } from '@angular/router';
 
 describe('SettingsComponent', () => {
   let component: SettingsComponent;
   let fixture: ComponentFixture<SettingsComponent>;
-  let julesService: jasmine.SpyObj<JulesService>;
+  let julesService: any;
 
   beforeEach(async () => {
-    julesService = jasmine.createSpyObj('JulesService', [
-      'getSettings',
-      'updateApiKey',
-      'testConnection'
-    ]);
+    julesService = {
+      getSettings: vi.fn(),
+      updateApiKey: vi.fn(),
+      testConnection: vi.fn()
+    };
 
-    julesService.getSettings.and.returnValue(
+    julesService.getSettings.mockReturnValue(
       of({
         api_key_configured: true,
         masked_api_key: '****1234',
@@ -24,9 +27,14 @@ describe('SettingsComponent', () => {
       })
     );
 
+
+
     await TestBed.configureTestingModule({
       imports: [SettingsComponent],
-      providers: [{ provide: JulesService, useValue: julesService }]
+      providers: [
+        { provide: JulesService, useValue: julesService },
+        provideRouter([])
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(SettingsComponent);
@@ -42,7 +50,7 @@ describe('SettingsComponent', () => {
   });
 
   it('should save the API key and refresh settings', () => {
-    julesService.updateApiKey.and.returnValue(of({ status: 'success', message: 'Saved' }));
+    julesService.updateApiKey.mockReturnValue(of({ status: 'success', message: 'Saved' }));
 
     fixture.detectChanges();
 
@@ -55,7 +63,7 @@ describe('SettingsComponent', () => {
   });
 
   it('should update connection status on successful test connection', () => {
-    julesService.testConnection.and.returnValue(
+    julesService.testConnection.mockReturnValue(
       of({
         status: 'success',
         message: 'Connection ok',
@@ -75,7 +83,7 @@ describe('SettingsComponent', () => {
   });
 
   it('should surface errors on failed connection tests', () => {
-    julesService.testConnection.and.returnValue(
+    julesService.testConnection.mockReturnValue(
       of({
         status: 'error',
         message: 'Connection failed',

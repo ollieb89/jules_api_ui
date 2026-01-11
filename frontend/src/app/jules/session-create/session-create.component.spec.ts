@@ -3,18 +3,24 @@ import { SessionCreateComponent } from './session-create.component';
 import { JulesService } from '../../services/jules.service';
 import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
+import { vi } from 'vitest';
 
 describe('SessionCreateComponent', () => {
   let component: SessionCreateComponent;
   let fixture: ComponentFixture<SessionCreateComponent>;
-  let julesService: jasmine.SpyObj<JulesService>;
-  let router: jasmine.SpyObj<Router>;
+  let julesService: any;
+  let router: any;
 
   beforeEach(async () => {
-    julesService = jasmine.createSpyObj('JulesService', ['getSources', 'createSession']);
-    router = jasmine.createSpyObj('Router', ['navigate']);
+    julesService = {
+      getSources: vi.fn(),
+      createSession: vi.fn()
+    };
+    router = {
+      navigate: vi.fn()
+    };
 
-    julesService.getSources.and.returnValue(
+    julesService.getSources.mockReturnValue(
       of({
         sources: [
           {
@@ -54,7 +60,7 @@ describe('SessionCreateComponent', () => {
       update_time: '2024-01-01T00:00:00Z'
     };
 
-    julesService.createSession.and.returnValue(of(sessionResponse));
+    julesService.createSession.mockReturnValue(of(sessionResponse));
 
     fixture.detectChanges();
 
@@ -74,7 +80,7 @@ describe('SessionCreateComponent', () => {
   });
 
   it('should surface errors when session creation fails', () => {
-    julesService.createSession.and.returnValue(throwError(() => ({ error: 'Session failed' })));
+    julesService.createSession.mockReturnValue(throwError(() => ({ error: 'Session failed' })));
 
     fixture.detectChanges();
 

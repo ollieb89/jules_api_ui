@@ -4,6 +4,8 @@ import { DashboardComponent } from './dashboard.component';
 import { SessionCacheService } from '../../services/session-cache.service';
 import { ThemeService } from '../../services/theme.service';
 
+import { provideRouter } from '@angular/router';
+
 describe('DashboardComponent', () => {
   it('renders summary counts and starts auto refresh', async () => {
     const cacheService = {
@@ -20,11 +22,14 @@ describe('DashboardComponent', () => {
       getTheme: vi.fn(() => 'light')
     };
 
+
+
     await TestBed.configureTestingModule({
       imports: [DashboardComponent],
       providers: [
         { provide: SessionCacheService, useValue: cacheService },
-        { provide: ThemeService, useValue: themeService }
+        { provide: ThemeService, useValue: themeService },
+        provideRouter([])
       ]
     }).compileComponents();
 

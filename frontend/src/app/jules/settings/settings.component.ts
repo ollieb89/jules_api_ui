@@ -4,6 +4,12 @@ import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { JulesService } from '../../services/jules.service';
 import { getApiErrorMessage } from '../../utils/api-error';
+import {
+  parseSettingsResponse,
+  parseUpdateApiKeyResponse,
+  parseTestConnectionResponse,
+  getParserErrorMessage
+} from '../../utils/api-parsers';
 
 interface SettingsResponse {
   api_key_configured: boolean;
@@ -174,7 +180,7 @@ export class SettingsComponent implements OnInit {
   loadSettings(): void {
     this.loading.set(true);
     this.error.set(null);
-    
+
     // Note: This endpoint needs to be added to JulesService
     this.julesService.getSettings().subscribe({
       next: (response) => {
@@ -200,7 +206,7 @@ export class SettingsComponent implements OnInit {
       this.saving.set(true);
       this.error.set(null);
       this.successMessage.set(null);
-      
+
       const apiKey = this.apiKeyForm.get('apiKey')?.value;
       this.julesService.updateApiKey(apiKey).subscribe({
         next: (response) => {
@@ -227,7 +233,7 @@ export class SettingsComponent implements OnInit {
     this.testing.set(true);
     this.error.set(null);
     this.successMessage.set(null);
-    
+
     this.julesService.testConnection().subscribe({
       next: (response) => {
         try {

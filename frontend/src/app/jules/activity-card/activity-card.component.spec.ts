@@ -2,15 +2,17 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ActivityCardComponent } from './activity-card.component';
 import { ClipboardService } from '../../services/clipboard.service';
+import { vi } from 'vitest';
 
 describe('ActivityCardComponent', () => {
   let component: ActivityCardComponent;
   let fixture: ComponentFixture<ActivityCardComponent>;
-  let clipboardService: jasmine.SpyObj<ClipboardService>;
+  let clipboardService: any;
 
   beforeEach(async () => {
-    clipboardService = jasmine.createSpyObj('ClipboardService', ['copyToClipboard']);
-    clipboardService.copyToClipboard.and.resolveTo(true);
+    clipboardService = {
+      copyToClipboard: vi.fn().mockResolvedValue(true)
+    };
 
     await TestBed.configureTestingModule({
       imports: [ActivityCardComponent],

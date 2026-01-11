@@ -155,19 +155,19 @@ const parseSource = (value: unknown): Source => {
     display_name: asString(value['display_name'], 'source.display_name'),
     github_metadata: githubMetadata
       ? {
-          repository: asString(
-            (githubMetadata as UnknownRecord)['repository'],
-            'source.github_metadata.repository'
-          ),
-          branch: asNullableString(
-            (githubMetadata as UnknownRecord)['branch'],
-            'source.github_metadata.branch'
-          ),
-          commit: asNullableString(
-            (githubMetadata as UnknownRecord)['commit'],
-            'source.github_metadata.commit'
-          )
-        }
+        repository: asString(
+          (githubMetadata as UnknownRecord)['repository'],
+          'source.github_metadata.repository'
+        ),
+        branch: asNullableString(
+          (githubMetadata as UnknownRecord)['branch'],
+          'source.github_metadata.branch'
+        ),
+        commit: asNullableString(
+          (githubMetadata as UnknownRecord)['commit'],
+          'source.github_metadata.commit'
+        )
+      }
       : null
   };
 };
@@ -222,27 +222,36 @@ const parseActivity = (value: unknown): Activity => {
 
   return {
     name: asString(value['name'], 'activity.name'),
-    plan_generated: planGenerated ? { plan: parsePlan(planGenerated['plan']) } : null,
+    plan_generated: planGenerated
+      ? { plan: parsePlan((planGenerated as UnknownRecord)['plan']) }
+      : null,
     plan_approved: planApproved
       ? {
-          plan: planApproved['plan'] ? parsePlan(planApproved['plan']) : undefined
-        }
+        plan: (planApproved as UnknownRecord)['plan']
+          ? parsePlan((planApproved as UnknownRecord)['plan'])
+          : undefined
+      }
       : null,
     progress_updated: progressUpdated
       ? {
-          title: asNullableString(progressUpdated['title'], 'activity.progress_updated.title'),
-          description: asNullableString(
-            progressUpdated['description'],
+        title:
+          asNullableString(
+            (progressUpdated as UnknownRecord)['title'],
+            'activity.progress_updated.title'
+          ) ?? undefined,
+        description:
+          asNullableString(
+            (progressUpdated as UnknownRecord)['description'],
             'activity.progress_updated.description'
-          ),
-          artifacts: progressUpdated['artifacts']
-            ? asArray(
-                progressUpdated['artifacts'],
-                'activity.progress_updated.artifacts',
-                parseArtifact
-              )
-            : null
-        }
+          ) ?? undefined,
+        artifacts: (progressUpdated as UnknownRecord)['artifacts']
+          ? asArray(
+            (progressUpdated as UnknownRecord)['artifacts'],
+            'activity.progress_updated.artifacts',
+            parseArtifact
+          )
+          : null
+      }
       : null,
     session_completed: sessionCompleted ? {} : null,
     create_time: asString(value['create_time'], 'activity.create_time')
@@ -343,11 +352,10 @@ export const parseTestConnectionResponse = (value: unknown): TestConnectionRespo
     status,
     message,
     api_key_configured: apiKeyConfigured,
-    api_connectivity: asNullableString(
-      value['api_connectivity'],
-      'test_connection.api_connectivity'
-    ) ?? undefined,
-    sources_count: asOptionalNumber(value['sources_count'], 'test_connection.sources_count'),
+    api_connectivity:
+      asNullableString(value['api_connectivity'], 'test_connection.api_connectivity') ?? undefined,
+    sources_count:
+      asOptionalNumber(value['sources_count'], 'test_connection.sources_count') ?? undefined,
     error: asNullableString(value['error'], 'test_connection.error') ?? undefined
   };
 };
