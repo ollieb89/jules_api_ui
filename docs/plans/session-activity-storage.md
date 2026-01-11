@@ -6,7 +6,7 @@
 - Add a periodic sync job to reconcile sessions/activities from the Jules API.
 
 ## Implementation notes
-- Models: `jules_backend/jules/models.py` with `JulesSession` + `JulesActivity`.
-- Sync helpers: `jules_backend/jules/sync.py` used by API views and the management command.
-- Management command: `jules_backend/jules/management/commands/sync_jules_sessions.py`.
-- Migration: `jules_backend/jules/migrations/0002_add_sessions_activities.py`.
+- Models: `backend/jules/models.py` with `JulesSession` + `JulesActivity`.
+- Sync helpers: `backend/jules/sync.py` used by API views and the management command.
+- Management command: `backend/jules/management/commands/sync_jules_sessions.py`.
+- Migration: `backend/jules/migrations/0002_add_sessions_activities.py`.

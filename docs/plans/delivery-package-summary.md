@@ -150,11 +150,11 @@ Congratulations! Your complete Jules API UI project package is ready. Here's eve
 ### Step 1: Set Up Your Project (Today)
 ```bash
 # Install frontend dependencies
-cd jules_api
+cd frontend
 bun install
 
 # Install backend dependencies
-cd ../jules_backend
+cd ../backend
 pixi install
 ```
 

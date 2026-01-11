@@ -36,14 +36,14 @@ colors/
 - Ensure focus rings remain visible across light and dark modes.
 
 ## CSS Variable Entry Points
-- `jules_api/src/styles/colors/palette.css` defines the raw palette.
-- `jules_api/src/styles/colors/semantic.css` defines semantic aliases.
-- `jules_api/src/styles/colors/dark-mode.css` defines dark-mode overrides.
+- `frontend/src/styles/colors/palette.css` defines the raw palette.
+- `frontend/src/styles/colors/semantic.css` defines semantic aliases.
+- `frontend/src/styles/colors/dark-mode.css` defines dark-mode overrides.
 
 ## TypeScript Access
 Use the helper utilities for SSR-safe access:
-- `jules_api/src/theme/colors.ts` exposes `themeColors` and `getColorTokenValue`.
-- `jules_api/src/hooks/useColorToken.ts` reads CSS tokens in the browser.
+- `frontend/src/theme/colors.ts` exposes `themeColors` and `getColorTokenValue`.
+- `frontend/src/hooks/useColorToken.ts` reads CSS tokens in the browser.
 
 ## Component Mappings
 - Buttons: `--color-interactive-primary` and related hover/active/disabled tokens.
@@ -53,5 +53,5 @@ Use the helper utilities for SSR-safe access:
 
 ## Future Extensions
 Add new palettes by extending the `colorPalette` object in
-`jules_api/src/constants/colors.ts` and adding matching CSS variables in
+`frontend/src/constants/colors.ts` and adding matching CSS variables in
 `palette.css` and `semantic.css`.

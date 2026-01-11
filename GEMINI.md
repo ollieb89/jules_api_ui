@@ -1,11 +1,11 @@
 # Jules Project
 
-This repository contains the source code for the Jules application, consisting of an Angular frontend (`jules_api`) and a Django backend (`jules_backend`).
+This repository contains the source code for the Jules application, consisting of an Angular frontend (`frontend`) and a Django backend (`backend`).
 
 ## Project Structure
 
-- **`jules_api/`**: Angular 21+ frontend application.
-- **`jules_backend/`**: Django backend application using Pixi for environment management.
+- **`frontend/`**: Angular 21+ frontend application.
+- **`backend/`**: Django backend application using Pixi for environment management.
 - **`docs/`**: Project documentation.
 - **`.agent/`**: AI agent rules and context.
 
@@ -14,9 +14,9 @@ This repository contains the source code for the Jules application, consisting o
 - **Node.js / Bun**: For the frontend (`bun` is specified in `package.json`).
 - **Pixi**: For the backend environment and task management.
 
-## 1. Jules API (Frontend)
+## 1. Frontend
 
-Located in `jules_api/`.
+Located in `frontend/`.
 
 ### Tech Stack
 
@@ -28,7 +28,7 @@ Located in `jules_api/`.
 
 ### Development Commands
 
-Run these commands from the `jules_api/` directory:
+Run these commands from the `frontend/` directory:
 
 - **Start Development Server:**
 
@@ -57,7 +57,7 @@ Run these commands from the `jules_api/` directory:
 
 ## 2. Jules Backend
 
-Located in `jules_backend/`.
+Located in `backend/`.
 
 ### Tech Stack
 
@@ -72,7 +72,7 @@ from the repository and is not part of deployment or development workflows.
 
 ### Development Commands
 
-Run these commands from the `jules_backend/` directory (or use `pixi run -m jules_backend ...` if supported):
+Run these commands from the `backend/` directory (or use `pixi run -m backend ...` if supported):
 
 - **Setup Environment:**
 

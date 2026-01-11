@@ -41,8 +41,8 @@
     ]
   },
   "workspaces": {
-    "jules_api": {
-      "root": "jules_api",
+    "frontend": {
+      "root": "frontend",
       "type": "angular",
       "port": 4700,
       "commands": {
@@ -51,8 +51,8 @@
         "test": "ng test"
       }
     },
-    "jules_backend": {
-      "root": "jules_backend",
+    "backend": {
+      "root": "backend",
       "type": "python",
       "port": 8444,
       "commands": {

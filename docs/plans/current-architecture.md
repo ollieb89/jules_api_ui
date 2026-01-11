@@ -7,10 +7,10 @@ frontend and Django REST backend as implemented today.
 ## Frontend Overview (Angular 21 SSR)
 - **Standalone components** with `loadComponent` routing and no NgModules.
 - **Signals** and computed state for UI/data modeling.
-- **SSR render modes** configured in `jules_api/src/app/app.routes.server.ts`:
+- **SSR render modes** configured in `frontend/src/app/app.routes.server.ts`:
   - Server-rendered: `users/:id/edit`, `jules/:id`
   - Prerendered: `**` catch-all
-- **Route map** from `jules_api/src/app/app.routes.ts`:
+- **Route map** from `frontend/src/app/app.routes.ts`:
   - `/` → `/dashboard`
   - `/dashboard`
   - `/users`, `/users/new`, `/users/:id/edit`
@@ -18,8 +18,8 @@ frontend and Django REST backend as implemented today.
   - `/jules/integrations`
 
 ## Backend Overview (Django REST Framework)
-Routes are registered via the router in `jules_backend/jules/urls.py` and implemented in
-`jules_backend/jules/views.py`.
+Routes are registered via the router in `backend/jules/urls.py` and implemented in
+`backend/jules/views.py`.
 
 ### Core APIs
 - `GET /api/jules/sources/`

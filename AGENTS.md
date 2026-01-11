@@ -1,8 +1,8 @@
 # Repository Guidelines
 
 ## Project Structure & Modules
-- `jules_api/`: Angular 21 frontend (SSR) using Bun. Source in `src/`, public assets in `public/`, builds land in `dist/`. Follows standalone components and signals.
-- `jules_backend/`: Django service. App code in `jules_backend/`, `users/`, and `jules/` with tests in `tests/`.
+- `frontend/`: Angular 21 frontend (SSR) using Bun. Source in `src/`, public assets in `public/`, builds land in `dist/`. Follows standalone components and signals.
+- `backend/`: Django service. App code in `backend/`, `users/`, and `jules/` with tests in `tests/`.
 - `docs/plans/`: Planning and design notes. Update or add a new plan file when changing scope.
 
 ## Build, Test, and Development Commands
@@ -12,7 +12,7 @@ Run commands from the target subproject directory.
 ```bash
 bun install          # install deps
 bun run start        # dev server on :4700 (SSR-ready)
-bun run build        # production build to dist/jules_api
+bun run build        # production build to dist/frontend
 bun run test         # Vitest unit tests
 ```
 
@@ -38,5 +38,5 @@ pixi run black . && pixi run ruff . && pixi run mypy .  # formatting/lint/type-c
 - PRs should describe intent, key changes, and testing performed. Link issues or plans, include screenshots/GIFs for UI-affecting changes, and note migration impacts. Update docs when behavior or APIs change.
 
 ## Security & Configuration
-- Do not commit secrets; copy `jules_backend/.env.example` to `.env` locally. Confirm DB credentials before running migrations.
+- Do not commit secrets; copy `backend/.env.example` to `.env` locally. Confirm DB credentials before running migrations.
 - In SSR frontend code, guard browser-only APIs with platform checks. In backend, validate inputs at schema boundaries and prefer parameterized queries via Django ORM.

@@ -33,14 +33,14 @@ Jules API UI is a comprehensive task management and code review platform that in
 ## 🏗️ Project Structure
 
 ```
-jules_api_ui/
-├── jules_api/          # Angular 21 frontend (SSR with Bun)
+frontend_ui/
+├── frontend/          # Angular 21 frontend (SSR with Bun)
 │   ├── src/           # Source code
 │   ├── public/        # Static assets
 │   ├── dist/          # Build output
 │   └── package.json   # Frontend dependencies
 │
-├── jules_backend/      # Django backend (Pixi)
+├── backend/      # Django backend (Pixi)
 │   ├── users/         # Users Django app (includes users/migrations/)
 │   ├── jules/         # Jules Django app (includes jules/migrations/)
 │   ├── pixi.toml      # Python dependencies and tasks
@@ -80,18 +80,18 @@ Get the entire application running in 5 minutes:
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/ollieb89/jules_api_ui.git
-cd jules_api_ui
+git clone https://github.com/ollieb89/frontend_ui.git
+cd frontend_ui
 
 # 2. Start the backend
-cd jules_backend
+cd backend
 cp .env.example .env
 # Edit .env with your database credentials
 pixi run migrate
 pixi run runserver  # Runs on http://localhost:8444
 
 # 3. In a new terminal, start the frontend
-cd jules_api
+cd frontend
 bun install
 bun run start  # Runs on http://localhost:4700
 ```
@@ -105,7 +105,7 @@ The frontend is an Angular 21 application with SSR support, using Bun as the pac
 ### Installation
 
 ```bash
-cd jules_api
+cd frontend
 bun install
 ```
 
@@ -125,7 +125,7 @@ bun run test
 bun run watch
 
 # Serve SSR build
-bun run serve:ssr:jules_api
+bun run serve:ssr:frontend
 ```
 
 ### Frontend Architecture
@@ -150,7 +150,7 @@ bun run serve:ssr:jules_api
 
 ### Frontend Configuration
 
-Edit `jules_api/src/environments/environment.ts` for development and `environment.production.ts` for production:
+Edit `frontend/src/environments/environment.ts` for development and `environment.production.ts` for production:
 
 ```typescript
 export const environment = {
@@ -168,7 +168,7 @@ been removed from the repository and is not part of the runtime or deployment wo
 ### Installation
 
 ```bash
-cd jules_backend
+cd backend
 
 # Copy environment template
 cp .env.example .env
@@ -179,7 +179,7 @@ nano .env
 
 ### Environment Variables
 
-Create a `.env` file in `jules_backend/` with the following:
+Create a `.env` file in `backend/` with the following:
 
 ```bash
 # Database
@@ -257,13 +257,13 @@ pixi run collectstatic
 
 1. **Start Backend** (Terminal 1):
    ```bash
-   cd jules_backend
+   cd backend
    pixi run runserver
    ```
 
 2. **Start Frontend** (Terminal 2):
    ```bash
-   cd jules_api
+   cd frontend
    bun run start
    ```
 
@@ -319,7 +319,7 @@ git push origin feat/your-feature-name
 ### Frontend Tests
 
 ```bash
-cd jules_api
+cd frontend
 
 # Run all tests
 bun run test
@@ -340,7 +340,7 @@ bun run test --coverage
 ### Backend Tests
 
 ```bash
-cd jules_backend
+cd backend
 
 # Run all tests
 pixi run test
@@ -367,7 +367,7 @@ pixi run pytest -v
 ### Frontend Linting & Formatting
 
 ```bash
-cd jules_api
+cd frontend
 
 # Prettier is configured automatically (format on save in most IDEs)
 # Formatting rules are defined in package.json
@@ -376,7 +376,7 @@ cd jules_api
 ### Backend Linting & Formatting
 
 ```bash
-cd jules_backend
+cd backend
 
 # Format and lint code (runs both black and ruff)
 pixi run format
@@ -390,7 +390,7 @@ pixi run typecheck
 Pre-commit is available in the backend for running checks automatically:
 
 ```bash
-cd jules_backend
+cd backend
 pre-commit install
 pre-commit run --all-files
 ```
@@ -403,17 +403,17 @@ The frontend can be deployed to various platforms:
 
 **Build for Production:**
 ```bash
-cd jules_api
+cd frontend
 bun run build
 ```
 
-The build artifacts will be in `dist/jules_api/`.
+The build artifacts will be in `dist/frontend/`.
 
 **Deployment Options:**
 - **Vercel**: Connect your GitHub repo for automatic deployments
 - **Netlify**: Deploy the `dist/` directory
 - **AWS S3 + CloudFront**: Static hosting with CDN
-- **Custom Server**: Use the SSR build with `bun run serve:ssr:jules_api`
+- **Custom Server**: Use the SSR build with `bun run serve:ssr:frontend`
 
 **Environment Variables** (Production):
 Set these in your deployment platform:
@@ -424,7 +424,7 @@ Set these in your deployment platform:
 
 **Build for Production:**
 ```bash
-cd jules_backend
+cd backend
 pixi run collectstatic
 ```
 
@@ -438,7 +438,7 @@ pixi run collectstatic
 **Production Server:**
 ```bash
 # Django with Gunicorn
-gunicorn jules_backend.wsgi:application --bind 0.0.0.0:8444
+gunicorn backend.wsgi:application --bind 0.0.0.0:8444
 ```
 
 **Environment Variables** (Production):
@@ -501,10 +501,10 @@ We welcome contributions! Please follow these guidelines:
 5. **Run quality checks**:
    ```bash
    # Frontend
-   cd jules_api && bun run test
+   cd frontend && bun run test
    
    # Backend
-   cd jules_backend && pixi run format && pixi run test
+   cd backend && pixi run format && pixi run test
    ```
 6. **Commit changes**: Use Conventional Commits format
 7. **Push to branch**: `git push origin feat/amazing-feature`
@@ -539,8 +539,8 @@ This project is licensed under the MIT License. See the LICENSE file for details
 
 ## 📞 Support
 
-- **Issues**: [GitHub Issues](https://github.com/ollieb89/jules_api_ui/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/ollieb89/jules_api_ui/discussions)
+- **Issues**: [GitHub Issues](https://github.com/ollieb89/frontend_ui/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/ollieb89/frontend_ui/discussions)
 - **Email**: buitelaarolivier@gmail.com
 
 ## 🎯 Project Status

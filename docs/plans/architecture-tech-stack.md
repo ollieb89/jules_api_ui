@@ -44,18 +44,18 @@
 
 ### Root Level
 ```
-jules_api_ui/
-├── jules_api/                 # Angular 21 SSR frontend
-├── jules_backend/             # Django + DRF backend
+frontend_ui/
+├── frontend/                 # Angular 21 SSR frontend
+├── backend/             # Django + DRF backend
 ├── docs/                      # Documentation and plans
 ├── DESIGN_TOKENS.json
 ├── README.md
 └── AGENTS.md
 ```
 
-### Frontend (`jules_api/`)
+### Frontend (`frontend/`)
 ```
-jules_api/
+frontend/
 ├── src/
 │   ├── app/
 │   │   ├── app.routes.ts          # Client routes (standalone components)
@@ -72,10 +72,10 @@ jules_api/
 └── package.json
 ```
 
-### Backend (`jules_backend/`)
+### Backend (`backend/`)
 ```
-jules_backend/
-├── jules_backend/             # Django project (settings, urls)
+backend/
+├── backend/             # Django project (settings, urls)
 ├── jules/                     # Jules app (DRF viewsets, serializers)
 ├── users/                     # User management API
 ├── migrations/                # Alembic migrations (legacy)
@@ -86,7 +86,7 @@ jules_backend/
 
 ## 🧭 FRONTEND ROUTING (Angular 21 Standalone + SSR)
 
-The Angular router is configured in `jules_api/src/app/app.routes.ts`:
+The Angular router is configured in `frontend/src/app/app.routes.ts`:
 
 - `/` → redirect to `/dashboard`
 - `/dashboard` → `DashboardComponent`
@@ -102,7 +102,7 @@ The Angular router is configured in `jules_api/src/app/app.routes.ts`:
 All routes load standalone components with `loadComponent` for SSR-friendly lazy loading,
 and routing is defined without NgModules.
 
-SSR rendering modes are configured in `jules_api/src/app/app.routes.server.ts`:
+SSR rendering modes are configured in `frontend/src/app/app.routes.server.ts`:
 - Server rendering for `users/:id/edit` and `jules/:id`
 - Prerendering for the `**` catch-all
 
@@ -110,7 +110,7 @@ SSR rendering modes are configured in `jules_api/src/app/app.routes.server.ts`:
 
 ## 🔌 BACKEND API SURFACE (Django REST Framework)
 
-The Jules API endpoints are served under `/api/jules/` (see `jules_backend/jules/urls.py`).
+The Jules API endpoints are served under `/api/jules/` (see `backend/jules/urls.py`).
 
 ### Core Resources
 - `GET /api/jules/sources/` → list connected sources
@@ -137,7 +137,7 @@ The Jules API endpoints are served under `/api/jules/` (see `jules_backend/jules
 - `GET /api/jules/sync/` → current background sync status
 - `GET /api/jules/sync/events/` → SSE stream for sync updates
 
-Additional system health checks are exposed at `/health` via `jules_backend/health`.
+Additional system health checks are exposed at `/health` via `backend/health`.
 
 ---
 
