@@ -50,7 +50,7 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
   @Input() showPagination: boolean = true;
   planStateChange = output<PlanState | null>();
   @ViewChild(MatPaginator) paginator!: MatPaginator;
-  
+
   private julesService = inject(JulesService);
   private previousSessionId: string | null = null;
 
@@ -59,14 +59,14 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
   error = signal<string | null>(null);
   nextPageToken = signal<string | null>(null);
   planSnapshot = signal<PlanSnapshot | null>(null);
-  
+
   // Pagination state
   pageSize = signal<number>(10);
   currentPageIndex = signal<number>(0);
   pageTokens = signal<(string | null)[]>([]);
   nextTokens = signal<(string | null)[]>([]);
   currentPageActivities = signal<Activity[]>([]);
-  
+
   // Originator filter
   originatorFilter = signal<ActivityOriginator>('all');
 
@@ -129,7 +129,7 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
         originatorBadgeClass
       };
     });
-    
+
     // Apply originator filter
     const filter = this.originatorFilter();
     if (filter === 'all') {
@@ -192,11 +192,11 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
           this.planStateChange.emit(snapshot?.plan.state ?? null);
           const nextToken = response.next_page_token || null;
           this.nextPageToken.set(nextToken);
-          
+
           const currentIndex = this.currentPageIndex();
           const tokens = this.pageTokens();
           const nexts = this.nextTokens();
-          
+
           // Store the token used for this page and the next token from this page
           if (tokens.length <= currentIndex) {
             const newTokens = [...tokens];
@@ -214,25 +214,18 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
             newNexts[currentIndex] = nextToken;
             this.nextTokens.set(newNexts);
           }
-          
+
           if (this.paginator) {
             if (nextToken) {
               this.paginator.length = 10000;
             } else {
-              const newNexts = [...nexts];
-              newNexts[currentIndex] = nextToken;
-              this.nextTokens.set(newNexts);
+              this.paginator.length = (currentIndex + 1) * this.pageSize();
             }
-
-            if (this.paginator) {
-              if (nextToken) {
-                this.paginator.length = 10000;
-              } else {
-                this.paginator.length = (currentIndex + 1) * this.pageSize();
-              }
-              this.paginator.pageIndex = currentIndex;
-            }
+            this.paginator.pageIndex = currentIndex;
           }
+          this.loading.set(false);
+        } catch (error) {
+          this.error.set(getParserErrorMessage(error, 'Invalid activities response.'));
           this.loading.set(false);
         }
       },
@@ -298,12 +291,12 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
     if (activity.plan_approved) return 'Plan Approved';
     if (activity.progress_updated) return 'Progress Updated';
     if (activity.session_completed) return 'Session Completed';
-    
+
     // Parse from activity.name as fallback
     const name = activity.name || '';
     const parts = name.split('/');
     const activityId = parts[parts.length - 1] || '';
-    
+
     // Return capitalized activity ID or generic label
     return activityId ? `Activity ${activityId.substring(0, 8)}` : 'Activity';
   }

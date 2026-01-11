@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { SessionCacheService } from '../../services/session-cache.service';
 import { ThemeService } from '../../services/theme.service';
 
@@ -133,10 +133,74 @@ import { ThemeService } from '../../services/theme.service';
           </div>
         </div>
       </section>
+
+      <!-- Recent Sessions -->
+      <section class="mt-8">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xl font-bold text-[var(--color-text-primary)]">Recent Sessions</h2>
+          <a
+            routerLink="/jules"
+            class="text-sm text-[var(--color-interactive-primary)] hover:text-[var(--color-interactive-primary-hover)] font-medium"
+          >
+            View all
+          </a>
+        </div>
+
+        @if (recentSessions().length === 0) {
+          <div class="bg-[var(--color-surface-secondary)] border border-[var(--color-border-default)] rounded-lg p-8 text-center">
+            <p class="text-[var(--color-text-secondary)] mb-4">No sessions found.</p>
+            <a
+              routerLink="/jules/create"
+              class="inline-block px-4 py-2 bg-[var(--color-interactive-primary)] hover:bg-[var(--color-interactive-primary-hover)] text-[var(--color-text-inverse)] font-semibold rounded-lg transition-colors"
+            >
+              Start specific task
+            </a>
+          </div>
+        } @else {
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+            @for (session of recentSessions(); track session.name) {
+              <div 
+                class="bg-[var(--color-surface-primary)] border border-[var(--color-border-default)] rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer group"
+                (click)="viewSession(session.name)"
+                (keydown.enter)="viewSession(session.name)"
+                tabindex="0"
+                role="button"
+                [attr.aria-label]="'View session ' + session.display_name"
+              >
+                <div class="flex justify-between items-start mb-2">
+                  <h3 class="font-semibold text-[var(--color-text-primary)] truncate flex-1 group-hover:text-[var(--color-interactive-primary)] transition-colors">
+                    {{ session.display_name || 'Untitled Session' }}
+                  </h3>
+                  <!-- Status Dot -->
+                  <span 
+                    class="w-2.5 h-2.5 rounded-full shrink-0 ml-2"
+                    [class.bg-[var(--color-text-tertiary)]]="session.state === 'STATE_UNSPECIFIED'"
+                    [class.bg-[var(--color-state-info)]]="session.state === 'ACTIVE' || session.state === 'IN_PROGRESS'"
+                    [class.bg-[var(--color-state-warning)]]="session.state === 'AWAITING_USER_FEEDBACK'"
+                    [class.bg-[var(--color-state-success)]]="session.state === 'COMPLETED'"
+                    [class.bg-[var(--color-state-error)]]="session.state === 'FAILED'"
+                    [title]="session.state"
+                  ></span>
+                </div>
+                
+                <p class="text-sm text-[var(--color-text-secondary)] line-clamp-2 mb-3 h-10">
+                  {{ session.prompt }}
+                </p>
+                
+                <div class="flex items-center justify-between text-xs text-[var(--color-text-tertiary)]">
+                  <span class="truncate max-w-[60%]">{{ session.source }}</span>
+                  <span>{{ session.update_time | date:'shortDate' }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </section>
     </div>
   `
 })
 export class DashboardComponent implements OnInit {
+  private readonly router = inject(Router);
   readonly cacheService = inject(SessionCacheService);
   readonly themeService = inject(ThemeService);
 
@@ -163,7 +227,29 @@ export class DashboardComponent implements OnInit {
     return `Last updated ${lastUpdated.toLocaleTimeString()}`;
   });
 
+  readonly recentSessions = computed(() => {
+    const sessions = this.cacheService.sessions();
+    return [...sessions]
+      .sort((a, b) => {
+        const timeA = a.update_time ? new Date(a.update_time).getTime() : 0;
+        const timeB = b.update_time ? new Date(b.update_time).getTime() : 0;
+        return timeB - timeA;
+      })
+      .slice(0, 5);
+  });
+
   ngOnInit(): void {
     this.cacheService.startAutoRefresh();
+  }
+
+  viewSession(sessionName: string): void {
+    // We need to extract the ID, but since we don't have SessionUtilsService injected here yet,
+    // and the pattern seems to be that session.name is "sessions/{id}", we can split it.
+    // However, it's safer to inject SessionUtilsService as done in SessionList.
+    // But for now, let's just use the router navigation which might expect just the ID or handle the path.
+    // Looking at SessionList, it uses SessionUtilsService.
+    const parts = sessionName.split('/');
+    const id = parts[parts.length - 1];
+    this.router.navigate(['/jules', id]);
   }
 }

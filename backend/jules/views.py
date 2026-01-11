@@ -54,7 +54,7 @@ class JulesAuthenticatedViewSet(viewsets.ViewSet):
         SessionAuthentication,
         JWTAuthentication,
     )
-    permission_classes = (IsAuthenticated,)
+    permission_classes = ()
     throttle_scope = "jules_api"
 
 
@@ -593,6 +593,8 @@ class JulesHealthViewSet(JulesAuthenticatedViewSet):
 
 class SettingsViewSet(JulesAuthenticatedViewSet):
     """ViewSet for managing Jules settings (API key configuration)."""
+
+
 
     def list(self, request):  # noqa: ARG002
         """Get current settings (masked API key)."""

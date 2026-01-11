@@ -65,9 +65,21 @@ class SourceSerializer(serializers.Serializer):
     def to_internal_value(self, data):
         """Handle camelCase from API response."""
         if isinstance(data, dict):
+            name = data.get("name", "")
+            display_name = data.get("displayName", data.get("display_name", ""))
+
+            # Fallback if display_name is empty
+            if not display_name and name:
+                # Try to extract "Owner/Repo" from "sources/github/Owner/Repo"
+                parts = name.split("/")
+                if len(parts) >= 4 and parts[0] == "sources" and parts[1] == "github":
+                    display_name = f"{parts[2]}/{parts[3]}"
+                else:
+                    display_name = name
+
             normalized = {
-                "name": data.get("name", ""),
-                "displayName": data.get("displayName", data.get("display_name", "")),
+                "name": name,
+                "displayName": display_name,
                 "githubMetadata": data.get(
                     "githubMetadata", data.get("github_metadata")
                 ),

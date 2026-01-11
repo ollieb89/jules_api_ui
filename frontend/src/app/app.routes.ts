@@ -49,13 +49,6 @@ export const routes: Routes = [
       )
   },
   {
-    path: 'jules/:id',
-    loadComponent: () =>
-      import('./jules/session-detail/session-detail.component').then(
-        (module) => module.SessionDetailComponent
-      )
-  },
-  {
     path: 'jules/settings',
     loadComponent: () =>
       import('./jules/settings/settings.component').then(
@@ -67,6 +60,13 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./jules/phase-two/phase-two.component').then(
         (module) => module.PhaseTwoComponent
+      )
+  },
+  {
+    path: 'jules/:id',
+    loadComponent: () =>
+      import('./jules/session-detail/session-detail.component').then(
+        (module) => module.SessionDetailComponent
       )
   }
 ];

@@ -43,10 +43,22 @@ export class ApiErrorService {
       errorMessage = 'Resource not found';
     } else if (error.status >= 500) {
       const apiError = error.error as JulesApiError | undefined;
-      errorMessage = apiError?.error || 'Server error. Please try again later.';
+      if (apiError?.error) {
+        errorMessage = typeof apiError.error === 'string'
+          ? apiError.error
+          : apiError.error.message || 'Server error. Please try again later.';
+      } else {
+        errorMessage = 'Server error. Please try again later.';
+      }
     } else if (typeof error.error === 'object' && error.error) {
       const apiError = error.error as JulesApiError;
-      errorMessage = apiError.error || errorMessage;
+      if (apiError?.error) {
+        if (typeof apiError.error === 'string') {
+          errorMessage = apiError.error;
+        } else {
+          errorMessage = apiError.error.message || errorMessage;
+        }
+      }
     } else {
       errorMessage = `Error: ${error.status} ${error.statusText}`;
     }

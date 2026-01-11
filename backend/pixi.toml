@@ -14,6 +14,8 @@ collectstatic = "python manage.py collectstatic --noinput"
 test = "pytest"
 format = "black . && ruff check ."
 typecheck = "mypy ."
+setup-env = "python scripts/setup_env.py"
+
 
 [dependencies]
 python = "3.11.*"

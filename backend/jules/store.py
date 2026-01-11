@@ -31,7 +31,9 @@ def is_sessions_cache_fresh() -> bool:
 
 
 def mark_sessions_synced() -> None:
-    cache.set(SESSION_SYNC_CACHE_KEY, timezone.now().isoformat(), SESSION_SYNC_TTL_SECONDS)
+    cache.set(
+        SESSION_SYNC_CACHE_KEY, timezone.now().isoformat(), SESSION_SYNC_TTL_SECONDS
+    )
 
 
 def is_activities_cache_fresh(session_id: str) -> bool:
@@ -125,7 +127,9 @@ def mark_sync_failed(error: str) -> dict[str, Any]:
 def is_session_fresh(session: JulesSession) -> bool:
     if not session.last_synced_at:
         return False
-    return timezone.now() - session.last_synced_at <= timedelta(seconds=SESSION_SYNC_TTL_SECONDS)
+    return timezone.now() - session.last_synced_at <= timedelta(
+        seconds=SESSION_SYNC_TTL_SECONDS
+    )
 
 
 def _ensure_aware(value):
@@ -187,12 +191,20 @@ def get_cached_activities_payload(session_name: str) -> list[dict[str, Any]]:
 def upsert_session_from_api(session_data: dict[str, Any]) -> JulesSession:
     now = timezone.now()
     session_name = session_data.get("name", "")
+    prompt = session_data.get("prompt", "")
+
+    # Generate display_name from prompt if not provided
+    display_name = (
+        session_data.get("displayName") or session_data.get("display_name") or ""
+    )
+    if not display_name and prompt:
+        # Use first 60 characters of prompt as display name
+        display_name = prompt[:60] + ("..." if len(prompt) > 60 else "")
+
     defaults = {
-        "display_name": session_data.get("displayName")
-        or session_data.get("display_name")
-        or "",
+        "display_name": display_name,
         "state": session_data.get("state", "STATE_UNSPECIFIED") or "STATE_UNSPECIFIED",
-        "prompt": session_data.get("prompt", ""),
+        "prompt": prompt,
         "source": session_data.get("source", ""),
         "create_time": _parse_datetime(
             session_data.get("createTime") or session_data.get("create_time")
@@ -202,7 +214,9 @@ def upsert_session_from_api(session_data: dict[str, Any]) -> JulesSession:
         ),
         "last_synced_at": now,
     }
-    session, _ = JulesSession.objects.update_or_create(name=session_name, defaults=defaults)
+    session, _ = JulesSession.objects.update_or_create(
+        name=session_name, defaults=defaults
+    )
     publish("sessions", "sessions_update", get_cached_sessions_payload())
     publish(f"session:{session.name}", "session_update", session_to_api_dict(session))
     return session
@@ -218,10 +232,18 @@ def upsert_activity_from_api(
 
     if activity_data.get("planGenerated") or activity_data.get("plan_generated"):
         activity_type = JulesActivity.TYPE_PLAN_GENERATED
-        payload = activity_data.get("planGenerated") or activity_data.get("plan_generated") or {}
+        payload = (
+            activity_data.get("planGenerated")
+            or activity_data.get("plan_generated")
+            or {}
+        )
     elif activity_data.get("planApproved") or activity_data.get("plan_approved"):
         activity_type = JulesActivity.TYPE_PLAN_APPROVED
-        payload = activity_data.get("planApproved") or activity_data.get("plan_approved") or {}
+        payload = (
+            activity_data.get("planApproved")
+            or activity_data.get("plan_approved")
+            or {}
+        )
     elif activity_data.get("progressUpdated") or activity_data.get("progress_updated"):
         activity_type = JulesActivity.TYPE_PROGRESS_UPDATED
         payload = (
@@ -229,7 +251,9 @@ def upsert_activity_from_api(
             or activity_data.get("progress_updated")
             or {}
         )
-    elif activity_data.get("sessionCompleted") or activity_data.get("session_completed"):
+    elif activity_data.get("sessionCompleted") or activity_data.get(
+        "session_completed"
+    ):
         activity_type = JulesActivity.TYPE_SESSION_COMPLETED
         payload = (
             activity_data.get("sessionCompleted")
@@ -262,7 +286,7 @@ def get_or_create_session_stub(session_name: str) -> JulesSession:
     session, _ = JulesSession.objects.get_or_create(
         name=session_name,
         defaults={
-            "display_name": "",
+            "display_name": session_name,  # Use session name as fallback
             "state": "STATE_UNSPECIFIED",
             "prompt": "",
             "source": "",

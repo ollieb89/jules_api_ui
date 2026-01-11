@@ -21,6 +21,8 @@ type UnknownRecord = Record<string, unknown>;
 const sessionStates = new Set<SessionState>([
   'STATE_UNSPECIFIED',
   'ACTIVE',
+  'IN_PROGRESS',
+  'AWAITING_USER_FEEDBACK',
   'COMPLETED',
   'FAILED'
 ]);

@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy, signal, ChangeDetectionStrategy, inject, computed, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, signal, ChangeDetectionStrategy, inject, computed, ViewChild, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
@@ -33,6 +33,7 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private fb = inject(FormBuilder);
+  private platformId = inject(PLATFORM_ID);
 
   @ViewChild('deleteDialog') deleteDialog!: ConfirmationDialogComponent;
   @ViewChild(ActivityTimelineComponent) activityTimeline?: ActivityTimelineComponent;
@@ -41,13 +42,13 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
   loading = signal<boolean>(false);
   error = signal<string | null>(null);
   sessionId = signal<string>('');
-  
+
   // PR information (placeholder - would come from session metadata or activities)
   prInfo = signal<PRInfo | null>(null);
-  
+
   // Collapsible sections state
   activitiesExpanded = signal<boolean>(true);
-  
+
   // SSE connection state
   streamConnected = signal<boolean>(false);
 
@@ -75,15 +76,18 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.sessionId.set(id);
-      this.loadSession();
-      this.startLiveUpdates();
-      
-      // Check for action query param (e.g., ?action=message)
-      this.route.queryParams.subscribe(params => {
-        if (params['action'] === 'message' && this.session()) {
-          // Focus message input (would need ViewChild for actual focus)
-        }
-      });
+
+      if (isPlatformBrowser(this.platformId)) {
+        this.loadSession();
+        this.startLiveUpdates();
+
+        // Check for action query param (e.g., ?action=message)
+        this.route.queryParams.subscribe(params => {
+          if (params['action'] === 'message' && this.session()) {
+            // Focus message input (would need ViewChild for actual focus)
+          }
+        });
+      }
     } else {
       this.error.set('Session ID is required');
     }
@@ -131,7 +135,7 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
     if (this.messageForm.valid) {
       this.sendingMessage.set(true);
       const message = this.messageForm.get('message')?.value;
-      
+
       this.julesService.sendMessage(this.sessionId(), { message }).subscribe({
         next: (session) => {
           try {
@@ -154,7 +158,7 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
 
   approvePlan(): void {
     if (!this.canApprovePlan()) return;
-    
+
     this.approvingPlan.set(true);
     this.error.set(null);
 
@@ -245,6 +249,8 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
     const labels: Record<SessionState, string> = {
       'STATE_UNSPECIFIED': 'Pending',
       'ACTIVE': 'Active',
+      'IN_PROGRESS': 'In Progress',
+      'AWAITING_USER_FEEDBACK': 'Awaiting Feedback',
       'COMPLETED': 'Completed',
       'FAILED': 'Failed'
     };
@@ -255,6 +261,8 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
     const classes: Record<SessionState, string> = {
       'STATE_UNSPECIFIED': 'bg-[var(--color-background-tertiary)] text-[var(--color-text-secondary)]',
       'ACTIVE': 'bg-[var(--color-surface-info)] text-[var(--color-text-info-strong)]',
+      'IN_PROGRESS': 'bg-[var(--color-surface-info)] text-[var(--color-text-info-strong)]',
+      'AWAITING_USER_FEEDBACK': 'bg-[var(--color-surface-warning)] text-[var(--color-text-warning-strong)]',
       'COMPLETED': 'bg-[var(--color-surface-success)] text-[var(--color-text-success-strong)]',
       'FAILED': 'bg-[var(--color-surface-error)] text-[var(--color-text-error-strong)]'
     };
@@ -281,21 +289,21 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
 
   formatPrompt(prompt: string): string {
     if (!prompt) return prompt;
-    
+
     let formatted = prompt;
-    
+
     // Make "Task:" bold at the start of lines (handle both "Task:" and "**Task:**")
     formatted = formatted.replace(/^(\*\*)?Task:(\*\*)?/gm, '**Task:**');
-    
+
     // Add newline after "Details:" if it exists
     formatted = formatted.replace(/Details:\s*/g, 'Details:\n\n');
-    
+
     // Make "File:", "Description:", and "Language:" bold in list items
     // Match patterns like "- File: ..." or "* File: ..." or just "File: ..." in list items
     formatted = formatted.replace(/^(\s*[-*]\s*)(File:)/gm, '$1**$2**');
     formatted = formatted.replace(/^(\s*[-*]\s*)(Description:)/gm, '$1**$2**');
     formatted = formatted.replace(/^(\s*[-*]\s*)(Language:)/gm, '$1**$2**');
-    
+
     // Clean up orphaned ** markers (standalone ** on their own line or in empty paragraphs)
     // Remove lines that are just ** or whitespace + **
     formatted = formatted.replace(/^\s*\*\*\s*$/gm, '');
@@ -304,7 +312,7 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
     // Remove ** at the start or end of lines with nothing else
     formatted = formatted.replace(/^\*\*\s+/gm, '');
     formatted = formatted.replace(/\s+\*\*$/gm, '');
-    
+
     return formatted;
   }
 

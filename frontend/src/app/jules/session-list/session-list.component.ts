@@ -104,7 +104,10 @@ interface FormattedSession extends Session {
               class="w-full px-3 py-2 border border-[var(--color-border-strong)] rounded-lg bg-[var(--color-surface-primary)] text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
             >
               <option [value]="null">All Statuses</option>
+              <option value="STATE_UNSPECIFIED">Pending</option>
               <option value="ACTIVE">Active</option>
+              <option value="IN_PROGRESS">In Progress</option>
+              <option value="AWAITING_USER_FEEDBACK">Awaiting Feedback</option>
               <option value="COMPLETED">Completed</option>
               <option value="FAILED">Failed</option>
             </select>
@@ -122,8 +125,8 @@ interface FormattedSession extends Session {
               class="w-full px-3 py-2 border border-[var(--color-border-strong)] rounded-lg bg-[var(--color-surface-primary)] text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
             >
               <option [value]="null">All Sources</option>
-              @for (source of cacheService.uniqueSources(); track source) {
-                <option [value]="source">{{ source }}</option>
+              @for (source of cacheService.uniqueSources(); track source.name) {
+                <option [value]="source.name">{{ source.display_name }}</option>
               }
             </select>
           </div>
@@ -328,18 +331,35 @@ export class SessionListComponent implements OnInit {
     return this.cacheService.filteredSessions().map(session => {
       const createTime = new Date(session.create_time);
       const updateTime = new Date(session.update_time);
-      
+
       let stateBadgeClass = 'bg-[var(--color-background-tertiary)] text-[var(--color-text-secondary)]';
-      if (session.state === 'ACTIVE') {
+      if (session.state === 'STATE_UNSPECIFIED') {
+        stateBadgeClass = 'bg-[var(--color-background-tertiary)] text-[var(--color-text-secondary)]';
+      } else if (session.state === 'ACTIVE') {
         stateBadgeClass = 'bg-[var(--color-surface-info)] text-[var(--color-text-info-strong)]';
+      } else if (session.state === 'IN_PROGRESS') {
+        stateBadgeClass = 'bg-[var(--color-surface-info)] text-[var(--color-text-info-strong)]';
+      } else if (session.state === 'AWAITING_USER_FEEDBACK') {
+        stateBadgeClass = 'bg-[var(--color-surface-warning)] text-[var(--color-text-warning-strong)]';
       } else if (session.state === 'COMPLETED') {
         stateBadgeClass = 'bg-[var(--color-surface-success)] text-[var(--color-text-success-strong)]';
       } else if (session.state === 'FAILED') {
         stateBadgeClass = 'bg-[var(--color-surface-error)] text-[var(--color-text-error-strong)]';
       }
 
+      // Ensure display_name is always set - fallback to prompt excerpt or session name
+      let displayName = session.display_name;
+      if (!displayName || displayName.trim() === '') {
+        if (session.prompt) {
+          displayName = session.prompt.substring(0, 60) + (session.prompt.length > 60 ? '...' : '');
+        } else {
+          displayName = session.name;
+        }
+      }
+
       return {
         ...session,
+        display_name: displayName,
         formattedCreateTime: createTime.toLocaleString(),
         formattedUpdateTime: updateTime.toLocaleString(),
         stateBadgeClass
@@ -371,12 +391,12 @@ export class SessionListComponent implements OnInit {
 
   onSearchChange(value: string): void {
     this.searchInput.set(value);
-    
+
     // Debounce search (300ms)
     if (this.searchDebounceTimer) {
       clearTimeout(this.searchDebounceTimer);
     }
-    
+
     this.searchDebounceTimer = setTimeout(() => {
       this.cacheService.setFilter({ search: value || undefined });
     }, 300);
@@ -467,6 +487,8 @@ export class SessionListComponent implements OnInit {
     const labels: Record<SessionState, string> = {
       'STATE_UNSPECIFIED': 'Pending',
       'ACTIVE': 'Active',
+      'IN_PROGRESS': 'In Progress',
+      'AWAITING_USER_FEEDBACK': 'Awaiting Feedback',
       'COMPLETED': 'Completed',
       'FAILED': 'Failed'
     };
