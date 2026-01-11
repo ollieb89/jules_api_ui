@@ -84,7 +84,8 @@ export class UserListComponent implements OnInit {
   private performDelete(id: number): void {
     this.userService.deleteUser(id).subscribe({
       next: () => {
-        this.loadUsers(); // Reload the list
+        // Optimistically update the list locally to avoid a full reload spinner
+        this.users.update((users) => users.filter((u) => u.id !== id));
         this.confirmDialog?.reset();
         this.userToDelete.set(null);
       },
