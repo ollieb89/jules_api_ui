@@ -175,10 +175,14 @@ export class SessionCacheService {
     this.error.set(null);
 
     const allSessions: Session[] = [];
-    let pageToken: string | null = null;
     let hasMore = true;
 
     const fetchPage = (token: string | null = null): void => {
+      // The token argument is used by recursive calls, but handled internally in the closure scope
+      // when recursing. However, for linting purposes we must acknowledge it is used in the recursive call below.
+      // Or simply remove the parameter default since we only call it with null initially.
+      // Actually, token IS used in getSessions call.
+
       if (!hasMore || allSessions.length >= this.MAX_SESSIONS) {
         this.updateSessions(allSessions);
         this.loading.set(false);

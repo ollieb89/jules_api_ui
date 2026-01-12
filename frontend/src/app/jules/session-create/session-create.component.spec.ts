@@ -8,8 +8,10 @@ import { vi } from 'vitest';
 describe('SessionCreateComponent', () => {
   let component: SessionCreateComponent;
   let fixture: ComponentFixture<SessionCreateComponent>;
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   let julesService: any;
   let router: any;
+  /* eslint-enable @typescript-eslint/no-explicit-any */
 
   beforeEach(async () => {
     julesService = {
