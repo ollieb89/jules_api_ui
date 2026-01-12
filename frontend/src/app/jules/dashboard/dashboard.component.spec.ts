@@ -3,7 +3,7 @@ import { vi } from 'vitest';
 import { DashboardComponent } from './dashboard.component';
 import { SessionCacheService } from '../../services/session-cache.service';
 import { ThemeService } from '../../services/theme.service';
-import { provideRouter, Router } from '@angular/router';
+import { provideRouter } from '@angular/router';
 
 describe('DashboardComponent', () => {
   it('renders summary counts and starts auto refresh', async () => {
@@ -72,8 +72,9 @@ describe('DashboardComponent', () => {
     }).compileComponents();
 
     const fixture = TestBed.createComponent(DashboardComponent);
-    const router = TestBed.inject(Router);
-    const navigateSpy = vi.spyOn(router, 'navigate');
+    // Router navigation is handled by routerLink, so we check the href or routerLink binding
+    // But testing RouterLink directives usually involves clicking or checking attributes.
+    // Since we provided provideRouter([]), the RouterLink directive should function.
 
     fixture.detectChanges();
 
@@ -86,17 +87,19 @@ describe('DashboardComponent', () => {
     expect(compiled.textContent).toContain('Session 1');
     expect(compiled.textContent).toContain('Session 2');
 
-    // Simulate click on the first session card
-    // The clickable element has class 'cursor-pointer' or strictly we can find by text
-    const sessionCard = Array.from(compiled.querySelectorAll('div')).find(
-      el => el.textContent?.includes('Session 1') && el.getAttribute('role') === 'button'
+    // Look for the anchor tag for Session 1
+    const sessionLink = Array.from(compiled.querySelectorAll('a')).find(
+      el => el.textContent?.includes('Session 1')
     );
 
-    if (sessionCard) {
-      (sessionCard as HTMLElement).click();
-      expect(navigateSpy).toHaveBeenCalledWith(['/jules', '1']);
+    if (sessionLink) {
+      expect(sessionLink.getAttribute('href')).toBe('/jules/1');
+
+      // Also verify accessible status
+      const srText = sessionLink.querySelector('.sr-only');
+      expect(srText?.textContent).toContain('Active');
     } else {
-      throw new Error('Session card not found');
+      throw new Error('Session link not found');
     }
   });
 });
