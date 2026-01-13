@@ -387,9 +387,22 @@ export class SessionCacheService {
   }
 
   /**
-   * Get unique sources from cached sessions with display names
+   * Get unique sources from API with fallback to session data
+   * Prioritizes loaded sources from API to show all available sources,
+   * even if no active sessions exist for them
    */
   readonly uniqueSources = computed(() => {
+    const loadedSources = this.sources();
+    
+    // If sources have been loaded from API, use them (they're already sorted by API)
+    if (loadedSources.length > 0) {
+      return loadedSources.map(source => ({
+        name: source.name,
+        display_name: source.display_name
+      }));
+    }
+    
+    // Fallback: derive sources from sessions if API sources not yet loaded
     const sourceNames = new Set<string>();
     const map = this.sourceMap();
     

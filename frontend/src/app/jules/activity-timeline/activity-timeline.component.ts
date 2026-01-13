@@ -38,6 +38,14 @@ interface PlanSnapshot {
   planGeneratedAt: string;
 }
 
+interface ActivityGroup {
+  type: 'single' | 'grouped';
+  activities: FormattedActivity[];
+  summary: string;
+  firstActivity: FormattedActivity;
+  groupIndex: number;
+}
+
 @Component({
   selector: 'app-activity-timeline',
   imports: [CommonModule, FormsModule, PlanApprovalComponent, MatPaginatorModule],
@@ -69,6 +77,9 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
 
   // Originator filter
   originatorFilter = signal<ActivityOriginator>('all');
+
+  // Expanded groups state
+  expandedGroups = signal<Set<number>>(new Set());
 
   formattedActivities = computed<FormattedActivity[]>(() => {
     const activities = this.currentPageActivities().map(activity => {
@@ -136,6 +147,82 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
       return activities;
     }
     return activities.filter(activity => activity.originator === filter);
+  });
+
+  groupedActivities = computed<ActivityGroup[]>(() => {
+    const activities = this.formattedActivities();
+    const groups: ActivityGroup[] = [];
+    let currentProgressGroup: FormattedActivity[] = [];
+    let groupIndex = 0;
+
+    for (let i = 0; i < activities.length; i++) {
+      const activity = activities[i];
+
+      if (activity.progress_updated) {
+        // Add to current progress group
+        currentProgressGroup.push(activity);
+      } else {
+        // Flush current progress group if it exists
+        if (currentProgressGroup.length > 0) {
+          if (currentProgressGroup.length >= 3) {
+            // Create grouped item
+            groups.push({
+              type: 'grouped',
+              activities: currentProgressGroup,
+              summary: `Progress Updates (${currentProgressGroup.length} items)`,
+              firstActivity: currentProgressGroup[0],
+              groupIndex: groupIndex++
+            });
+          } else {
+            // Add individual items
+            currentProgressGroup.forEach(act => {
+              groups.push({
+                type: 'single',
+                activities: [act],
+                summary: '',
+                firstActivity: act,
+                groupIndex: groupIndex++
+              });
+            });
+          }
+          currentProgressGroup = [];
+        }
+
+        // Add current non-progress activity as single item
+        groups.push({
+          type: 'single',
+          activities: [activity],
+          summary: '',
+          firstActivity: activity,
+          groupIndex: groupIndex++
+        });
+      }
+    }
+
+    // Flush any remaining progress group
+    if (currentProgressGroup.length > 0) {
+      if (currentProgressGroup.length >= 3) {
+        groups.push({
+          type: 'grouped',
+          activities: currentProgressGroup,
+          summary: `Progress Updates (${currentProgressGroup.length} items)`,
+          firstActivity: currentProgressGroup[0],
+          groupIndex: groupIndex++
+        });
+      } else {
+        currentProgressGroup.forEach(act => {
+          groups.push({
+            type: 'single',
+            activities: [act],
+            summary: '',
+            firstActivity: act,
+            groupIndex: groupIndex++
+          });
+        });
+      }
+    }
+
+    return groups;
   });
 
   ngOnInit(): void {
@@ -299,6 +386,28 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
 
     // Return capitalized activity ID or generic label
     return activityId ? `Activity ${activityId.substring(0, 8)}` : 'Activity';
+  }
+
+  toggleGroup(groupIndex: number): void {
+    const expanded = this.expandedGroups();
+    const newExpanded = new Set(expanded);
+    if (newExpanded.has(groupIndex)) {
+      newExpanded.delete(groupIndex);
+    } else {
+      newExpanded.add(groupIndex);
+    }
+    this.expandedGroups.set(newExpanded);
+  }
+
+  isGroupExpanded(groupIndex: number): boolean {
+    return this.expandedGroups().has(groupIndex);
+  }
+
+  onGroupKeyDown(event: KeyboardEvent, groupIndex: number): void {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.toggleGroup(groupIndex);
+    }
   }
 
   private derivePlanSnapshot(activities: Activity[]): PlanSnapshot | null {

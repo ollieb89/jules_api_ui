@@ -2,9 +2,10 @@
   <div class="mb-6">
     <a
       routerLink="/jules"
-      class="text-[var(--color-interactive-primary)] hover:text-[var(--color-interactive-primary-hover)] mb-4 inline-block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+      class="inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-background-secondary)] hover:bg-[var(--color-background-tertiary)] text-[var(--color-text-primary)] font-medium rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
     >
-      ← Back to Sessions
+      <span aria-hidden="true">←</span>
+      <span>Back to Sessions</span>
     </a>
   </div>
 
@@ -36,13 +37,14 @@
           (click)="refreshSession()"
           type="button"
           [disabled]="refreshing()"
-          aria-label="Refresh session"
-          class="px-4 py-2 bg-[var(--color-background-secondary)] hover:bg-[var(--color-background-tertiary)] text-[var(--color-text-secondary)] font-medium rounded-lg transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+          [attr.aria-label]="refreshing() ? 'Refreshing session data' : 'Refresh session data'"
+          class="px-4 py-2 bg-[var(--color-background-secondary)] hover:bg-[var(--color-background-tertiary)] active:bg-[var(--color-background-tertiary)] text-[var(--color-text-secondary)] font-medium rounded-lg transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)] inline-flex items-center gap-2"
         >
+          <span [class.animate-spin]="refreshing()" class="inline-block" aria-hidden="true">↻</span>
           @if (refreshing()) {
-            Refreshing...
+            <span>Refreshing...</span>
           } @else {
-            ↻ Refresh
+            <span>Refresh</span>
           }
         </button>
         
@@ -51,13 +53,14 @@
             (click)="approvePlan()"
             type="button"
             [disabled]="approvingPlan()"
-            aria-label="Approve plan"
-            class="px-4 py-2 bg-[var(--color-interactive-success)] hover:bg-[var(--color-interactive-success-hover)] text-[var(--color-text-inverse)] font-medium rounded-lg transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+            [attr.aria-label]="approvingPlan() ? 'Approving plan in progress' : 'Approve the proposed plan'"
+            class="px-4 py-2 bg-[var(--color-interactive-success)] hover:bg-[var(--color-interactive-success-hover)] active:bg-[var(--color-interactive-success-hover)] text-[var(--color-text-inverse)] font-medium rounded-lg transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)] inline-flex items-center gap-2 shadow-sm hover:shadow"
           >
+            <span aria-hidden="true">✓</span>
             @if (approvingPlan()) {
-              Approving...
+              <span>Approving...</span>
             } @else {
-              ✓ Approve Plan
+              <span>Approve Plan</span>
             }
           </button>
         }
@@ -67,20 +70,22 @@
             (click)="sendMessage()"
             type="button"
             [disabled]="messageForm.invalid || sendingMessage()"
-            aria-label="Send message"
-            class="px-4 py-2 bg-[var(--color-interactive-primary)] hover:bg-[var(--color-interactive-primary-hover)] text-[var(--color-text-inverse)] font-medium rounded-lg transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+            [attr.aria-label]="sendingMessage() ? 'Sending message' : 'Send a message to the agent'"
+            class="px-4 py-2 bg-[var(--color-interactive-primary)] hover:bg-[var(--color-interactive-primary-hover)] active:bg-[var(--color-interactive-primary-active)] text-[var(--color-text-inverse)] font-medium rounded-lg transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)] inline-flex items-center gap-2 shadow-sm hover:shadow"
           >
-            💬 Send Message
+            <span aria-hidden="true">💬</span>
+            <span>Send Message</span>
           </button>
         }
         
         <button
           (click)="deleteSession()"
           type="button"
-          aria-label="Delete session"
-          class="px-4 py-2 bg-[var(--color-interactive-error)] hover:bg-[var(--color-interactive-error-hover)] text-[var(--color-text-inverse)] font-medium rounded-lg transition-colors ml-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+          aria-label="Delete this session permanently"
+          class="px-4 py-2 bg-[var(--color-interactive-error)] hover:bg-[var(--color-interactive-error-hover)] active:bg-[var(--color-interactive-error-hover)] text-[var(--color-text-inverse)] font-medium rounded-lg transition-all duration-150 ml-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)] inline-flex items-center gap-2 shadow-sm hover:shadow"
         >
-          🗑️ Delete
+          <span aria-hidden="true">🗑️</span>
+          <span>Delete</span>
         </button>
       </div>
     </div>
@@ -178,26 +183,38 @@
     <!-- Activity Timeline (Collapsible) -->
     <div class="bg-[var(--color-surface-primary)] shadow-md rounded-lg p-6">
       <div class="flex justify-between items-center mb-4">
-        <h2 class="text-2xl font-bold text-[var(--color-text-primary)]">Activity Timeline</h2>
+        <div class="flex items-center gap-3">
+          <h2 class="text-2xl font-bold text-[var(--color-text-primary)]">Activity Timeline</h2>
+          @if (activityCount() > 0) {
+            <span 
+              class="text-sm font-medium text-[var(--color-text-secondary)] bg-[var(--color-background-tertiary)] px-2.5 py-1 rounded-full"
+              [attr.aria-label]="activityCount() + ' activities'"
+            >
+              {{ activityCount() }}
+            </span>
+          }
+        </div>
         <button
           (click)="toggleActivities()"
           type="button"
           [aria-label]="activitiesExpanded() ? 'Collapse activities' : 'Expand activities'"
           [aria-expanded]="activitiesExpanded()"
-          class="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+          class="px-3 py-2 rounded-lg text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-background-secondary)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
         >
-          @if (activitiesExpanded()) {
-            ▼
-          } @else {
-            ▶
-          }
+          <span class="text-lg" aria-hidden="true">
+            @if (activitiesExpanded()) {
+              ▼
+            } @else {
+              ▶
+            }
+          </span>
         </button>
       </div>
       
       @if (activitiesExpanded()) {
         <app-activity-timeline
           [sessionId]="sessionId()"
-          [showPagination]="false"
+          [showPagination]="true"
           (planStateChange)="onPlanStateChange($event)"
         ></app-activity-timeline>
       }

@@ -236,6 +236,33 @@ def test_activities_list_serializes_plan_approved(api_client, monkeypatch):
     assert activity['plan_approved']['plan']['steps'][0]['title'] == 'Approve steps'
 
 
+def test_activities_list_serializes_plan_approved_with_missing_plan(api_client, monkeypatch):
+    """Test that plan_approved activity serializes gracefully when plan is missing."""
+    class StubClient:
+        def list_activities(self, session_id, page_size, page_token):  # noqa: ARG002
+            return {
+                'activities': [
+                    {
+                        'name': 'sessions/2/activities/8',
+                        'planApproved': {},  # Empty plan
+                        'createTime': '2024-05-01T00:00:00Z',
+                    }
+                ],
+                'nextPageToken': None,
+            }
+
+    monkeypatch.setattr('jules.views.JulesApiClient', lambda: StubClient())
+    monkeypatch.setattr('jules.views.is_activities_cache_fresh', lambda x: False)
+
+    response = api_client.get('/api/jules/sessions/2/activities/?page_size=1')
+
+    assert response.status_code == status.HTTP_200_OK
+    payload = response.json()
+    activity = payload['activities'][0]
+    # Should have plan_approved key with null/missing plan
+    assert 'plan_approved' in activity
+
+
 def test_activities_list_handles_api_error(api_client, monkeypatch):
     class StubClient:
         def list_activities(self, session_id, page_size, page_token):  # noqa: ARG002

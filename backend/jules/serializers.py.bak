@@ -51,10 +51,11 @@ class SourceSerializer(serializers.Serializer):
     )
     display_name = serializers.CharField(
         source="displayName",
-        required=False,
-        allow_blank=True,
+        min_length=1,
         error_messages={
+            "required": "Display name is required.",
             "blank": "Display name cannot be blank.",
+            "min_length": "Display name must be at least 1 character.",
         },
     )
     github_metadata = GitHubSourceMetadataSerializer(
@@ -100,8 +101,7 @@ class SessionSerializer(serializers.Serializer):
     )
     display_name = serializers.CharField(
         source="displayName",
-        required=False,
-        allow_blank=True,
+        min_length=1,
         error_messages={
             "required": "Display name is required.",
             "blank": "Display name cannot be blank.",
@@ -413,31 +413,13 @@ class PlanSerializer(serializers.Serializer):
 class PlanGeneratedActivitySerializer(serializers.Serializer):
     """Serializer for planGenerated activity."""
 
-    plan = PlanSerializer(required=False, allow_null=True)
-
-    def to_internal_value(self, data):
-        """Handle missing or empty plan data."""
-        if isinstance(data, dict):
-            normalized = {
-                "plan": data.get("plan"),
-            }
-            return normalized
-        return super().to_internal_value(data)
+    plan = PlanSerializer()
 
 
 class PlanApprovedActivitySerializer(serializers.Serializer):
     """Serializer for planApproved activity."""
 
-    plan = PlanSerializer(required=False, allow_null=True)
-
-    def to_internal_value(self, data):
-        """Handle missing or empty plan data."""
-        if isinstance(data, dict):
-            normalized = {
-                "plan": data.get("plan"),
-            }
-            return normalized
-        return super().to_internal_value(data)
+    plan = PlanSerializer()
 
 
 class ProgressUpdatedActivitySerializer(serializers.Serializer):

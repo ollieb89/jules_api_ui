@@ -1,2 +1,21 @@
 /* Component-specific styles if needed */
 
+/* Refresh button spin animation */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Smooth transitions for buttons */
+:host ::ng-deep button {
+  transition: all 0.15s ease-in-out;
+}
+
+:host ::ng-deep button:disabled {
+  cursor: not-allowed;
+}

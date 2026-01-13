@@ -72,6 +72,10 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
     return Boolean(currentSession && currentSession.state === 'ACTIVE' && hasPendingPlan);
   });
 
+  activityCount = computed(() => {
+    return this.activityTimeline?.activities().length ?? 0;
+  });
+
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
