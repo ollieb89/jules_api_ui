@@ -54,7 +54,7 @@ class JulesAuthenticatedViewSet(viewsets.ViewSet):
         SessionAuthentication,
         JWTAuthentication,
     )
-    permission_classes = ()
+    permission_classes = (IsAuthenticated,)
     throttle_scope = "jules_api"
 
 
