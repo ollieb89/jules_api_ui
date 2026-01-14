@@ -18,6 +18,7 @@ import { MatPaginatorModule, MatPaginator, PageEvent } from '@angular/material/p
 import { JulesService } from '../../services/jules.service';
 import { Activity, Plan, PlanState } from '../../models/jules.model';
 import { PlanApprovalComponent } from '../plan-approval/plan-approval.component';
+import { LoadingSpinnerComponent } from '../../components/loading-spinner/loading-spinner.component';
 import { getApiErrorMessage } from '../../utils/api-error';
 import { getParserErrorMessage } from '../../utils/api-parsers';
 
@@ -48,7 +49,7 @@ interface ActivityGroup {
 
 @Component({
   selector: 'app-activity-timeline',
-  imports: [CommonModule, FormsModule, PlanApprovalComponent, MatPaginatorModule],
+  imports: [CommonModule, FormsModule, PlanApprovalComponent, LoadingSpinnerComponent, MatPaginatorModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './activity-timeline.component.html',
   styleUrl: './activity-timeline.component.css'
