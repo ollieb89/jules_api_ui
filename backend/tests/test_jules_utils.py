@@ -77,9 +77,7 @@ class TestHandleApiException:
         mock_response.status_code = 404
         mock_response.json = Mock(return_value={"message": "Not found"})
 
-        error = httpx.HTTPStatusError(
-            "Not found", request=Mock(), response=mock_response
-        )
+        error = httpx.HTTPStatusError("Not found", request=Mock(), response=mock_response)
 
         with patch("jules.utils.logger"):
             response = handle_api_exception(error)
@@ -98,9 +96,7 @@ class TestHandleApiException:
         mock_response.json = Mock(side_effect=json.JSONDecodeError("error", "", 0))
         mock_response.text = "Internal server error"
 
-        error = httpx.HTTPStatusError(
-            "Server error", request=Mock(), response=mock_response
-        )
+        error = httpx.HTTPStatusError("Server error", request=Mock(), response=mock_response)
 
         with patch("jules.utils.logger"):
             response = handle_api_exception(error)
@@ -182,9 +178,7 @@ class TestErrorResponseStructure:
         mock_response.status_code = 400
         mock_response.json = Mock(return_value={"msg": "bad request"})
 
-        error = httpx.HTTPStatusError(
-            "Bad request", request=Mock(), response=mock_response
-        )
+        error = httpx.HTTPStatusError("Bad request", request=Mock(), response=mock_response)
 
         with patch("jules.utils.logger"):
             response = handle_api_exception(error)

@@ -12,7 +12,7 @@ describe('UserFormComponent', () => {
   beforeEach(async () => {
     const userService = {
       getUser: vi.fn(() => of({ id: 1, name: 'Test User', email: 'test@example.com' })),
-      createUser: vi.fn(() => of({}))
+      createUser: vi.fn(() => of({})),
     };
 
     await TestBed.configureTestingModule({
@@ -21,9 +21,9 @@ describe('UserFormComponent', () => {
         { provide: UserService, useValue: userService },
         {
           provide: ActivatedRoute,
-          useValue: { snapshot: { paramMap: convertToParamMap({}) } }
-        }
-      ]
+          useValue: { snapshot: { paramMap: convertToParamMap({}) } },
+        },
+      ],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(UserFormComponent);

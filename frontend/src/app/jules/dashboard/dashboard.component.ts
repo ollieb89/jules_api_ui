@@ -53,8 +53,12 @@ import { ThemeService } from '../../services/theme.service';
         </div>
         <div class="bg-[var(--color-surface-primary)] shadow-md rounded-lg p-5">
           <p class="text-sm text-[var(--color-text-tertiary)]">Completed</p>
-          <p class="text-3xl font-semibold text-[var(--color-text-success)]">{{ completedCount() }}</p>
-          <p class="text-xs text-[var(--color-text-tertiary)] mt-2">Completion rate {{ completionRateLabel() }}</p>
+          <p class="text-3xl font-semibold text-[var(--color-text-success)]">
+            {{ completedCount() }}
+          </p>
+          <p class="text-xs text-[var(--color-text-tertiary)] mt-2">
+            Completion rate {{ completionRateLabel() }}
+          </p>
         </div>
         <div class="bg-[var(--color-surface-primary)] shadow-md rounded-lg p-5">
           <p class="text-sm text-[var(--color-text-tertiary)]">Failed</p>
@@ -71,8 +75,12 @@ import { ThemeService } from '../../services/theme.service';
       <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="bg-[var(--color-surface-primary)] shadow-md rounded-lg p-6 lg:col-span-2">
           <div class="flex items-center justify-between mb-4">
-            <h2 class="text-lg font-semibold text-[var(--color-text-primary)]">Task Completion Rate</h2>
-            <span class="text-sm text-[var(--color-text-tertiary)]">{{ completionRateLabel() }}</span>
+            <h2 class="text-lg font-semibold text-[var(--color-text-primary)]">
+              Task Completion Rate
+            </h2>
+            <span class="text-sm text-[var(--color-text-tertiary)]">{{
+              completionRateLabel()
+            }}</span>
           </div>
           <div class="h-3 rounded-full bg-[var(--color-background-tertiary)] overflow-hidden">
             <div
@@ -147,7 +155,9 @@ import { ThemeService } from '../../services/theme.service';
         </div>
 
         @if (recentSessions().length === 0) {
-          <div class="bg-[var(--color-surface-secondary)] border border-[var(--color-border-default)] rounded-lg p-8 text-center">
+          <div
+            class="bg-[var(--color-surface-secondary)] border border-[var(--color-border-default)] rounded-lg p-8 text-center"
+          >
             <p class="text-[var(--color-text-secondary)] mb-4">No sessions found.</p>
             <a
               routerLink="/jules/create"
@@ -159,7 +169,7 @@ import { ThemeService } from '../../services/theme.service';
         } @else {
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
             @for (session of recentSessions(); track session.name) {
-              <div 
+              <div
                 class="bg-[var(--color-surface-primary)] border border-[var(--color-border-default)] rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer group"
                 (click)="viewSession(session.name)"
                 (keydown.enter)="viewSession(session.name)"
@@ -168,28 +178,36 @@ import { ThemeService } from '../../services/theme.service';
                 [attr.aria-label]="'View session ' + session.display_name"
               >
                 <div class="flex justify-between items-start mb-2">
-                  <h3 class="font-semibold text-[var(--color-text-primary)] truncate flex-1 group-hover:text-[var(--color-interactive-primary)] transition-colors">
+                  <h3
+                    class="font-semibold text-[var(--color-text-primary)] truncate flex-1 group-hover:text-[var(--color-interactive-primary)] transition-colors"
+                  >
                     {{ session.display_name || 'Untitled Session' }}
                   </h3>
                   <!-- Status Dot -->
-                  <span 
+                  <span
                     class="w-2.5 h-2.5 rounded-full shrink-0 ml-2"
                     [class.bg-[var(--color-text-tertiary)]]="session.state === 'STATE_UNSPECIFIED'"
-                    [class.bg-[var(--color-state-info)]]="session.state === 'ACTIVE' || session.state === 'IN_PROGRESS'"
-                    [class.bg-[var(--color-state-warning)]]="session.state === 'AWAITING_USER_FEEDBACK'"
+                    [class.bg-[var(--color-state-info)]]="
+                      session.state === 'ACTIVE' || session.state === 'IN_PROGRESS'
+                    "
+                    [class.bg-[var(--color-state-warning)]]="
+                      session.state === 'AWAITING_USER_FEEDBACK'
+                    "
                     [class.bg-[var(--color-state-success)]]="session.state === 'COMPLETED'"
                     [class.bg-[var(--color-state-error)]]="session.state === 'FAILED'"
                     [title]="session.state"
                   ></span>
                 </div>
-                
+
                 <p class="text-sm text-[var(--color-text-secondary)] line-clamp-2 mb-3 h-10">
                   {{ session.prompt }}
                 </p>
-                
-                <div class="flex items-center justify-between text-xs text-[var(--color-text-tertiary)]">
+
+                <div
+                  class="flex items-center justify-between text-xs text-[var(--color-text-tertiary)]"
+                >
                   <span class="truncate max-w-[60%]">{{ session.source }}</span>
-                  <span>{{ session.update_time | date:'shortDate' }}</span>
+                  <span>{{ session.update_time | date: 'shortDate' }}</span>
                 </div>
               </div>
             }
@@ -197,7 +215,7 @@ import { ThemeService } from '../../services/theme.service';
         }
       </section>
     </div>
-  `
+  `,
 })
 export class DashboardComponent implements OnInit {
   private readonly router = inject(Router);
