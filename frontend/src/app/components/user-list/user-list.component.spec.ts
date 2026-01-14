@@ -16,20 +16,30 @@ describe('UserListComponent', () => {
       getUsers: vi.fn(() =>
         of({
           results: [
-            { id: 1, name: 'Alice Smith', email: 'alice@example.com', created_at: '2023-01-01T10:00:00Z' },
-            { id: 2, name: 'Bob Jones', email: 'bob@example.com', created_at: '2023-01-02T11:00:00Z' }
-          ]
-        })
+            {
+              id: 1,
+              name: 'Alice Smith',
+              email: 'alice@example.com',
+              created_at: '2023-01-01T10:00:00Z',
+            },
+            {
+              id: 2,
+              name: 'Bob Jones',
+              email: 'bob@example.com',
+              created_at: '2023-01-02T11:00:00Z',
+            },
+          ],
+        }),
       ),
-      deleteUser: vi.fn(() => of({}))
+      deleteUser: vi.fn(() => of({})),
     };
 
     await TestBed.configureTestingModule({
       imports: [UserListComponent, RouterTestingModule.withRoutes([])],
       providers: [
         { provide: UserService, useValue: userService },
-        { provide: PLATFORM_ID, useValue: 'browser' }
-      ]
+        { provide: PLATFORM_ID, useValue: 'browser' },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(UserListComponent);

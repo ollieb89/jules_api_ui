@@ -61,6 +61,7 @@ class TestSharedHttpClientBackoff:
 
     def test_retry_after_header_takes_precedence(self, shared_client):
         from jules.services import _resolve_retry_policy
+
         policy = _resolve_retry_policy("default")
         response = httpx.Response(
             429,
@@ -71,6 +72,7 @@ class TestSharedHttpClientBackoff:
 
     def test_invalid_retry_after_falls_back_to_exponential(self, shared_client):
         from jules.services import _resolve_retry_policy
+
         policy = _resolve_retry_policy("default")
         response = httpx.Response(
             503,

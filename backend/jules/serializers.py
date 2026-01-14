@@ -79,9 +79,7 @@ class SourceSerializer(serializers.Serializer):
             normalized = {
                 "name": name,
                 "displayName": display_name,
-                "githubMetadata": data.get(
-                    "githubMetadata", data.get("github_metadata")
-                ),
+                "githubMetadata": data.get("githubMetadata", data.get("github_metadata")),
             }
             return normalized
         return super().to_internal_value(data)
@@ -404,9 +402,7 @@ class PlanSerializer(serializers.Serializer):
         """Validate plan data and provide helpful error messages."""
         steps = attrs.get("steps", [])
         if steps and not isinstance(steps, list):
-            raise serializers.ValidationError(
-                {"steps": "Steps must be a list of step objects."}
-            )
+            raise serializers.ValidationError({"steps": "Steps must be a list of step objects."})
         return attrs
 
 
@@ -528,12 +524,8 @@ class ActivitySerializer(serializers.Serializer):
                 "name": data.get("name", ""),
                 "planGenerated": data.get("planGenerated", data.get("plan_generated")),
                 "planApproved": data.get("planApproved", data.get("plan_approved")),
-                "progressUpdated": data.get(
-                    "progressUpdated", data.get("progress_updated")
-                ),
-                "sessionCompleted": data.get(
-                    "sessionCompleted", data.get("session_completed")
-                ),
+                "progressUpdated": data.get("progressUpdated", data.get("progress_updated")),
+                "sessionCompleted": data.get("sessionCompleted", data.get("session_completed")),
                 "createTime": data.get("createTime", data.get("create_time", "")),
             }
             return normalized

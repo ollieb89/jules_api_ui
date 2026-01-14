@@ -6,7 +6,6 @@ from django.conf import settings
 from django.http import StreamingHttpResponse
 from rest_framework import status, viewsets
 from rest_framework.authentication import SessionAuthentication
-from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -99,7 +98,11 @@ class SessionViewSet(JulesAuthenticatedViewSet):
             try:
                 sessions = get_cached_sessions_payload()
                 latest_update = max(
-                    (session.get("updateTime") for session in sessions if session.get("updateTime")),
+                    (
+                        session.get("updateTime")
+                        for session in sessions
+                        if session.get("updateTime")
+                    ),
                     default=None,
                 )
                 if latest_update and latest_update != last_update:
@@ -325,9 +328,7 @@ class SessionViewSet(JulesAuthenticatedViewSet):
         page_size = int(request.query_params.get("page_size", 100))
         page_token = request.query_params.get("page_token")
         try:
-            data = client.list_activities(
-                session_id=pk, page_size=page_size, page_token=page_token
-            )
+            data = client.list_activities(session_id=pk, page_size=page_size, page_token=page_token)
             activities = data.get("activities", [])
             session = get_or_create_session_stub(session_name)
             for activity in activities:
@@ -533,10 +534,9 @@ class SessionViewSet(JulesAuthenticatedViewSet):
                     f"activity.stream.{session_name}",
                 ):
                     break
-                activities = (
-                    JulesActivity.objects.filter(session__name=session_name, id__gt=last_seen)
-                    .order_by("id")[:100]
-                )
+                activities = JulesActivity.objects.filter(
+                    session__name=session_name, id__gt=last_seen
+                ).order_by("id")[:100]
                 for activity in activities:
                     payload = JulesActivitySerializer(activity).data
                     yield f"id: {activity.id}\n"
@@ -594,17 +594,17 @@ class JulesHealthViewSet(JulesAuthenticatedViewSet):
 class SettingsViewSet(JulesAuthenticatedViewSet):
     """ViewSet for managing Jules settings (API key configuration)."""
 
-
-
     def list(self, request):  # noqa: ARG002
         """Get current settings (masked API key)."""
         settings = JulesSettings.get_settings()
-        serializer = JulesSettingsSerializer({
-            "api_key_configured": bool(settings.get_api_key()),
-            "masked_api_key": settings.get_masked_api_key(),
-            "created_at": settings.created_at,
-            "updated_at": settings.updated_at,
-        })
+        serializer = JulesSettingsSerializer(
+            {
+                "api_key_configured": bool(settings.get_api_key()),
+                "masked_api_key": settings.get_masked_api_key(),
+                "created_at": settings.created_at,
+                "updated_at": settings.updated_at,
+            }
+        )
         return Response(serializer.data)
 
     @action(detail=False, methods=["post"], url_path="api-key")

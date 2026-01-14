@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("jules", "0007_reencrypt_api_keys_jules_encryption_key"),
     ]

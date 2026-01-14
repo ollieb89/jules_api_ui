@@ -2,7 +2,7 @@ import {
   ApplicationConfig,
   ErrorHandler,
   importProvidersFrom,
-  provideBrowserGlobalErrorListeners
+  provideBrowserGlobalErrorListeners,
 } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
@@ -24,7 +24,7 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     {
       provide: ErrorHandler,
-      useClass: GlobalErrorHandler
+      useClass: GlobalErrorHandler,
     },
     provideRouter(routes),
     provideClientHydration(withEventReplay()),
@@ -34,11 +34,11 @@ export const appConfig: ApplicationConfig = {
         authInterceptor,
         julesApiErrorInterceptor,
         loggingInterceptor,
-        retryInterceptor
-      ])
+        retryInterceptor,
+      ]),
     ),
     provideMarkdown(),
     provideAnimations(),
-    importProvidersFrom(MatDialogModule, MatSnackBarModule)
-  ]
+    importProvidersFrom(MatDialogModule, MatSnackBarModule),
+  ],
 };

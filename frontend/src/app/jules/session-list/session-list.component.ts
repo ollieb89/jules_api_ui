@@ -1,4 +1,13 @@
-import { Component, OnInit, signal, ChangeDetectionStrategy, inject, computed, effect, ViewChild } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  signal,
+  ChangeDetectionStrategy,
+  inject,
+  computed,
+  effect,
+  ViewChild,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -67,7 +76,10 @@ interface FormattedSession extends Session {
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <!-- Search -->
           <div>
-            <label for="search" class="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
+            <label
+              for="search"
+              class="block text-sm font-medium text-[var(--color-text-secondary)] mb-1"
+            >
               Search
             </label>
             <div class="relative">
@@ -94,7 +106,10 @@ interface FormattedSession extends Session {
 
           <!-- Status Filter -->
           <div>
-            <label for="status" class="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
+            <label
+              for="status"
+              class="block text-sm font-medium text-[var(--color-text-secondary)] mb-1"
+            >
               Status
             </label>
             <select
@@ -115,7 +130,10 @@ interface FormattedSession extends Session {
 
           <!-- Source Filter -->
           <div>
-            <label for="source" class="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
+            <label
+              for="source"
+              class="block text-sm font-medium text-[var(--color-text-secondary)] mb-1"
+            >
               Source
             </label>
             <select
@@ -133,7 +151,10 @@ interface FormattedSession extends Session {
 
           <!-- Sort -->
           <div>
-            <label for="sort" class="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
+            <label
+              for="sort"
+              class="block text-sm font-medium text-[var(--color-text-secondary)] mb-1"
+            >
               Sort By
             </label>
             <div class="flex gap-2">
@@ -179,7 +200,10 @@ interface FormattedSession extends Session {
 
       <!-- Results Count -->
       <div class="mb-4 flex flex-col gap-1 text-sm text-[var(--color-text-secondary)]">
-        <span>Showing {{ cacheService.filteredCount() }} of {{ cacheService.totalCount() }} sessions</span>
+        <span
+          >Showing {{ cacheService.filteredCount() }} of
+          {{ cacheService.totalCount() }} sessions</span
+        >
         <span>{{ lastUpdatedLabel() }}</span>
       </div>
 
@@ -192,7 +216,7 @@ interface FormattedSession extends Session {
 
       <!-- Error State -->
       @if (cacheService.error()) {
-        <div 
+        <div
           class="bg-[var(--color-surface-error)] border border-[var(--color-border-error)] text-[var(--color-text-error)] px-4 py-3 rounded mb-4"
           role="alert"
           aria-live="assertive"
@@ -210,8 +234,14 @@ interface FormattedSession extends Session {
       }
 
       <!-- Empty State -->
-      @if (!cacheService.loading() && cacheService.filteredCount() === 0 && cacheService.totalCount() === 0) {
-        <div class="bg-[var(--color-surface-secondary)] border border-[var(--color-border-default)] rounded-lg p-8 text-center">
+      @if (
+        !cacheService.loading() &&
+        cacheService.filteredCount() === 0 &&
+        cacheService.totalCount() === 0
+      ) {
+        <div
+          class="bg-[var(--color-surface-secondary)] border border-[var(--color-border-default)] rounded-lg p-8 text-center"
+        >
           <p class="text-[var(--color-text-secondary)] mb-4">No sessions found.</p>
           <button
             (click)="createSession()"
@@ -225,8 +255,14 @@ interface FormattedSession extends Session {
       }
 
       <!-- No Results After Filtering -->
-      @if (!cacheService.loading() && cacheService.filteredCount() === 0 && cacheService.totalCount() > 0) {
-        <div class="bg-[var(--color-surface-secondary)] border border-[var(--color-border-default)] rounded-lg p-8 text-center">
+      @if (
+        !cacheService.loading() &&
+        cacheService.filteredCount() === 0 &&
+        cacheService.totalCount() > 0
+      ) {
+        <div
+          class="bg-[var(--color-surface-secondary)] border border-[var(--color-border-default)] rounded-lg p-8 text-center"
+        >
           <p class="text-[var(--color-text-secondary)] mb-4">No sessions match your filters.</p>
           <button
             (click)="clearFilters()"
@@ -241,31 +277,35 @@ interface FormattedSession extends Session {
       <!-- Session Grid -->
       @if (cacheService.filteredCount() > 0) {
         <div class="bg-[var(--color-surface-primary)] shadow-md rounded-lg overflow-hidden">
-          <div 
+          <div
             class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 max-h-[600px] overflow-y-auto"
           >
             @for (session of formattedSessions(); track session.name) {
-              <div class="bg-[var(--color-surface-secondary)] border border-[var(--color-border-default)] rounded-lg p-4 hover:shadow-lg transition-shadow">
+              <div
+                class="bg-[var(--color-surface-secondary)] border border-[var(--color-border-default)] rounded-lg p-4 hover:shadow-lg transition-shadow"
+              >
                 <div class="flex justify-between items-start mb-2">
                   <h3 class="text-lg font-semibold text-[var(--color-text-primary)] flex-1">
                     {{ session.display_name }}
                   </h3>
-                  <span 
-                    [class]="'px-2 py-1 rounded-full text-xs font-medium ' + session.stateBadgeClass"
+                  <span
+                    [class]="
+                      'px-2 py-1 rounded-full text-xs font-medium ' + session.stateBadgeClass
+                    "
                   >
                     {{ getStateLabel(session.state) }}
                   </span>
                 </div>
-                
+
                 <p class="text-sm text-[var(--color-text-secondary)] mb-3 line-clamp-2">
                   {{ session.prompt }}
                 </p>
-                
+
                 <div class="flex flex-wrap gap-2 text-xs text-[var(--color-text-tertiary)] mb-3">
                   <span>Source: {{ session.source }}</span>
                   <span>Created: {{ session.formattedCreateTime }}</span>
                 </div>
-                
+
                 <div class="flex gap-2">
                   <button
                     (click)="viewSession(session.name)"
@@ -305,7 +345,7 @@ interface FormattedSession extends Session {
         (cancelled)="onDeleteCancelled()"
       ></app-confirmation-dialog>
     </div>
-  `
+  `,
 })
 export class SessionListComponent implements OnInit {
   readonly cacheService = inject(SessionCacheService);
@@ -328,21 +368,25 @@ export class SessionListComponent implements OnInit {
 
   // Formatted sessions for display
   formattedSessions = computed<FormattedSession[]>(() => {
-    return this.cacheService.filteredSessions().map(session => {
+    return this.cacheService.filteredSessions().map((session) => {
       const createTime = new Date(session.create_time);
       const updateTime = new Date(session.update_time);
 
-      let stateBadgeClass = 'bg-[var(--color-background-tertiary)] text-[var(--color-text-secondary)]';
+      let stateBadgeClass =
+        'bg-[var(--color-background-tertiary)] text-[var(--color-text-secondary)]';
       if (session.state === 'STATE_UNSPECIFIED') {
-        stateBadgeClass = 'bg-[var(--color-background-tertiary)] text-[var(--color-text-secondary)]';
+        stateBadgeClass =
+          'bg-[var(--color-background-tertiary)] text-[var(--color-text-secondary)]';
       } else if (session.state === 'ACTIVE') {
         stateBadgeClass = 'bg-[var(--color-surface-info)] text-[var(--color-text-info-strong)]';
       } else if (session.state === 'IN_PROGRESS') {
         stateBadgeClass = 'bg-[var(--color-surface-info)] text-[var(--color-text-info-strong)]';
       } else if (session.state === 'AWAITING_USER_FEEDBACK') {
-        stateBadgeClass = 'bg-[var(--color-surface-warning)] text-[var(--color-text-warning-strong)]';
+        stateBadgeClass =
+          'bg-[var(--color-surface-warning)] text-[var(--color-text-warning-strong)]';
       } else if (session.state === 'COMPLETED') {
-        stateBadgeClass = 'bg-[var(--color-surface-success)] text-[var(--color-text-success-strong)]';
+        stateBadgeClass =
+          'bg-[var(--color-surface-success)] text-[var(--color-text-success-strong)]';
       } else if (session.state === 'FAILED') {
         stateBadgeClass = 'bg-[var(--color-surface-error)] text-[var(--color-text-error-strong)]';
       }
@@ -362,7 +406,7 @@ export class SessionListComponent implements OnInit {
         display_name: displayName,
         formattedCreateTime: createTime.toLocaleString(),
         formattedUpdateTime: updateTime.toLocaleString(),
-        stateBadgeClass
+        stateBadgeClass,
       };
     });
   });
@@ -453,7 +497,7 @@ export class SessionListComponent implements OnInit {
   deleteSession(sessionId: string): void {
     this.sessionToDelete.set(sessionId);
     // Find session name/title for better UX
-    const session = this.cacheService.filteredSessions().find(s => s.name === sessionId);
+    const session = this.cacheService.filteredSessions().find((s) => s.name === sessionId);
     const sessionName = session ? session.display_name : 'this session';
 
     this.confirmationDialog.title = 'Delete Session';
@@ -474,7 +518,7 @@ export class SessionListComponent implements OnInit {
         error: (err: unknown) => {
           this.cacheService.error.set(getApiErrorMessage(err, 'Failed to delete session'));
           this.confirmationDialog.reset();
-        }
+        },
       });
     }
   }
@@ -485,12 +529,12 @@ export class SessionListComponent implements OnInit {
 
   getStateLabel(state: SessionState): string {
     const labels: Record<SessionState, string> = {
-      'STATE_UNSPECIFIED': 'Pending',
-      'ACTIVE': 'Active',
-      'IN_PROGRESS': 'In Progress',
-      'AWAITING_USER_FEEDBACK': 'Awaiting Feedback',
-      'COMPLETED': 'Completed',
-      'FAILED': 'Failed'
+      STATE_UNSPECIFIED: 'Pending',
+      ACTIVE: 'Active',
+      IN_PROGRESS: 'In Progress',
+      AWAITING_USER_FEEDBACK: 'Awaiting Feedback',
+      COMPLETED: 'Completed',
+      FAILED: 'Failed',
     };
     return labels[state] || state;
   }
