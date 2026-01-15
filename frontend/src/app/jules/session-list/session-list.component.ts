@@ -2,6 +2,7 @@ import { Component, OnInit, signal, ChangeDetectionStrategy, inject, computed, e
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { LoadingSpinnerComponent } from '../../components/loading-spinner/loading-spinner.component';
 import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
 import { SessionCacheService, SortField } from '../../services/session-cache.service';
 import { ThemeService } from '../../services/theme.service';
@@ -19,7 +20,7 @@ interface FormattedSession extends Session {
 
 @Component({
   selector: 'app-session-list',
-  imports: [CommonModule, RouterModule, FormsModule, ConfirmationDialogComponent],
+  imports: [CommonModule, RouterModule, FormsModule, LoadingSpinnerComponent, ConfirmationDialogComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="container mx-auto px-4 py-8">
@@ -185,9 +186,7 @@ interface FormattedSession extends Session {
 
       <!-- Loading State -->
       @if (cacheService.loading() && cacheService.totalCount() === 0) {
-        <div class="flex justify-center items-center py-12" aria-busy="true" aria-live="polite">
-          <div class="text-[var(--color-text-secondary)]">Loading sessions...</div>
-        </div>
+        <app-loading-spinner label="Loading sessions..." containerClass="py-12"></app-loading-spinner>
       }
 
       <!-- Error State -->

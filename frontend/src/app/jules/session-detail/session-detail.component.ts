@@ -10,6 +10,7 @@ import { JulesStreamService } from '../../services/jules-stream.service';
 import { PlanState, Session, SessionState } from '../../models/jules.model';
 import { ActivityTimelineComponent } from '../activity-timeline/activity-timeline.component';
 import { CodeBlockStyleDirective } from '../../directives/code-block-style.directive';
+import { LoadingSpinnerComponent } from '../../components/loading-spinner/loading-spinner.component';
 import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
 import { getApiErrorMessage } from '../../utils/api-error';
 import { getParserErrorMessage, parseSessionResponse } from '../../utils/api-parsers';
@@ -22,7 +23,7 @@ interface PRInfo {
 
 @Component({
   selector: 'app-session-detail',
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, ActivityTimelineComponent, MarkdownComponent, CodeBlockStyleDirective, ConfirmationDialogComponent],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, ActivityTimelineComponent, MarkdownComponent, CodeBlockStyleDirective, LoadingSpinnerComponent, ConfirmationDialogComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './session-detail.component.html',
   styleUrl: './session-detail.component.css'
