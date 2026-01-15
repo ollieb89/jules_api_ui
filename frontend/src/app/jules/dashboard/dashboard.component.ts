@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { SessionCacheService } from '../../services/session-cache.service';
 import { ThemeService } from '../../services/theme.service';
+import { SessionUtilsService } from '../../services/session-utils.service';
+import { SessionState } from '../../models/jules.model';
 
 @Component({
   selector: 'app-dashboard',
@@ -159,13 +161,9 @@ import { ThemeService } from '../../services/theme.service';
         } @else {
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
             @for (session of recentSessions(); track session.name) {
-              <div 
-                class="bg-[var(--color-surface-primary)] border border-[var(--color-border-default)] rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer group"
-                (click)="viewSession(session.name)"
-                (keydown.enter)="viewSession(session.name)"
-                tabindex="0"
-                role="button"
-                [attr.aria-label]="'View session ' + session.display_name"
+              <a
+                [routerLink]="['/jules', getSessionId(session.name)]"
+                class="block bg-[var(--color-surface-primary)] border border-[var(--color-border-default)] rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
               >
                 <div class="flex justify-between items-start mb-2">
                   <h3 class="font-semibold text-[var(--color-text-primary)] truncate flex-1 group-hover:text-[var(--color-interactive-primary)] transition-colors">
@@ -180,7 +178,9 @@ import { ThemeService } from '../../services/theme.service';
                     [class.bg-[var(--color-state-success)]]="session.state === 'COMPLETED'"
                     [class.bg-[var(--color-state-error)]]="session.state === 'FAILED'"
                     [title]="session.state"
-                  ></span>
+                  >
+                    <span class="sr-only">{{ getStateLabel(session.state) }}</span>
+                  </span>
                 </div>
                 
                 <p class="text-sm text-[var(--color-text-secondary)] line-clamp-2 mb-3 h-10">
@@ -191,7 +191,7 @@ import { ThemeService } from '../../services/theme.service';
                   <span class="truncate max-w-[60%]">{{ session.source }}</span>
                   <span>{{ session.update_time | date:'shortDate' }}</span>
                 </div>
-              </div>
+              </a>
             }
           </div>
         }
@@ -203,6 +203,7 @@ export class DashboardComponent implements OnInit {
   private readonly router = inject(Router);
   readonly cacheService = inject(SessionCacheService);
   readonly themeService = inject(ThemeService);
+  private readonly sessionUtils = inject(SessionUtilsService);
 
   readonly totalCount = computed(() => this.cacheService.totalCount());
   readonly activeCount = computed(() => this.cacheService.activeCount());
@@ -242,14 +243,19 @@ export class DashboardComponent implements OnInit {
     this.cacheService.startAutoRefresh();
   }
 
-  viewSession(sessionName: string): void {
-    // We need to extract the ID, but since we don't have SessionUtilsService injected here yet,
-    // and the pattern seems to be that session.name is "sessions/{id}", we can split it.
-    // However, it's safer to inject SessionUtilsService as done in SessionList.
-    // But for now, let's just use the router navigation which might expect just the ID or handle the path.
-    // Looking at SessionList, it uses SessionUtilsService.
-    const parts = sessionName.split('/');
-    const id = parts[parts.length - 1];
-    this.router.navigate(['/jules', id]);
+  getSessionId(sessionName: string): string {
+    return this.sessionUtils.extractSessionId(sessionName);
+  }
+
+  getStateLabel(state: SessionState): string {
+    const labels: Record<SessionState, string> = {
+      'STATE_UNSPECIFIED': 'Pending',
+      'ACTIVE': 'Active',
+      'IN_PROGRESS': 'In Progress',
+      'AWAITING_USER_FEEDBACK': 'Awaiting Feedback',
+      'COMPLETED': 'Completed',
+      'FAILED': 'Failed'
+    };
+    return labels[state] || state;
   }
 }
