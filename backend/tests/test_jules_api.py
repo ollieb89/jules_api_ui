@@ -147,9 +147,7 @@ def test_activities_list_pagination_and_serializers(api_client, monkeypatch):
 
     monkeypatch.setattr("jules.views.JulesApiClient", lambda: StubClient())
 
-    response = api_client.get(
-        "/api/jules/sessions/1/activities/?page_size=1&page_token=page-1"
-    )
+    response = api_client.get("/api/jules/sessions/1/activities/?page_size=1&page_token=page-1")
 
     assert response.status_code == status.HTTP_200_OK
     payload = response.json()

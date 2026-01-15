@@ -2,12 +2,12 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ActivityCardComponent } from './activity-card.component';
 import { ClipboardService } from '../../services/clipboard.service';
-import { vi } from 'vitest';
+import { vi, Mock } from 'vitest';
 
 describe('ActivityCardComponent', () => {
   let component: ActivityCardComponent;
   let fixture: ComponentFixture<ActivityCardComponent>;
-  let clipboardService: any;
+  let clipboardService: { copyToClipboard: Mock };
 
   beforeEach(async () => {
     clipboardService = {

@@ -3,13 +3,13 @@ import { SessionCreateComponent } from './session-create.component';
 import { JulesService } from '../../services/jules.service';
 import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
-import { vi } from 'vitest';
+import { vi, Mock } from 'vitest';
 
 describe('SessionCreateComponent', () => {
   let component: SessionCreateComponent;
   let fixture: ComponentFixture<SessionCreateComponent>;
-  let julesService: any;
-  let router: any;
+  let julesService: { getSources: Mock; createSession: Mock };
+  let router: { navigate: Mock };
 
   beforeEach(async () => {
     julesService = {
