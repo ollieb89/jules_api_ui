@@ -11,6 +11,7 @@ import { LoadingSpinnerComponent } from '../loading-spinner/loading-spinner.comp
       #dialog
       class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-0 backdrop:bg-black/50 min-w-[320px] max-w-lg text-left"
       (cancel)="onCancel($event)"
+      (click)="onBackdropClick($event)"
     >
       <div class="p-6">
         <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">{{ title }}</h2>
@@ -88,6 +89,12 @@ export class ConfirmationDialogComponent {
 
   onCancel(event: Event) {
     this.cancelled.emit();
+  }
+
+  onBackdropClick(event: MouseEvent) {
+    if (event.target === this.dialog.nativeElement) {
+      this.close();
+    }
   }
 
   confirm() {
