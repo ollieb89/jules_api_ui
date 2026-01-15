@@ -10,9 +10,7 @@
   </div>
 
   @if (loading()) {
-    <div class="flex justify-center items-center py-12" aria-busy="true" aria-live="polite">
-      <div class="text-[var(--color-text-secondary)]">Loading session...</div>
-    </div>
+    <app-loading-spinner label="Loading session..." containerClass="py-12"></app-loading-spinner>
   } @else if (error()) {
     <div 
       class="bg-[var(--color-surface-error)] border border-[var(--color-border-error)] text-[var(--color-text-error)] px-4 py-3 rounded mb-4"
