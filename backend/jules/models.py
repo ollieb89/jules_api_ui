@@ -6,7 +6,6 @@ from cryptography.fernet import Fernet
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.utils import timezone
 
 
 def _derive_fernet_key(secret: str) -> bytes:

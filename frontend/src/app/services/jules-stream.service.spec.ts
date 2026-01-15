@@ -12,9 +12,11 @@ describe('JulesStreamService', () => {
     getSessionsEventStreamUrl: ReturnType<typeof vi.fn>;
     getSessionEventStreamUrl: ReturnType<typeof vi.fn>;
   };
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   let mockEventSource: any;
   let createdSources: any[];
   let OriginalEventSource: any;
+  /* eslint-enable @typescript-eslint/no-explicit-any */
 
   beforeEach(() => {
     // Mock AuthTokenService
@@ -67,6 +69,7 @@ describe('JulesStreamService', () => {
       return new Promise<void>((resolve, reject) => {
         // Create a new service instance with server platform
         const serverService = TestBed.runInInjectionContext(() => new JulesStreamService());
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const servicePrivate = serverService as any;
         servicePrivate.platformId = 'server';
         servicePrivate.authTokenService = mockAuthTokenService;
@@ -136,6 +139,7 @@ describe('JulesStreamService', () => {
 
         // Simulate EventSource open event
         const openHandler = mockEventSource.addEventListener.mock.calls.find(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (call: any[]) => call[0] === 'open'
         )[1];
         openHandler();
@@ -173,6 +177,7 @@ describe('JulesStreamService', () => {
 
         // Simulate EventSource sessions_update event
         const updateHandler = mockEventSource.addEventListener.mock.calls.find(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (call: any[]) => call[0] === 'sessions_update'
         )[1];
         updateHandler({ data: JSON.stringify(mockSessions) });
@@ -197,6 +202,7 @@ describe('JulesStreamService', () => {
 
         // Simulate EventSource sessions_update event with invalid JSON
         const updateHandler = mockEventSource.addEventListener.mock.calls.find(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (call: any[]) => call[0] === 'sessions_update'
         )[1];
         updateHandler({ data: 'invalid json' });
@@ -215,6 +221,7 @@ describe('JulesStreamService', () => {
 
       // Simulate EventSource error event
       const errorHandler = mockEventSource.addEventListener.mock.calls.find(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (call: any[]) => call[0] === 'error'
       )[1];
       errorHandler();
@@ -247,6 +254,7 @@ describe('JulesStreamService', () => {
       return new Promise<void>((resolve, reject) => {
         // Create a new service instance with server platform
         const serverService = TestBed.runInInjectionContext(() => new JulesStreamService());
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const servicePrivate = serverService as any;
         servicePrivate.platformId = 'server';
         servicePrivate.authTokenService = mockAuthTokenService;
@@ -329,6 +337,7 @@ describe('JulesStreamService', () => {
 
         // Simulate EventSource session_update event
         const updateHandler = mockEventSource.addEventListener.mock.calls.find(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (call: any[]) => call[0] === 'session_update'
         )[1];
         updateHandler({ data: JSON.stringify(mockSession) });
@@ -353,6 +362,7 @@ describe('JulesStreamService', () => {
 
         // Simulate EventSource activity_update event
         const activityHandler = mockEventSource.addEventListener.mock.calls.find(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (call: any[]) => call[0] === 'activity_update'
         )[1];
         activityHandler({ data: JSON.stringify({ latest_activity_id: 7 }) });
@@ -377,6 +387,7 @@ describe('JulesStreamService', () => {
 
         // Simulate EventSource session_update event with invalid JSON
         const updateHandler = mockEventSource.addEventListener.mock.calls.find(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (call: any[]) => call[0] === 'session_update'
         )[1];
         updateHandler({ data: 'invalid json' });
