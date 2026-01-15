@@ -11,6 +11,14 @@ describe('UserListComponent', () => {
   let component: UserListComponent;
   let fixture: ComponentFixture<UserListComponent>;
 
+  beforeAll(() => {
+    // Polyfill HTMLDialogElement methods for JSDOM
+    if (typeof HTMLDialogElement !== 'undefined') {
+      HTMLDialogElement.prototype.showModal = vi.fn();
+      HTMLDialogElement.prototype.close = vi.fn();
+    }
+  });
+
   beforeEach(async () => {
     const userService = {
       getUsers: vi.fn(() =>
@@ -49,5 +57,28 @@ describe('UserListComponent', () => {
     component.createUser();
 
     expect(navigateSpy).toHaveBeenCalledWith(['/users/new']);
+  });
+
+  it('optimistically removes user from list upon deletion without reloading', () => {
+    const userService = TestBed.inject(UserService);
+
+    // Initial state check
+    expect(component.users().length).toBe(2);
+
+    // Setup user to delete
+    component.userToDelete.set(1);
+
+    // Execute confirmation
+    component.onConfirmDelete();
+
+    // Verify API call
+    expect(userService.deleteUser).toHaveBeenCalledWith(1);
+
+    // Verify optimistic update (list reduced to 1)
+    expect(component.users().length).toBe(1);
+    expect(component.users()[0].id).toBe(2);
+
+    // Verify NO reload happened
+    expect(userService.getUsers).not.toHaveBeenCalled();
   });
 });
