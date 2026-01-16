@@ -1,0 +1,185 @@
+$ NG_CLI_ANALYTICS=false ng serve --port 4700
+❯ Building...
+✔ Building...
+Initial chunk files | Names                    |  Raw size
+styles.css          | styles                   | 173.38 kB |
+main.js             | main                     |  17.69 kB |
+chunk-CGKGWTPK.js   | -                        |   3.14 kB |
+chunk-3TDPNUI5.js   | -                        |   1.94 kB |
+chunk-DI463QPF.js   | -                        |   1.58 kB |
+chunk-HBGDH4TH.js   | -                        |   1.52 kB |
+chunk-VUJOFXKG.js   | -                        | 938 bytes |
+chunk-FNRXFYQJ.js   | -                        | 778 bytes |
+
+                    | Initial total            | 200.95 kB
+
+Lazy chunk files    | Names                    |  Raw size
+chunk-RJFCXLQY.js   | session-detail-component | 127.52 kB |
+chunk-RWDPSYSV.js   | session-list-component   |  62.40 kB |
+chunk-35NPN7FS.js   | phase-two-component      |  58.38 kB |
+chunk-LXY6S34F.js   | session-create-component |  45.62 kB |
+chunk-IUMC4MJF.js   | dashboard-component      |  32.43 kB |
+chunk-XSDUGGMD.js   | settings-component       |  25.13 kB |
+chunk-YWABV3YP.js   | user-form-component      |  19.40 kB |
+chunk-JHLWHQFX.js   | user-list-component      |  18.82 kB |
+chunk-BIHABOU2.js   | -                        |  13.98 kB |
+chunk-IW6QGGIA.js   | -                        |   9.87 kB |
+chunk-B62VGVJC.js   | -                        |   8.23 kB |
+chunk-UI2VZNLO.js   | -                        |   6.31 kB |
+chunk-AJ6WGKT5.js   | -                        |   4.75 kB |
+chunk-7BTYQXGM.js   | -                        |   1.24 kB |
+
+Application bundle generation complete. [6.291 seconds] - 2026-01-16T20:05:47.886Z
+
+Watch mode enabled. Watching for file changes...
+NOTE: Raw file sizes do not reflect development server per-request transformations.
+  ➜  Local:   http://localhost:4700/
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Initial chunk files | Names                    |  Raw size
+main.js             | main                     |  17.69 kB |
+
+Lazy chunk files    | Names                    |  Raw size
+chunk-ATRS5A4U.js   | session-detail-component | 132.15 kB |
+
+Application bundle generation complete. [3.990 seconds] - 2026-01-16T20:10:35.281Z
+
+Page reload sent to client(s).
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Initial chunk files | Names                    |  Raw size
+main.js             | main                     |  17.69 kB |
+
+Lazy chunk files    | Names                    |  Raw size
+chunk-YAJQ7U55.js   | session-detail-component | 173.42 kB |
+
+Application bundle generation complete. [1.271 seconds] - 2026-01-16T20:11:29.478Z
+
+Component update sent to client(s).
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Initial chunk files | Names                    |  Raw size
+styles.css          | styles                   | 173.38 kB |
+main.js             | main                     |  17.69 kB |
+chunk-CGKGWTPK.js   | -                        |   3.14 kB |
+chunk-3TDPNUI5.js   | -                        |   1.94 kB |
+chunk-DI463QPF.js   | -                        |   1.58 kB |
+chunk-HBGDH4TH.js   | -                        |   1.52 kB |
+chunk-VUJOFXKG.js   | -                        | 938 bytes |
+chunk-FNRXFYQJ.js   | -                        | 778 bytes |
+
+                    | Initial total            | 200.95 kB
+
+Lazy chunk files    | Names                    |  Raw size
+chunk-YAJQ7U55.js   | session-detail-component | 173.42 kB |
+chunk-RWDPSYSV.js   | session-list-component   |  62.40 kB |
+chunk-35NPN7FS.js   | phase-two-component      |  58.38 kB |
+chunk-LXY6S34F.js   | session-create-component |  45.62 kB |
+chunk-IUMC4MJF.js   | dashboard-component      |  32.43 kB |
+chunk-XSDUGGMD.js   | settings-component       |  25.13 kB |
+chunk-YWABV3YP.js   | user-form-component      |  19.40 kB |
+chunk-JHLWHQFX.js   | user-list-component      |  18.82 kB |
+chunk-BIHABOU2.js   | -                        |  13.98 kB |
+chunk-IW6QGGIA.js   | -                        |   9.87 kB |
+chunk-B62VGVJC.js   | -                        |   8.23 kB |
+chunk-UI2VZNLO.js   | -                        |   6.31 kB |
+chunk-AJ6WGKT5.js   | -                        |   4.75 kB |
+chunk-7BTYQXGM.js   | -                        |   1.24 kB |
+
+Application bundle generation complete. [0.142 seconds] - 2026-01-16T20:14:25.769Z
+
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Initial chunk files | Names                    |  Raw size
+styles.css          | styles                   | 173.38 kB |
+main.js             | main                     |  17.69 kB |
+chunk-CGKGWTPK.js   | -                        |   3.14 kB |
+chunk-3TDPNUI5.js   | -                        |   1.94 kB |
+chunk-DI463QPF.js   | -                        |   1.58 kB |
+chunk-HBGDH4TH.js   | -                        |   1.52 kB |
+chunk-VUJOFXKG.js   | -                        | 938 bytes |
+chunk-FNRXFYQJ.js   | -                        | 778 bytes |
+
+                    | Initial total            | 200.95 kB
+
+Lazy chunk files    | Names                    |  Raw size
+chunk-YAJQ7U55.js   | session-detail-component | 173.42 kB |
+chunk-RWDPSYSV.js   | session-list-component   |  62.40 kB |
+chunk-35NPN7FS.js   | phase-two-component      |  58.38 kB |
+chunk-LXY6S34F.js   | session-create-component |  45.62 kB |
+chunk-IUMC4MJF.js   | dashboard-component      |  32.43 kB |
+chunk-XSDUGGMD.js   | settings-component       |  25.13 kB |
+chunk-YWABV3YP.js   | user-form-component      |  19.40 kB |
+chunk-JHLWHQFX.js   | user-list-component      |  18.82 kB |
+chunk-BIHABOU2.js   | -                        |  13.98 kB |
+chunk-IW6QGGIA.js   | -                        |   9.87 kB |
+chunk-B62VGVJC.js   | -                        |   8.23 kB |
+chunk-UI2VZNLO.js   | -                        |   6.31 kB |
+chunk-AJ6WGKT5.js   | -                        |   4.75 kB |
+chunk-7BTYQXGM.js   | -                        |   1.24 kB |
+
+Application bundle generation complete. [1.033 seconds] - 2026-01-16T20:14:54.665Z
+
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Initial chunk files | Names                    |  Raw size
+styles.css          | styles                   | 173.38 kB |
+main.js             | main                     |  17.69 kB |
+chunk-CGKGWTPK.js   | -                        |   3.14 kB |
+chunk-3TDPNUI5.js   | -                        |   1.94 kB |
+chunk-DI463QPF.js   | -                        |   1.58 kB |
+chunk-HBGDH4TH.js   | -                        |   1.52 kB |
+chunk-VUJOFXKG.js   | -                        | 938 bytes |
+chunk-FNRXFYQJ.js   | -                        | 778 bytes |
+
+                    | Initial total            | 200.95 kB
+
+Lazy chunk files    | Names                    |  Raw size
+chunk-YAJQ7U55.js   | session-detail-component | 173.42 kB |
+chunk-RWDPSYSV.js   | session-list-component   |  62.40 kB |
+chunk-35NPN7FS.js   | phase-two-component      |  58.38 kB |
+chunk-LXY6S34F.js   | session-create-component |  45.62 kB |
+chunk-IUMC4MJF.js   | dashboard-component      |  32.43 kB |
+chunk-XSDUGGMD.js   | settings-component       |  25.13 kB |
+chunk-YWABV3YP.js   | user-form-component      |  19.40 kB |
+chunk-JHLWHQFX.js   | user-list-component      |  18.82 kB |
+chunk-BIHABOU2.js   | -                        |  13.98 kB |
+chunk-IW6QGGIA.js   | -                        |   9.87 kB |
+chunk-B62VGVJC.js   | -                        |   8.23 kB |
+chunk-UI2VZNLO.js   | -                        |   6.31 kB |
+chunk-AJ6WGKT5.js   | -                        |   4.75 kB |
+chunk-7BTYQXGM.js   | -                        |   1.24 kB |
+
+Application bundle generation complete. [0.098 seconds] - 2026-01-16T20:15:00.400Z
+
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Initial chunk files | Names                    |  Raw size
+styles.css          | styles                   | 173.38 kB |
+main.js             | main                     |  17.69 kB |
+chunk-CGKGWTPK.js   | -                        |   3.14 kB |
+chunk-3TDPNUI5.js   | -                        |   1.94 kB |
+chunk-DI463QPF.js   | -                        |   1.58 kB |
+chunk-HBGDH4TH.js   | -                        |   1.52 kB |
+chunk-VUJOFXKG.js   | -                        | 938 bytes |
+chunk-FNRXFYQJ.js   | -                        | 778 bytes |
+
+                    | Initial total            | 200.95 kB
+
+Lazy chunk files    | Names                    |  Raw size
+chunk-YAJQ7U55.js   | session-detail-component | 173.42 kB |
+chunk-RWDPSYSV.js   | session-list-component   |  62.40 kB |
+chunk-35NPN7FS.js   | phase-two-component      |  58.38 kB |
+chunk-LXY6S34F.js   | session-create-component |  45.62 kB |
+chunk-IUMC4MJF.js   | dashboard-component      |  32.43 kB |
+chunk-XSDUGGMD.js   | settings-component       |  25.13 kB |
+chunk-YWABV3YP.js   | user-form-component      |  19.40 kB |
+chunk-JHLWHQFX.js   | user-list-component      |  18.82 kB |
+chunk-BIHABOU2.js   | -                        |  13.98 kB |
+chunk-IW6QGGIA.js   | -                        |   9.87 kB |
+chunk-B62VGVJC.js   | -                        |   8.23 kB |
+chunk-UI2VZNLO.js   | -                        |   6.31 kB |
+chunk-AJ6WGKT5.js   | -                        |   4.75 kB |
+chunk-7BTYQXGM.js   | -                        |   1.24 kB |
+
+Application bundle generation complete. [0.104 seconds] - 2026-01-16T20:15:07.655Z

@@ -7,6 +7,7 @@ import { vi } from 'vitest';
 describe('ActivityCardComponent', () => {
   let component: ActivityCardComponent;
   let fixture: ComponentFixture<ActivityCardComponent>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let clipboardService: any;
 
   beforeEach(async () => {
@@ -92,5 +93,71 @@ describe('ActivityCardComponent', () => {
     expect(description).toContain('Running tests');
     expect(bashOutput).toContain('npm test');
     expect(diffLines.length).toBeGreaterThan(0);
+  });
+
+  it('should have accessibility attributes on plan toggle button', () => {
+    fixture.componentRef.setInput('activity', {
+      name: 'activities/plan-generated-123',
+      plan_generated: {
+        plan: {
+          steps: [],
+          state: 'PENDING'
+        }
+      },
+      create_time: '2024-01-01T00:00:00Z'
+    });
+    fixture.detectChanges();
+
+    const button = fixture.debugElement.query(By.css('button'));
+    expect(button.attributes['aria-expanded']).toBe('false');
+    expect(button.attributes['aria-controls']).toBe('plan-content-activities/plan-generated-123');
+
+    component.togglePlanExpanded();
+    fixture.detectChanges();
+
+    expect(button.attributes['aria-expanded']).toBe('true');
+    const content = fixture.debugElement.query(By.css('ol'));
+    expect(content.attributes['id']).toBe('plan-content-activities/plan-generated-123');
+  });
+
+  it('should show feedback when copy is successful', async () => {
+    vi.useFakeTimers();
+    fixture.componentRef.setInput('activity', {
+      name: 'activities/progress-updated',
+      progress_updated: {
+        artifacts: [
+          {
+            bash_output: 'npm test'
+          }
+        ]
+      },
+      create_time: '2024-01-01T00:00:00Z'
+    });
+
+    component.toggleBashOutput(0);
+    fixture.detectChanges();
+
+    // Find the copy button
+    // The first button is the toggle button, the second is the copy button
+    const buttons = fixture.debugElement.queryAll(By.css('button'));
+    const copyButton = buttons[1];
+
+    expect(copyButton.nativeElement.textContent).toContain('Copy');
+
+    // Click it
+    copyButton.nativeElement.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(clipboardService.copyToClipboard).toHaveBeenCalledWith('npm test');
+    expect(copyButton.nativeElement.textContent).toContain('Copied!');
+
+    // Fast forward time
+    vi.advanceTimersByTime(2000);
+    fixture.detectChanges();
+
+    expect(copyButton.nativeElement.textContent).toContain('Copy');
+    vi.useRealTimers();
   });
 });
