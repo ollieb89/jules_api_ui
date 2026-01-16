@@ -7,6 +7,7 @@ import { vi } from 'vitest';
 describe('ActivityCardComponent', () => {
   let component: ActivityCardComponent;
   let fixture: ComponentFixture<ActivityCardComponent>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let clipboardService: any;
 
   beforeEach(async () => {

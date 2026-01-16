@@ -35,10 +35,8 @@ def reencrypt_api_keys(apps, schema_editor):
     old_fernet = Fernet(_derive_key(settings.SECRET_KEY))
     new_fernet = Fernet(_derive_key(new_secret))
 
-    for config in (
-        JulesSettings.objects.exclude(_encrypted_api_key__isnull=True).exclude(
-            _encrypted_api_key=""
-        )
+    for config in JulesSettings.objects.exclude(_encrypted_api_key__isnull=True).exclude(
+        _encrypted_api_key=""
     ):
         updated_value = _reencrypt_value(config._encrypted_api_key, old_fernet, new_fernet)
         if updated_value:
@@ -56,10 +54,8 @@ def reverse_reencrypt_api_keys(apps, schema_editor):
     old_fernet = Fernet(_derive_key(settings.SECRET_KEY))
     new_fernet = Fernet(_derive_key(new_secret))
 
-    for config in (
-        JulesSettings.objects.exclude(_encrypted_api_key__isnull=True).exclude(
-            _encrypted_api_key=""
-        )
+    for config in JulesSettings.objects.exclude(_encrypted_api_key__isnull=True).exclude(
+        _encrypted_api_key=""
     ):
         updated_value = _reencrypt_value(config._encrypted_api_key, new_fernet, old_fernet)
         if updated_value:
