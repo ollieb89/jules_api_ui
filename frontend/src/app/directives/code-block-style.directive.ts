@@ -1,4 +1,4 @@
-import { Directive, AfterViewInit, ElementRef, Renderer2, OnInit, OnDestroy } from '@angular/core';
+import { Directive, AfterViewInit, ElementRef, Renderer2, OnDestroy } from '@angular/core';
 
 /**
  * Directive to fix code block styling by removing problematic inline styles
