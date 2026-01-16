@@ -8,3 +8,7 @@
 ## 2026-01-13 - Optimistic UI Updates
 **Learning:** Reloading full lists after a single item deletion causes unnecessary layout shifts and visual "jank" (spinners). Optimistic updates using local state signals provide a smoother, instant experience.
 **Action:** When performing destructive actions on lists, update the local signal immediately upon success instead of re-fetching the entire list.
+
+## 2026-01-16 - Accessible Toggle Patterns
+**Learning:** Visual-only toggle buttons (using arrow icons) lack semantic state. Adding `aria-expanded` and `aria-controls` provides critical context to screen readers about what is being controlled and its current state.
+**Action:** Ensure all collapsible sections use button elements with proper ARIA attributes, not just visual indicators.

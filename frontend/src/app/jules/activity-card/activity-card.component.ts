@@ -1,9 +1,9 @@
-import { Component, input, signal, ChangeDetectionStrategy, inject, computed } from '@angular/core';
+import { Component, input, signal, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { Activity, PlanGeneratedActivity, ProgressUpdatedActivity } from '../../models/jules.model';
+import { Activity } from '../../models/jules.model';
 import { ClipboardService } from '../../services/clipboard.service';
 
 interface DiffLine {
@@ -37,6 +37,8 @@ interface DiffLine {
             (click)="togglePlanExpanded()"
             type="button"
             class="flex items-center gap-2 text-sm font-medium text-[var(--color-interactive-primary)] hover:text-[var(--color-interactive-primary-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+            [attr.aria-expanded]="planExpanded()"
+            [attr.aria-controls]="'plan-content-' + activity().name"
           >
             @if (planExpanded()) {
               ▼
@@ -47,7 +49,10 @@ interface DiffLine {
           </button>
           
           @if (planExpanded()) {
-            <ol class="list-decimal list-inside space-y-2 mt-3 pl-4 border-l-2 border-[var(--color-border-default)]">
+            <ol
+              [id]="'plan-content-' + activity().name"
+              class="list-decimal list-inside space-y-2 mt-3 pl-4 border-l-2 border-[var(--color-border-default)]"
+            >
               @for (step of activity()!.plan_generated!.plan.steps; track $index) {
                 <li class="text-base text-[var(--color-text-primary)] leading-relaxed">
                   <span class="inline-block mr-2">{{ step.title || step.description || 'Step ' + ($index + 1) }}</span>
@@ -72,6 +77,8 @@ interface DiffLine {
                     (click)="toggleBashOutput($index)"
                     type="button"
                     class="flex items-center gap-2 text-sm font-medium text-[var(--color-interactive-primary)] hover:text-[var(--color-interactive-primary-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+                    [attr.aria-expanded]="isBashOutputExpanded($index)"
+                    [attr.aria-controls]="'bash-output-' + activity().name + '-' + $index"
                   >
                     @if (isBashOutputExpanded($index)) {
                       ▼
@@ -82,15 +89,20 @@ interface DiffLine {
                   </button>
                   
                   @if (isBashOutputExpanded($index)) {
-                    <div class="mt-2 relative">
+                    <div class="mt-2 relative" [id]="'bash-output-' + activity().name + '-' + $index">
                       <pre class="bg-[var(--color-background-tertiary)] text-[var(--color-text-primary)] p-4 rounded-lg overflow-x-auto text-xs font-mono max-h-96 overflow-y-auto">{{ artifact.bash_output }}</pre>
                       <button
-                        (click)="copyToClipboard(artifact.bash_output || '')"
+                        (click)="copyToClipboard(artifact.bash_output || '', 'bash-' + $index)"
                         type="button"
                         class="absolute top-2 right-2 px-2 py-1 bg-[var(--color-background-tertiary)] hover:bg-[var(--color-background-secondary)] text-[var(--color-text-primary)] text-xs rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
                         title="Copy to clipboard"
+                        [attr.aria-label]="copySuccess()['bash-' + $index] ? 'Copied bash output' : 'Copy bash output'"
                       >
-                        📋 Copy
+                        @if (copySuccess()['bash-' + $index]) {
+                          ✅ Copied!
+                        } @else {
+                          📋 Copy
+                        }
                       </button>
                     </div>
                   }
@@ -103,6 +115,8 @@ interface DiffLine {
                     (click)="toggleDiffExpanded($index)"
                     type="button"
                     class="flex items-center gap-2 text-sm font-medium text-[var(--color-interactive-primary)] hover:text-[var(--color-interactive-primary-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+                    [attr.aria-expanded]="isDiffExpanded($index)"
+                    [attr.aria-controls]="'diff-content-' + activity().name + '-' + $index"
                   >
                     @if (isDiffExpanded($index)) {
                       ▼
@@ -113,7 +127,7 @@ interface DiffLine {
                   </button>
                   
                   @if (isDiffExpanded($index)) {
-                    <div class="mt-2 relative">
+                    <div class="mt-2 relative" [id]="'diff-content-' + activity().name + '-' + $index">
                       <div class="diff-container">
                         @for (line of parseDiff(artifact.git_patch); track $index) {
                           <div 
@@ -124,12 +138,17 @@ interface DiffLine {
                         }
                       </div>
                       <button
-                        (click)="copyToClipboard(artifact.git_patch || '')"
+                        (click)="copyToClipboard(artifact.git_patch || '', 'patch-' + $index)"
                         type="button"
                         class="absolute top-2 right-2 px-2 py-1 bg-[var(--color-background-tertiary)] hover:bg-[var(--color-background-secondary)] text-[var(--color-text-primary)] text-xs rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
                         title="Copy to clipboard"
+                        [attr.aria-label]="copySuccess()['patch-' + $index] ? 'Copied changeset' : 'Copy changeset'"
                       >
-                        📋 Copy
+                        @if (copySuccess()['patch-' + $index]) {
+                          ✅ Copied!
+                        } @else {
+                          📋 Copy
+                        }
                       </button>
                     </div>
                   }
@@ -273,7 +292,7 @@ export class ActivityCardComponent {
     return labels[state] || state;
   }
 
-  getStepStateClass(state: string): string {
+  getStepStateClass(_state: string): string {
     return 'mat-chip mat-standard-chip mat-mdc-chip';
   }
 
@@ -288,14 +307,14 @@ export class ActivityCardComponent {
     return colors[state] || '';
   }
 
-  async copyToClipboard(text: string): Promise<void> {
+  async copyToClipboard(text: string, key: string): Promise<void> {
     const success = await this.clipboardService.copyToClipboard(text);
     if (success) {
       const current = this.copySuccess();
-      this.copySuccess.set({ ...current, [text.substring(0, 20)]: true });
+      this.copySuccess.set({ ...current, [key]: true });
       setTimeout(() => {
         const updated = this.copySuccess();
-        delete updated[text.substring(0, 20)];
+        delete updated[key];
         this.copySuccess.set({ ...updated });
       }, 2000);
     }

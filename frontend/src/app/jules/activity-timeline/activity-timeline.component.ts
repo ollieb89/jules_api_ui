@@ -21,6 +21,7 @@ import { PlanApprovalComponent } from '../plan-approval/plan-approval.component'
 import { LoadingSpinnerComponent } from '../../components/loading-spinner/loading-spinner.component';
 import { getApiErrorMessage } from '../../utils/api-error';
 import { getParserErrorMessage } from '../../utils/api-parsers';
+import { ClipboardService } from '../../services/clipboard.service';
 
 type ActivityOriginator = 'all' | 'agent' | 'user';
 
@@ -47,6 +48,11 @@ interface ActivityGroup {
   groupIndex: number;
 }
 
+interface DiffLine {
+  type: 'add' | 'remove' | 'context' | 'header';
+  content: string;
+}
+
 @Component({
   selector: 'app-activity-timeline',
   imports: [CommonModule, FormsModule, PlanApprovalComponent, LoadingSpinnerComponent, MatPaginatorModule],
@@ -61,6 +67,7 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   private julesService = inject(JulesService);
+  private clipboardService = inject(ClipboardService);
   private previousSessionId: string | null = null;
 
   activities = signal<Activity[]>([]);
@@ -81,6 +88,11 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
 
   // Expanded groups state
   expandedGroups = signal<Set<number>>(new Set());
+
+  // Artifact expansion state
+  private bashOutputExpandedState = signal<Record<string, boolean>>({});
+  private diffExpandedState = signal<Record<string, boolean>>({});
+  copySuccess = signal<Record<string, boolean>>({});
 
   formattedActivities = computed<FormattedActivity[]>(() => {
     const activities = this.currentPageActivities().map(activity => {
@@ -408,6 +420,69 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       this.toggleGroup(groupIndex);
+    }
+  }
+
+  isBashOutputExpanded(activityName: string, index: number): boolean {
+    const key = `${activityName}-${index}`;
+    return this.bashOutputExpandedState()[key] || false;
+  }
+
+  isDiffExpanded(activityName: string, index: number): boolean {
+    const key = `${activityName}-${index}`;
+    return this.diffExpandedState()[key] || false;
+  }
+
+  toggleBashOutput(activityName: string, index: number): void {
+    const key = `${activityName}-${index}`;
+    const current = this.bashOutputExpandedState();
+    this.bashOutputExpandedState.set({ ...current, [key]: !current[key] });
+  }
+
+  toggleDiffExpanded(activityName: string, index: number): void {
+    const key = `${activityName}-${index}`;
+    const current = this.diffExpandedState();
+    this.diffExpandedState.set({ ...current, [key]: !current[key] });
+  }
+
+  async copyToClipboard(text: string, key: string): Promise<void> {
+    const success = await this.clipboardService.copyToClipboard(text);
+    if (success) {
+      const current = this.copySuccess();
+      this.copySuccess.set({ ...current, [key]: true });
+      setTimeout(() => {
+        const updated = this.copySuccess();
+        delete updated[key];
+        this.copySuccess.set({ ...updated });
+      }, 2000);
+    }
+  }
+
+  parseDiff(patch: string): DiffLine[] {
+    const lines = patch.split('\n');
+    return lines.map(line => {
+      if (line.startsWith('@@')) {
+        return { type: 'header', content: line };
+      } else if (line.startsWith('+') && !line.startsWith('+++')) {
+        return { type: 'add', content: line };
+      } else if (line.startsWith('-') && !line.startsWith('---')) {
+        return { type: 'remove', content: line };
+      } else {
+        return { type: 'context', content: line };
+      }
+    });
+  }
+
+  getDiffLineClass(type: DiffLine['type']): string {
+    switch (type) {
+      case 'add':
+        return 'diff-line-add';
+      case 'remove':
+        return 'diff-line-remove';
+      case 'header':
+        return 'diff-line-header';
+      default:
+        return 'diff-line-context';
     }
   }
 

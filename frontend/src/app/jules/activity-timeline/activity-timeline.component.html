@@ -114,6 +114,97 @@
                 </div>
                 <p class="text-sm text-[var(--color-text-secondary)] leading-relaxed">{{ group.firstActivity.description }}</p>
                 
+                <!-- Artifacts for Single Activity -->
+                @if (group.firstActivity.progress_updated?.artifacts && group.firstActivity.progress_updated!.artifacts!.length > 0) {
+                  <div class="mt-4">
+                    @for (artifact of group.firstActivity.progress_updated!.artifacts; track $index) {
+                      @if (artifact.bash_output) {
+                        <div class="mt-3">
+                          <button
+                            (click)="toggleBashOutput(group.firstActivity.name, $index)"
+                            type="button"
+                            class="flex items-center gap-2 text-sm font-medium text-[var(--color-interactive-primary)] hover:text-[var(--color-interactive-primary-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+                            [attr.aria-expanded]="isBashOutputExpanded(group.firstActivity.name, $index)"
+                            [attr.aria-controls]="'bash-output-' + group.firstActivity.name + '-' + $index"
+                          >
+                            @if (isBashOutputExpanded(group.firstActivity.name, $index)) {
+                              ▼
+                            } @else {
+                              ▶
+                            }
+                            Bash Output
+                          </button>
+
+                          @if (isBashOutputExpanded(group.firstActivity.name, $index)) {
+                            <div class="mt-2 relative" [id]="'bash-output-' + group.firstActivity.name + '-' + $index">
+                              <pre class="bg-[var(--color-background-tertiary)] text-[var(--color-text-primary)] p-4 rounded-lg overflow-x-auto text-xs font-mono max-h-96 overflow-y-auto">{{ artifact.bash_output }}</pre>
+                              <button
+                                (click)="copyToClipboard(artifact.bash_output || '', 'bash-' + group.firstActivity.name + '-' + $index)"
+                                type="button"
+                                class="absolute top-2 right-2 px-2 py-1 bg-[var(--color-background-tertiary)] hover:bg-[var(--color-background-secondary)] text-[var(--color-text-primary)] text-xs rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+                                title="Copy to clipboard"
+                                [attr.aria-label]="copySuccess()['bash-' + group.firstActivity.name + '-' + $index] ? 'Copied bash output' : 'Copy bash output'"
+                              >
+                                @if (copySuccess()['bash-' + group.firstActivity.name + '-' + $index]) {
+                                  ✅ Copied!
+                                } @else {
+                                  📋 Copy
+                                }
+                              </button>
+                            </div>
+                          }
+                        </div>
+                      }
+
+                      @if (artifact.git_patch) {
+                        <div class="mt-3">
+                          <button
+                            (click)="toggleDiffExpanded(group.firstActivity.name, $index)"
+                            type="button"
+                            class="flex items-center gap-2 text-sm font-medium text-[var(--color-interactive-primary)] hover:text-[var(--color-interactive-primary-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+                            [attr.aria-expanded]="isDiffExpanded(group.firstActivity.name, $index)"
+                            [attr.aria-controls]="'diff-content-' + group.firstActivity.name + '-' + $index"
+                          >
+                            @if (isDiffExpanded(group.firstActivity.name, $index)) {
+                              ▼
+                            } @else {
+                              ▶
+                            }
+                            Changeset
+                          </button>
+
+                          @if (isDiffExpanded(group.firstActivity.name, $index)) {
+                            <div class="mt-2 relative" [id]="'diff-content-' + group.firstActivity.name + '-' + $index">
+                              <div class="diff-container">
+                                @for (line of parseDiff(artifact.git_patch); track $index) {
+                                  <div
+                                    [class]="'diff-line ' + getDiffLineClass(line.type)"
+                                  >
+                                    {{ line.content }}
+                                  </div>
+                                }
+                              </div>
+                              <button
+                                (click)="copyToClipboard(artifact.git_patch || '', 'patch-' + group.firstActivity.name + '-' + $index)"
+                                type="button"
+                                class="absolute top-2 right-2 px-2 py-1 bg-[var(--color-background-tertiary)] hover:bg-[var(--color-background-secondary)] text-[var(--color-text-primary)] text-xs rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+                                title="Copy to clipboard"
+                                [attr.aria-label]="copySuccess()['patch-' + group.firstActivity.name + '-' + $index] ? 'Copied changeset' : 'Copy changeset'"
+                              >
+                                @if (copySuccess()['patch-' + group.firstActivity.name + '-' + $index]) {
+                                  ✅ Copied!
+                                } @else {
+                                  📋 Copy
+                                }
+                              </button>
+                            </div>
+                          }
+                        </div>
+                      }
+                    }
+                  </div>
+                }
+
                 @if (group.firstActivity.plan_generated && group.firstActivity.plan) {
                   <div class="mt-4">
                     <app-plan-approval [plan]="group.firstActivity.plan" [sessionId]="sessionId"></app-plan-approval>
@@ -195,6 +286,97 @@
                             </time>
                           </div>
                           <p class="text-xs text-[var(--color-text-secondary)] ml-7">{{ activity.description }}</p>
+
+                          <!-- Artifacts for Grouped Activity -->
+                          @if (activity.progress_updated?.artifacts && activity.progress_updated!.artifacts!.length > 0) {
+                            <div class="mt-2 ml-7">
+                              @for (artifact of activity.progress_updated!.artifacts; track $index) {
+                                @if (artifact.bash_output) {
+                                  <div class="mt-2">
+                                    <button
+                                      (click)="toggleBashOutput(activity.name, $index)"
+                                      type="button"
+                                      class="flex items-center gap-2 text-xs font-medium text-[var(--color-interactive-primary)] hover:text-[var(--color-interactive-primary-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+                                      [attr.aria-expanded]="isBashOutputExpanded(activity.name, $index)"
+                                      [attr.aria-controls]="'bash-output-' + activity.name + '-' + $index"
+                                    >
+                                      @if (isBashOutputExpanded(activity.name, $index)) {
+                                        ▼
+                                      } @else {
+                                        ▶
+                                      }
+                                      Bash Output
+                                    </button>
+
+                                    @if (isBashOutputExpanded(activity.name, $index)) {
+                                      <div class="mt-2 relative" [id]="'bash-output-' + activity.name + '-' + $index">
+                                        <pre class="bg-[var(--color-background-tertiary)] text-[var(--color-text-primary)] p-4 rounded-lg overflow-x-auto text-xs font-mono max-h-96 overflow-y-auto">{{ artifact.bash_output }}</pre>
+                                        <button
+                                          (click)="copyToClipboard(artifact.bash_output || '', 'bash-' + activity.name + '-' + $index)"
+                                          type="button"
+                                          class="absolute top-2 right-2 px-2 py-1 bg-[var(--color-background-tertiary)] hover:bg-[var(--color-background-secondary)] text-[var(--color-text-primary)] text-xs rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+                                          title="Copy to clipboard"
+                                          [attr.aria-label]="copySuccess()['bash-' + activity.name + '-' + $index] ? 'Copied bash output' : 'Copy bash output'"
+                                        >
+                                          @if (copySuccess()['bash-' + activity.name + '-' + $index]) {
+                                            ✅ Copied!
+                                          } @else {
+                                            📋 Copy
+                                          }
+                                        </button>
+                                      </div>
+                                    }
+                                  </div>
+                                }
+
+                                @if (artifact.git_patch) {
+                                  <div class="mt-2">
+                                    <button
+                                      (click)="toggleDiffExpanded(activity.name, $index)"
+                                      type="button"
+                                      class="flex items-center gap-2 text-xs font-medium text-[var(--color-interactive-primary)] hover:text-[var(--color-interactive-primary-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+                                      [attr.aria-expanded]="isDiffExpanded(activity.name, $index)"
+                                      [attr.aria-controls]="'diff-content-' + activity.name + '-' + $index"
+                                    >
+                                      @if (isDiffExpanded(activity.name, $index)) {
+                                        ▼
+                                      } @else {
+                                        ▶
+                                      }
+                                      Changeset
+                                    </button>
+
+                                    @if (isDiffExpanded(activity.name, $index)) {
+                                      <div class="mt-2 relative" [id]="'diff-content-' + activity.name + '-' + $index">
+                                        <div class="diff-container">
+                                          @for (line of parseDiff(artifact.git_patch); track $index) {
+                                            <div
+                                              [class]="'diff-line ' + getDiffLineClass(line.type)"
+                                            >
+                                              {{ line.content }}
+                                            </div>
+                                          }
+                                        </div>
+                                        <button
+                                          (click)="copyToClipboard(artifact.git_patch || '', 'patch-' + activity.name + '-' + $index)"
+                                          type="button"
+                                          class="absolute top-2 right-2 px-2 py-1 bg-[var(--color-background-tertiary)] hover:bg-[var(--color-background-secondary)] text-[var(--color-text-primary)] text-xs rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+                                          title="Copy to clipboard"
+                                          [attr.aria-label]="copySuccess()['patch-' + activity.name + '-' + $index] ? 'Copied changeset' : 'Copy changeset'"
+                                        >
+                                          @if (copySuccess()['patch-' + activity.name + '-' + $index]) {
+                                            ✅ Copied!
+                                          } @else {
+                                            📋 Copy
+                                          }
+                                        </button>
+                                      </div>
+                                    }
+                                  </div>
+                                }
+                              }
+                            </div>
+                          }
                         </div>
                       }
                     </div>
