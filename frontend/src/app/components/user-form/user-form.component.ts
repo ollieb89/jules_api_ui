@@ -1,7 +1,7 @@
 import { Component, OnInit, signal, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 
 import { UserService } from '../../services/user.service';
 import { ApiError, hasFieldErrors } from '../../models/user.model';
@@ -10,7 +10,7 @@ import { LoadingSpinnerComponent } from '../loading-spinner/loading-spinner.comp
 
 @Component({
   selector: 'app-user-form',
-  imports: [CommonModule, ReactiveFormsModule, LoadingSpinnerComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, LoadingSpinnerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './user-form.component.html'
 })
@@ -132,10 +132,6 @@ export class UserFormComponent implements OnInit {
       }
     }
     return null;
-  }
-
-  cancel(): void {
-    this.router.navigate(['/users']);
   }
 
   getFieldError(fieldName: string): string | null {

@@ -96,11 +96,4 @@ export class UserListComponent implements OnInit {
     });
   }
 
-  createUser(): void {
-    this.router.navigate(['/users/new']);
-  }
-
-  editUser(id: number): void {
-    this.router.navigate(['/users', id, 'edit']);
-  }
 }

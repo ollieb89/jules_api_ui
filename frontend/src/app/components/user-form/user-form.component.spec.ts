@@ -6,8 +6,11 @@ import { vi } from 'vitest';
 import { UserFormComponent } from './user-form.component';
 import { UserService } from '../../services/user.service';
 
+import { ComponentFixture } from '@angular/core/testing';
+
 describe('UserFormComponent', () => {
   let component: UserFormComponent;
+  let fixture: ComponentFixture<UserFormComponent>;
 
   beforeEach(async () => {
     const userService = {
@@ -26,7 +29,7 @@ describe('UserFormComponent', () => {
       ]
     }).compileComponents();
 
-    const fixture = TestBed.createComponent(UserFormComponent);
+    fixture = TestBed.createComponent(UserFormComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
@@ -39,12 +42,9 @@ describe('UserFormComponent', () => {
     expect(component.getFieldError('email')).toBe('Email is required');
   });
 
-  it('navigates back to the list on cancel', () => {
-    const router = TestBed.inject(Router);
-    const navigateSpy = vi.spyOn(router, 'navigate');
-
-    component.cancel();
-
-    expect(navigateSpy).toHaveBeenCalledWith(['/users']);
+  it('has a cancel link pointing to users list', () => {
+    const link = fixture.nativeElement.querySelector('a[aria-label="Cancel and return to users list"]');
+    expect(link).toBeTruthy();
+    expect(link.getAttribute('href')).toBe('/users');
   });
 });
