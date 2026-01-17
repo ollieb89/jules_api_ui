@@ -2,14 +2,18 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SettingsComponent } from './settings.component';
 import { JulesService } from '../../services/jules.service';
 import { of } from 'rxjs';
-import { vi } from 'vitest';
+import { vi, Mock } from 'vitest';
 
 import { provideRouter } from '@angular/router';
 
 describe('SettingsComponent', () => {
   let component: SettingsComponent;
   let fixture: ComponentFixture<SettingsComponent>;
-  let julesService: any;
+  let julesService: {
+    getSettings: Mock;
+    updateApiKey: Mock;
+    testConnection: Mock;
+  };
 
   beforeEach(async () => {
     julesService = {

@@ -6,7 +6,6 @@ from cryptography.fernet import Fernet
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.utils import timezone
 
 
 def _derive_fernet_key(secret: str) -> bytes:
@@ -25,9 +24,7 @@ def get_api_key_fernet():
     unreadable until re-encrypted.
     """
     if not settings.JULES_API_KEY_ENCRYPTION_KEY:
-        raise ValidationError(
-            "JULES_API_KEY_ENCRYPTION_KEY must be set to encrypt API keys."
-        )
+        raise ValidationError("JULES_API_KEY_ENCRYPTION_KEY must be set to encrypt API keys.")
 
     return Fernet(_derive_fernet_key(settings.JULES_API_KEY_ENCRYPTION_KEY))
 
@@ -49,25 +46,25 @@ def get_legacy_fernets() -> list[Fernet]:
 
 class JulesSettings(models.Model):
     """Settings for Jules API configuration."""
-    
+
     # Singleton pattern - only one settings instance
     id = models.AutoField(primary_key=True)
-    
+
     # Encrypted API key
     _encrypted_api_key = models.TextField(blank=True, null=True)
-    
+
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
         verbose_name = "Jules Settings"
         verbose_name_plural = "Jules Settings"
         db_table = "jules_settings"
-    
+
     def __str__(self):
         return "Jules Settings"
-    
+
     def set_api_key(self, api_key: str) -> None:
         """Store API key with Fernet encryption."""
         if not api_key:
@@ -80,7 +77,7 @@ class JulesSettings(models.Model):
             self._encrypted_api_key = encrypted
         except Exception as e:
             raise ValidationError("Failed to encrypt API key.") from e
-    
+
     def get_api_key(self) -> str | None:
         """Decrypt and return API key."""
         if not self._encrypted_api_key:
@@ -93,16 +90,14 @@ class JulesSettings(models.Model):
         except Exception:
             for legacy_fernet in get_legacy_fernets():
                 try:
-                    decrypted = legacy_fernet.decrypt(
-                        self._encrypted_api_key.encode()
-                    ).decode()
+                    decrypted = legacy_fernet.decrypt(self._encrypted_api_key.encode()).decode()
                     return decrypted
                 except Exception:
                     pass
 
             # If both fail
             raise ValidationError("Failed to decrypt API key")
-    
+
     def get_masked_api_key(self) -> str | None:
         """Return masked version of API key for display."""
         try:
@@ -116,7 +111,7 @@ class JulesSettings(models.Model):
             return f"{api_key[:4]}...{api_key[-4:]}"
         except Exception:
             return None
-    
+
     @classmethod
     def get_settings(cls):
         """Get or create the singleton settings instance."""

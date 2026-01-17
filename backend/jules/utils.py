@@ -83,7 +83,13 @@ def sanitize_url(url: str) -> str:
                 sanitized_params.append((key, value))
         sanitized_query = urlencode(sanitized_params, doseq=True)
         return urlunsplit(
-            (split_url.scheme, split_url.netloc, split_url.path, sanitized_query, split_url.fragment)
+            (
+                split_url.scheme,
+                split_url.netloc,
+                split_url.path,
+                sanitized_query,
+                split_url.fragment,
+            )
         )
     except Exception:
         return url

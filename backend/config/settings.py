@@ -7,7 +7,6 @@ import sys
 from pathlib import Path
 from urllib.parse import urlparse
 
-from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -28,9 +27,7 @@ if not SECRET_KEY:
     SECRET_KEY = "django-insecure-dev-only"
 
 JULES_ENCRYPTION_KEY = os.getenv("JULES_ENCRYPTION_KEY", SECRET_KEY)
-JULES_API_KEY_ENCRYPTION_KEY = os.getenv(
-    "JULES_API_KEY_ENCRYPTION_KEY", JULES_ENCRYPTION_KEY
-)
+JULES_API_KEY_ENCRYPTION_KEY = os.getenv("JULES_API_KEY_ENCRYPTION_KEY", JULES_ENCRYPTION_KEY)
 
 # Security Headers
 if not DEBUG:
@@ -206,9 +203,7 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
-    "DEFAULT_PERMISSION_CLASSES": (
-        "rest_framework.permissions.IsAuthenticated",
-    ),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 100,
     "DEFAULT_THROTTLE_CLASSES": (
