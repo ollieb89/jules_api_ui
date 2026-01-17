@@ -1,7 +1,9 @@
 from rest_framework import status, viewsets
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .models import User
+from .permissions import IsProfileOwnerOrAdmin
 from .serializers import UserCreateSerializer, UserSerializer, UserUpdateSerializer
 
 
@@ -19,6 +21,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated, IsProfileOwnerOrAdmin]
 
     def get_serializer_class(self):
         """Return appropriate serializer class based on action."""
