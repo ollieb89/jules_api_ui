@@ -8,3 +8,7 @@
 ## 2026-01-13 - Optimistic UI Updates
 **Learning:** Reloading full lists after a single item deletion causes unnecessary layout shifts and visual "jank" (spinners). Optimistic updates using local state signals provide a smoother, instant experience.
 **Action:** When performing destructive actions on lists, update the local signal immediately upon success instead of re-fetching the entire list.
+
+## 2026-01-17 - Semantic Link Navigation
+**Learning:** Navigation actions implemented as `<button>` elements prevent standard browser behaviors like "Open in new tab" and middle-clicking.
+**Action:** Use `<a>` tags with `routerLink` for all navigation actions, applying existing button styles (adding `inline-block` and `no-underline`) to maintain visual consistency while improving accessibility and usability.
