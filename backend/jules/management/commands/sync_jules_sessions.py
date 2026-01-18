@@ -34,9 +34,7 @@ class Command(BaseCommand):
             result = poll_sessions_and_activities(force_refresh=force_refresh)
             self.stdout.write(
                 self.style.SUCCESS(
-                    "Synced {sessions} sessions and {new_activities} activities.".format(
-                        **result
-                    )
+                    "Synced {sessions} sessions and {new_activities} activities.".format(**result)
                 )
             )
 

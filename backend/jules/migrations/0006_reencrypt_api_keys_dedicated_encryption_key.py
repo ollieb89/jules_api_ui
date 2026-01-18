@@ -30,9 +30,7 @@ def reencrypt_api_keys(apps, schema_editor):
 
     new_secret = settings.JULES_ENCRYPTION_KEY
     if not new_secret:
-        raise RuntimeError(
-            "JULES_ENCRYPTION_KEY must be set before running this migration."
-        )
+        raise RuntimeError("JULES_ENCRYPTION_KEY must be set before running this migration.")
 
     old_secret = settings.SECRET_KEY
     if not old_secret:
@@ -44,10 +42,8 @@ def reencrypt_api_keys(apps, schema_editor):
     old_fernet = Fernet(_derive_key(old_secret))
     new_fernet = Fernet(_derive_key(new_secret))
 
-    for config in (
-        JulesSettings.objects.exclude(_encrypted_api_key__isnull=True).exclude(
-            _encrypted_api_key=""
-        )
+    for config in JulesSettings.objects.exclude(_encrypted_api_key__isnull=True).exclude(
+        _encrypted_api_key=""
     ):
         updated_value = _reencrypt_value(config._encrypted_api_key, old_fernet, new_fernet)
         if updated_value:
@@ -60,9 +56,7 @@ def reverse_reencrypt_api_keys(apps, schema_editor):
 
     new_secret = settings.JULES_ENCRYPTION_KEY
     if not new_secret:
-        raise RuntimeError(
-            "JULES_ENCRYPTION_KEY must be set before reversing this migration."
-        )
+        raise RuntimeError("JULES_ENCRYPTION_KEY must be set before reversing this migration.")
 
     old_secret = settings.SECRET_KEY
     if not old_secret:
@@ -74,10 +68,8 @@ def reverse_reencrypt_api_keys(apps, schema_editor):
     old_fernet = Fernet(_derive_key(old_secret))
     new_fernet = Fernet(_derive_key(new_secret))
 
-    for config in (
-        JulesSettings.objects.exclude(_encrypted_api_key__isnull=True).exclude(
-            _encrypted_api_key=""
-        )
+    for config in JulesSettings.objects.exclude(_encrypted_api_key__isnull=True).exclude(
+        _encrypted_api_key=""
     ):
         updated_value = _reencrypt_value(config._encrypted_api_key, new_fernet, old_fernet)
         if updated_value:
