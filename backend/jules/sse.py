@@ -3,7 +3,31 @@ from __future__ import annotations
 import logging
 import time
 
+from rest_framework.exceptions import ValidationError
+
 logger = logging.getLogger(__name__)
+
+
+def validate_interval(
+    value: str | float | int | None,
+    default: float,
+    minimum: float,
+    maximum: float,
+    param_name: str = "poll_interval",
+) -> float:
+    """
+    Validate and clamp polling intervals.
+    Raises ValidationError if the value is not a valid number.
+    """
+    if value is None:
+        return default
+
+    try:
+        float_val = float(value)
+    except (ValueError, TypeError):
+        raise ValidationError({param_name: "Must be a valid number."})
+
+    return max(minimum, min(float_val, maximum))
 
 
 def clamp_interval(value: float, minimum: float, maximum: float) -> float:
