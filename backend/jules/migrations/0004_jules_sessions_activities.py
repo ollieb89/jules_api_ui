@@ -5,7 +5,6 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("jules", "0003_reencrypt_api_keys_dedicated_key"),
     ]
@@ -27,9 +26,7 @@ class Migration(migrations.Migration):
                 ("display_name", models.CharField(blank=True, max_length=255)),
                 (
                     "state",
-                    models.CharField(
-                        blank=True, default="STATE_UNSPECIFIED", max_length=32
-                    ),
+                    models.CharField(blank=True, default="STATE_UNSPECIFIED", max_length=32),
                 ),
                 ("prompt", models.TextField(blank=True)),
                 ("source", models.TextField(blank=True)),
@@ -92,8 +89,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name="julesactivity",
-            index=models.Index(
-                fields=["activity_type"], name="jules_acti_activity_6ef967_idx"
-            ),
+            index=models.Index(fields=["activity_type"], name="jules_acti_activity_6ef967_idx"),
         ),
     ]

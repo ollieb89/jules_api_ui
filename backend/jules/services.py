@@ -42,6 +42,7 @@ class RetryPolicy:
     backoff_seconds: float
     status_codes: set[int]
 
+
 _shared_httpx_client: httpx.Client | None = None
 
 
@@ -67,9 +68,7 @@ def _coerce_retry_policy(value: Any, default: RetryPolicy) -> RetryPolicy:
     if isinstance(value, Mapping):
         max_retries = int(value.get("max_retries", default.max_retries))
         backoff_seconds = float(value.get("backoff_seconds", default.backoff_seconds))
-        status_codes = {
-            int(code) for code in value.get("status_codes", default.status_codes)
-        }
+        status_codes = {int(code) for code in value.get("status_codes", default.status_codes)}
         return RetryPolicy(
             max_retries=max_retries,
             backoff_seconds=backoff_seconds,
@@ -364,9 +363,7 @@ class JulesApiClient:
         response = self._client.request("POST", url, json=payload, timeout_policy="long")
         return response.json()
 
-    def list_sessions(
-        self, page_size: int = 100, page_token: str | None = None
-    ) -> dict[str, Any]:
+    def list_sessions(self, page_size: int = 100, page_token: str | None = None) -> dict[str, Any]:
         """List all sessions with pagination."""
         url = self._get_url("sessions")
         params: dict[str, Any] = {"pageSize": page_size}
