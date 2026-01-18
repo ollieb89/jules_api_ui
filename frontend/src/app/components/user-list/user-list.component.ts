@@ -1,6 +1,6 @@
 import { Component, OnInit, signal, ChangeDetectionStrategy, inject, computed, PLATFORM_ID, ViewChild } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { RouterModule } from '@angular/router';
 
 import { UserService } from '../../services/user.service';
 import { User } from '../../models/user.model';
@@ -21,7 +21,6 @@ interface FormattedUser extends User {
 })
 export class UserListComponent implements OnInit {
   private userService = inject(UserService);
-  private router = inject(Router);
   private platformId = inject(PLATFORM_ID);
 
   users = signal<User[]>([]);
@@ -94,13 +93,5 @@ export class UserListComponent implements OnInit {
         this.confirmDialog?.reset(); // Ensure dialog closes and resets loading state
       }
     });
-  }
-
-  createUser(): void {
-    this.router.navigate(['/users/new']);
-  }
-
-  editUser(id: number): void {
-    this.router.navigate(['/users', id, 'edit']);
   }
 }
