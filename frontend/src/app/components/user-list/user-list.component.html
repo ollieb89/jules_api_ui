@@ -1,14 +1,13 @@
 <div class="container mx-auto px-4 py-8">
   <div class="flex justify-between items-center mb-6">
     <h1 class="text-3xl font-bold text-gray-900">Users</h1>
-    <button
-      (click)="createUser()"
-      type="button"
+    <a
+      routerLink="/users/new"
       aria-label="Add new user"
-      class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+      class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 inline-block no-underline"
     >
       Add User
-    </button>
+    </a>
   </div>
 
   @if (loading()) {
@@ -35,14 +34,13 @@
   } @else if (users().length === 0) {
     <div class="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
       <p class="text-gray-600 mb-4">No users found.</p>
-      <button
-        (click)="createUser()"
-        type="button"
+      <a
+        routerLink="/users/new"
         aria-label="Add first user"
-        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 inline-block no-underline"
       >
         Add First User
-      </button>
+      </a>
     </div>
   } @else {
     <div class="bg-white shadow-md rounded-lg overflow-hidden">
@@ -76,14 +74,13 @@
                 {{ user.formattedDate }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <button
-                  (click)="editUser(user.id)"
-                  type="button"
+                <a
+                  [routerLink]="['/users', user.id, 'edit']"
                   [aria-label]="'Edit user ' + user.name"
-                  class="text-blue-600 hover:text-blue-900 mr-4 cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1"
+                  class="text-blue-600 hover:text-blue-900 mr-4 cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 inline-block no-underline"
                 >
                   Edit
-                </button>
+                </a>
                 <button
                   (click)="deleteUser(user.id)"
                   type="button"
