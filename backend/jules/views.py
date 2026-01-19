@@ -41,7 +41,7 @@ from .store import (
     upsert_activity_from_api,
     upsert_session_from_api,
 )
-from .sse import clamp_interval, should_close_stream
+from .sse import should_close_stream, validate_interval
 from .utils import handle_api_exception
 from .streaming import publish, subscribe, unsubscribe
 
@@ -85,10 +85,11 @@ class SessionViewSet(JulesAuthenticatedViewSet):
     def cached_session_events(self, request):
         """Stream cached session list updates via SSE."""
         # Clamp polling intervals and cap stream lifetime to avoid busy loops.
-        heartbeat = clamp_interval(
-            float(request.query_params.get("poll_interval", 20)),
+        heartbeat = validate_interval(
+            request.query_params.get("poll_interval"),
             settings.SSE_MIN_POLL_INTERVAL_SECONDS,
             settings.SSE_MAX_POLL_INTERVAL_SECONDS,
+            default=20.0,
         )
         last_update = request.query_params.get("last_update")
         stream_started_at = time.monotonic()
@@ -190,10 +191,11 @@ class SessionViewSet(JulesAuthenticatedViewSet):
         """Stream session list updates via SSE."""
         client = JulesApiClient()
         # Clamp polling intervals and cap stream lifetime to avoid busy loops.
-        poll_interval = clamp_interval(
-            float(request.query_params.get("poll_interval", 10)),
+        poll_interval = validate_interval(
+            request.query_params.get("poll_interval"),
             settings.SSE_MIN_POLL_INTERVAL_SECONDS,
             settings.SSE_MAX_POLL_INTERVAL_SECONDS,
+            default=10.0,
         )
         last_update = request.query_params.get("last_update")
         stream_started_at = time.monotonic()
@@ -352,10 +354,11 @@ class SessionViewSet(JulesAuthenticatedViewSet):
     def cached_events(self, request, pk=None):  # noqa: ARG002
         """Stream cached session/activity updates via SSE."""
         # Clamp polling intervals and cap stream lifetime to avoid busy loops.
-        heartbeat = clamp_interval(
-            float(request.query_params.get("poll_interval", 15)),
+        heartbeat = validate_interval(
+            request.query_params.get("poll_interval"),
             settings.SSE_MIN_POLL_INTERVAL_SECONDS,
             settings.SSE_MAX_POLL_INTERVAL_SECONDS,
+            default=15.0,
         )
         session_name = normalize_session_name(pk)
         last_update = request.query_params.get("last_update")
@@ -445,10 +448,11 @@ class SessionViewSet(JulesAuthenticatedViewSet):
         """Stream session/activity updates via SSE."""
         client = JulesApiClient()
         # Clamp polling intervals and cap stream lifetime to avoid busy loops.
-        poll_interval = clamp_interval(
-            float(request.query_params.get("poll_interval", 5)),
+        poll_interval = validate_interval(
+            request.query_params.get("poll_interval"),
             settings.SSE_MIN_POLL_INTERVAL_SECONDS,
             settings.SSE_MAX_POLL_INTERVAL_SECONDS,
+            default=5.0,
         )
         last_update = request.query_params.get("last_update")
         last_activity_time = request.query_params.get("last_activity_time")
@@ -515,10 +519,12 @@ class SessionViewSet(JulesAuthenticatedViewSet):
         if not last_event_id:
             last_event_id = request.query_params.get("last_event_id")
         # Clamp polling intervals and cap stream lifetime to avoid busy loops.
-        heartbeat = clamp_interval(
-            float(request.query_params.get("heartbeat", 15)),
+        heartbeat = validate_interval(
+            request.query_params.get("heartbeat"),
             settings.SSE_MIN_POLL_INTERVAL_SECONDS,
             settings.SSE_MAX_POLL_INTERVAL_SECONDS,
+            default=15.0,
+            param_name="heartbeat",
         )
         session_name = normalize_session_name(pk)
         stream_started_at = time.monotonic()
@@ -700,10 +706,11 @@ class SyncStatusViewSet(JulesAuthenticatedViewSet):
     def events(self, request):
         """Stream background sync status updates via SSE."""
         # Clamp polling intervals and cap stream lifetime to avoid busy loops.
-        poll_interval = clamp_interval(
-            float(request.query_params.get("poll_interval", 5)),
+        poll_interval = validate_interval(
+            request.query_params.get("poll_interval"),
             settings.SSE_MIN_POLL_INTERVAL_SECONDS,
             settings.SSE_MAX_POLL_INTERVAL_SECONDS,
+            default=5.0,
         )
         last_update = request.query_params.get("last_update")
         stream_started_at = time.monotonic()

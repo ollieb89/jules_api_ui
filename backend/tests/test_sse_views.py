@@ -30,3 +30,11 @@ def test_cached_session_detail_sse_headers(api_client):
     assert response["Cache-Control"] == "no-cache"
     assert response["X-Accel-Buffering"] == "no"
     assert response.streaming
+
+
+def test_sse_invalid_poll_interval(api_client):
+    """Test that invalid poll_interval returns 400 Bad Request."""
+    response = api_client.get("/api/jules/sessions/cached-events/?poll_interval=invalid")
+
+    assert response.status_code == 400
+    assert "poll_interval" in response.json()
