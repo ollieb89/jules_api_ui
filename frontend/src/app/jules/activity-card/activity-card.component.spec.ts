@@ -7,7 +7,7 @@ import { vi } from 'vitest';
 describe('ActivityCardComponent', () => {
   let component: ActivityCardComponent;
   let fixture: ComponentFixture<ActivityCardComponent>;
-  let clipboardService: any;
+  let clipboardService: { copyToClipboard: ReturnType<typeof vi.fn> };
 
   beforeEach(async () => {
     clipboardService = {

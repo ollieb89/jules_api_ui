@@ -9,7 +9,7 @@ import { provideRouter } from '@angular/router';
 describe('SettingsComponent', () => {
   let component: SettingsComponent;
   let fixture: ComponentFixture<SettingsComponent>;
-  let julesService: any;
+  let julesService: { getSettings: ReturnType<typeof vi.fn>; updateApiKey: ReturnType<typeof vi.fn>; testConnection: ReturnType<typeof vi.fn> };
 
   beforeEach(async () => {
     julesService = {
