@@ -5,7 +5,6 @@ from datetime import datetime, timezone
 import pytest
 from django.core.management import call_command
 
-from jules.management.commands import sync_jules_sessions as command_module
 from jules.models import JulesActivity, JulesSession
 from jules.sync import upsert_activities, upsert_session
 
@@ -66,7 +65,9 @@ def test_sync_command_persists_sessions_and_activities(monkeypatch) -> None:
         def __init__(self) -> None:
             self.calls = 0
 
-        def list_sessions(self, page_size: int = 100, page_token: str | None = None) -> dict:
+        def list_sessions(
+            self, page_size: int = 100, page_token: str | None = None
+        ) -> dict:
             if self.calls == 0:
                 self.calls += 1
                 return {
