@@ -50,13 +50,16 @@ describe('UserListComponent', () => {
     expect(rows.length).toBe(2);
   });
 
-  it('navigates to the create user route', () => {
-    const router = TestBed.inject(Router);
-    const navigateSpy = vi.spyOn(router, 'navigate');
+  it('renders a link to create user', () => {
+    const link = fixture.nativeElement.querySelector('a[aria-label="Add new user"]');
+    expect(link).toBeTruthy();
+    expect(link.getAttribute('href')).toBe('/users/new');
+  });
 
-    component.createUser();
-
-    expect(navigateSpy).toHaveBeenCalledWith(['/users/new']);
+  it('renders edit links for users', () => {
+    const editLinks = fixture.nativeElement.querySelectorAll('a[aria-label^="Edit user"]');
+    expect(editLinks.length).toBe(2);
+    expect(editLinks[0].getAttribute('href')).toBe('/users/1/edit');
   });
 
   it('optimistically removes user from list upon deletion without reloading', () => {
