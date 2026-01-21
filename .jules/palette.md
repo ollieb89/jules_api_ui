@@ -8,3 +8,7 @@
 ## 2026-01-13 - Optimistic UI Updates
 **Learning:** Reloading full lists after a single item deletion causes unnecessary layout shifts and visual "jank" (spinners). Optimistic updates using local state signals provide a smoother, instant experience.
 **Action:** When performing destructive actions on lists, update the local signal immediately upon success instead of re-fetching the entire list.
+
+## 2026-01-15 - Native Dialog Backdrop Interaction
+**Learning:** The native `<dialog>` element does not automatically close when clicking the backdrop, unlike many custom modal implementations. This expectation is strong for users. The backdrop click event targets the `dialog` element itself, allowing easy detection.
+**Action:** Always implement a click handler on `<dialog>` elements to check `event.target === element` and close the dialog to match user expectations.
