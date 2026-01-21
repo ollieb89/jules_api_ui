@@ -50,13 +50,18 @@ describe('UserListComponent', () => {
     expect(rows.length).toBe(2);
   });
 
-  it('navigates to the create user route', () => {
-    const router = TestBed.inject(Router);
-    const navigateSpy = vi.spyOn(router, 'navigate');
+  it('renders "Add User" link with correct routerLink', () => {
+    const link = fixture.nativeElement.querySelector('a[aria-label="Add new user"]');
+    expect(link).toBeTruthy();
+    // Angular's RouterTestingModule should update the href property
+    expect(link.getAttribute('href')).toBe('/users/new');
+  });
 
-    component.createUser();
-
-    expect(navigateSpy).toHaveBeenCalledWith(['/users/new']);
+  it('renders "Edit" links with correct routerLink', () => {
+    const editLinks = fixture.nativeElement.querySelectorAll('a[aria-label^="Edit user"]');
+    expect(editLinks.length).toBe(2);
+    expect(editLinks[0].getAttribute('href')).toBe('/users/1/edit');
+    expect(editLinks[1].getAttribute('href')).toBe('/users/2/edit');
   });
 
   it('optimistically removes user from list upon deletion without reloading', () => {
