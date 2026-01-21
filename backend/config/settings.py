@@ -32,26 +32,6 @@ JULES_API_KEY_ENCRYPTION_KEY = os.getenv(
     "JULES_API_KEY_ENCRYPTION_KEY", JULES_ENCRYPTION_KEY
 )
 
-# Security Headers
-if not DEBUG:
-    # Force HTTPS
-    # Use SECURE_SSL_REDIRECT = True in production, but we need to disable it for tests running without HTTPS
-    # or ensure tests override it.
-    SECURE_SSL_REDIRECT = not TESTING
-    # Trust the X-Forwarded-Proto header for SSL termination proxies
-    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-    # Secure cookies
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    # HSTS settings
-    SECURE_HSTS_SECONDS = 31536000  # 1 year
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
-    # Content type security
-    SECURE_CONTENT_TYPE_NOSNIFF = True
-    # Referrer policy
-    SECURE_REFERRER_POLICY = "same-origin"
-
 # Security Settings
 # https://docs.djangoproject.com/en/5.0/topics/security/
 
@@ -60,32 +40,27 @@ SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
 
+# Production Security Settings
 if not DEBUG:
-    # Production security settings
-    SECURE_SSL_REDIRECT = True
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    SECURE_HSTS_SECONDS = 31536000  # 1 year
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
-
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
-
-# Security settings
-if not DEBUG:
-    # Set to True to avoid transmitting the session cookie over HTTP accidentally.
-    SESSION_COOKIE_SECURE = True
-    # Set to True to avoid transmitting the CSRF cookie over HTTP accidentally.
-    CSRF_COOKIE_SECURE = True
-    # Redirect all non-HTTPS requests to HTTPS.
+    # Force HTTPS
     SECURE_SSL_REDIRECT = not TESTING
     # Trust the X-Forwarded-Proto header for SSL termination proxies
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+    # Secure cookies (HTTPS only)
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
     # HTTP Strict Transport Security (HSTS)
-    SECURE_HSTS_SECONDS = 31536000  # 1 year
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = False
-    SECURE_HSTS_PRELOAD = False
+    # 31536000 seconds = 1 year
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+    # Referrer policy
+    SECURE_REFERRER_POLICY = "same-origin"
 else:
+    # Development settings
     SESSION_COOKIE_SECURE = False
     CSRF_COOKIE_SECURE = False
     SECURE_SSL_REDIRECT = False
