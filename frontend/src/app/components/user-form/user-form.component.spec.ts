@@ -1,5 +1,5 @@
-import { TestBed } from '@angular/core/testing';
-import { Router, ActivatedRoute, convertToParamMap } from '@angular/router';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { of } from 'rxjs';
 import { vi } from 'vitest';
@@ -8,6 +8,7 @@ import { UserService } from '../../services/user.service';
 
 describe('UserFormComponent', () => {
   let component: UserFormComponent;
+  let fixture: ComponentFixture<UserFormComponent>;
 
   beforeEach(async () => {
     const userService = {
@@ -26,7 +27,7 @@ describe('UserFormComponent', () => {
       ]
     }).compileComponents();
 
-    const fixture = TestBed.createComponent(UserFormComponent);
+    fixture = TestBed.createComponent(UserFormComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
@@ -39,12 +40,10 @@ describe('UserFormComponent', () => {
     expect(component.getFieldError('email')).toBe('Email is required');
   });
 
-  it('navigates back to the list on cancel', () => {
-    const router = TestBed.inject(Router);
-    const navigateSpy = vi.spyOn(router, 'navigate');
-
-    component.cancel();
-
-    expect(navigateSpy).toHaveBeenCalledWith(['/users']);
+  it('has a link to navigate back to the list', () => {
+    const link = fixture.nativeElement.querySelector('a');
+    expect(link).toBeTruthy();
+    expect(link.getAttribute('href')).toBe('/users');
+    expect(link.getAttribute('aria-label')).toBe('Cancel and return to users list');
   });
 });
