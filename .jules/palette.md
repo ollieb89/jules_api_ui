@@ -12,3 +12,7 @@
 ## 2026-01-15 - Native Dialog Backdrop Interaction
 **Learning:** The native `<dialog>` element does not automatically close when clicking the backdrop, unlike many custom modal implementations. This expectation is strong for users. The backdrop click event targets the `dialog` element itself, allowing easy detection.
 **Action:** Always implement a click handler on `<dialog>` elements to check `event.target === element` and close the dialog to match user expectations.
+
+## 2026-01-22 - Icon-Enhanced Actions
+**Learning:** Text-only buttons for primary actions (Add, Edit, Delete) are less scannable and require more cognitive load to process than buttons paired with standard, recognized icons.
+**Action:** Enhance primary action buttons with decorative (`aria-hidden="true"`) SVG icons to improve scanability and visual polish while maintaining accessible text labels.
