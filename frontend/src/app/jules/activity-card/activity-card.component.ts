@@ -36,18 +36,22 @@ interface DiffLine {
           <button
             (click)="togglePlanExpanded()"
             type="button"
+            [attr.aria-expanded]="planExpanded()"
+            [attr.aria-controls]="getActivityId() + '-plan-steps'"
             class="flex items-center gap-2 text-sm font-medium text-[var(--color-interactive-primary)] hover:text-[var(--color-interactive-primary-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
           >
-            @if (planExpanded()) {
-              ▼
-            } @else {
-              ▶
-            }
+            <span aria-hidden="true">
+              @if (planExpanded()) {
+                ▼
+              } @else {
+                ▶
+              }
+            </span>
             Plan Steps ({{ activity()!.plan_generated!.plan.steps.length }})
           </button>
           
           @if (planExpanded()) {
-            <ol class="list-decimal list-inside space-y-2 mt-3 pl-4 border-l-2 border-[var(--color-border-default)]">
+            <ol [id]="getActivityId() + '-plan-steps'" class="list-decimal list-inside space-y-2 mt-3 pl-4 border-l-2 border-[var(--color-border-default)]">
               @for (step of activity()!.plan_generated!.plan.steps; track $index) {
                 <li class="text-base text-[var(--color-text-primary)] leading-relaxed">
                   <span class="inline-block mr-2">{{ step.title || step.description || 'Step ' + ($index + 1) }}</span>
@@ -71,18 +75,22 @@ interface DiffLine {
                   <button
                     (click)="toggleBashOutput($index)"
                     type="button"
+                    [attr.aria-expanded]="isBashOutputExpanded($index)"
+                    [attr.aria-controls]="getActivityId() + '-bash-' + $index"
                     class="flex items-center gap-2 text-sm font-medium text-[var(--color-interactive-primary)] hover:text-[var(--color-interactive-primary-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
                   >
-                    @if (isBashOutputExpanded($index)) {
-                      ▼
-                    } @else {
-                      ▶
-                    }
+                    <span aria-hidden="true">
+                      @if (isBashOutputExpanded($index)) {
+                        ▼
+                      } @else {
+                        ▶
+                      }
+                    </span>
                     Bash Output
                   </button>
                   
                   @if (isBashOutputExpanded($index)) {
-                    <div class="mt-2 relative">
+                    <div [id]="getActivityId() + '-bash-' + $index" class="mt-2 relative">
                       <pre class="bg-[var(--color-background-tertiary)] text-[var(--color-text-primary)] p-4 rounded-lg overflow-x-auto text-xs font-mono max-h-96 overflow-y-auto">{{ artifact.bash_output }}</pre>
                       <button
                         (click)="copyToClipboard(artifact.bash_output || '')"
@@ -102,18 +110,22 @@ interface DiffLine {
                   <button
                     (click)="toggleDiffExpanded($index)"
                     type="button"
+                    [attr.aria-expanded]="isDiffExpanded($index)"
+                    [attr.aria-controls]="getActivityId() + '-diff-' + $index"
                     class="flex items-center gap-2 text-sm font-medium text-[var(--color-interactive-primary)] hover:text-[var(--color-interactive-primary-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
                   >
-                    @if (isDiffExpanded($index)) {
-                      ▼
-                    } @else {
-                      ▶
-                    }
+                    <span aria-hidden="true">
+                      @if (isDiffExpanded($index)) {
+                        ▼
+                      } @else {
+                        ▶
+                      }
+                    </span>
                     Changeset
                   </button>
                   
                   @if (isDiffExpanded($index)) {
-                    <div class="mt-2 relative">
+                    <div [id]="getActivityId() + '-diff-' + $index" class="mt-2 relative">
                       <div class="diff-container">
                         @for (line of parseDiff(artifact.git_patch); track $index) {
                           <div 
@@ -172,6 +184,12 @@ export class ActivityCardComponent {
   isDiffExpanded = (index: number): boolean => {
     return this.diffExpandedState()[index] || false;
   };
+
+  getActivityId(): string {
+    // Sanitize activity name for use as HTML ID
+    // Replaces all non-alphanumeric characters (except - and _) with dashes
+    return (this.activity().name || 'activity').replace(/[^a-zA-Z0-9-_]/g, '-');
+  }
 
   getActivityTitle(): string {
     const act = this.activity();
