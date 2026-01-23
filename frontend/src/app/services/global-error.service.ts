@@ -14,7 +14,7 @@ export class GlobalErrorService {
   setError(message: string): void {
     this.errorState.set({
       message,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 

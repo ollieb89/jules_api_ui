@@ -10,12 +10,12 @@ describe('ConfirmationDialogComponent', () => {
   beforeAll(() => {
     // Polyfill for JSDOM
     if (!HTMLDialogElement.prototype.showModal) {
-      HTMLDialogElement.prototype.showModal = function() {
+      HTMLDialogElement.prototype.showModal = function () {
         this.setAttribute('open', '');
       };
     }
     if (!HTMLDialogElement.prototype.close) {
-      HTMLDialogElement.prototype.close = function() {
+      HTMLDialogElement.prototype.close = function () {
         this.removeAttribute('open');
       };
     }
@@ -23,7 +23,7 @@ describe('ConfirmationDialogComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ConfirmationDialogComponent]
+      imports: [ConfirmationDialogComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ConfirmationDialogComponent);
@@ -43,7 +43,7 @@ describe('ConfirmationDialogComponent', () => {
     // Dispatch a click event directly on the dialog element (representing backdrop click)
     const event = new MouseEvent('click', {
       bubbles: true,
-      cancelable: true
+      cancelable: true,
       // view: window - Removed to avoid JSDOM/Vitest issue
     });
 
