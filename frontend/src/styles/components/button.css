@@ -8,7 +8,10 @@ button,
   border-radius: 0.5rem;
   padding: 0.5rem 1rem;
   font-weight: 600;
-  transition: background-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    color 0.2s ease;
 }
 
 button:hover,
@@ -39,7 +42,8 @@ button:focus-visible,
 .btn:focus-visible,
 .btn-primary:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px var(--color-focus-ring),
+  box-shadow:
+    0 0 0 3px var(--color-focus-ring),
     0 0 0 6px var(--color-focus-ring-offset);
 }
 
