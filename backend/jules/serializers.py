@@ -580,10 +580,12 @@ class ApiKeyUpdateSerializer(serializers.Serializer):
     api_key = serializers.CharField(
         required=True,
         min_length=1,
+        max_length=2048,
         error_messages={
             "required": "API key is required.",
             "blank": "API key cannot be blank.",
             "min_length": "API key must be at least 1 character.",
+            "max_length": "API key must be at most 2048 characters.",
         },
     )
 
