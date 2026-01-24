@@ -1,21 +1,23 @@
 import pytest
 from rest_framework.test import APIClient
-from rest_framework import status
 from django.contrib.auth.models import User
-from jules.views import SessionViewSet
+
 
 @pytest.fixture
 def api_client():
     return APIClient()
 
+
 @pytest.fixture
 def user():
-    return User.objects.create_user(username='testuser', password='password')
+    return User.objects.create_user(username="testuser", password="password")
+
 
 @pytest.fixture
 def authenticated_client(api_client, user):
     api_client.force_authenticate(user=user)
     return api_client
+
 
 @pytest.mark.django_db
 def test_cached_session_events_invalid_poll_interval_400(authenticated_client):

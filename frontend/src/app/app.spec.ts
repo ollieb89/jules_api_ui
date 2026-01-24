@@ -1,11 +1,11 @@
 import { TestBed } from '@angular/core/testing';
-import { App } from './app';
+import { AppComponent } from './app';
 
-describe('App', () => {
+describe('AppComponent', () => {
   beforeEach(async () => {
     Object.defineProperty(window, 'matchMedia', {
       writable: true,
-      value: (query: any) => ({
+      value: (query: unknown) => ({
         matches: false,
         media: query,
         onchange: null,
@@ -18,21 +18,20 @@ describe('App', () => {
     });
 
     await TestBed.configureTestingModule({
-      imports: [App],
+      imports: [AppComponent],
     }).compileComponents();
   });
 
   it('should create the app', () => {
-    const fixture = TestBed.createComponent(App);
+    const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
     expect(app).toBeTruthy();
   });
 
   it('should render title', async () => {
-    const fixture = TestBed.createComponent(App);
+    const fixture = TestBed.createComponent(AppComponent);
     await fixture.whenStable();
     fixture.detectChanges(); // Ensure change detection runs
-    const compiled = fixture.nativeElement as HTMLElement;
     // The actual title might differ, but let's see if this fixes the crash.
     // If it fails on text content, I'll know the component rendered at least.
     // Based on previous run, it crashed before this expectation.

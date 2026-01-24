@@ -7,7 +7,11 @@ import httpx
 from rest_framework import status
 
 from rest_framework.exceptions import Throttled
-from jules.utils import _extract_upstream_error, handle_api_exception, drf_exception_handler
+from jules.utils import (
+    _extract_upstream_error,
+    handle_api_exception,
+    drf_exception_handler,
+)
 
 
 class TestExtractUpstreamError:
