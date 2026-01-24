@@ -100,4 +100,24 @@ describe('SettingsComponent', () => {
     expect(component.connectionStatus()).toBe('error');
     expect(component.error()).toBe('Connection failed');
   });
+
+  it('should toggle API key visibility', () => {
+    fixture.detectChanges();
+    const input = fixture.nativeElement.querySelector('#api-key');
+
+    expect(component.showApiKey()).toBe(false);
+    expect(input.type).toBe('password');
+
+    component.toggleApiKeyVisibility();
+    fixture.detectChanges();
+
+    expect(component.showApiKey()).toBe(true);
+    expect(input.type).toBe('text');
+
+    component.toggleApiKeyVisibility();
+    fixture.detectChanges();
+
+    expect(component.showApiKey()).toBe(false);
+    expect(input.type).toBe('password');
+  });
 });
