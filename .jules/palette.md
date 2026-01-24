@@ -12,3 +12,7 @@
 ## 2026-01-15 - Native Dialog Backdrop Interaction
 **Learning:** The native `<dialog>` element does not automatically close when clicking the backdrop, unlike many custom modal implementations. This expectation is strong for users. The backdrop click event targets the `dialog` element itself, allowing easy detection.
 **Action:** Always implement a click handler on `<dialog>` elements to check `event.target === element` and close the dialog to match user expectations.
+
+## 2026-01-24 - Password Visibility Toggle
+**Learning:** For inputs like API keys that act as passwords but are often copied/pasted, users need verification. A simple toggle between `type="password"` and `type="text"` reduces anxiety and errors.
+**Action:** When implementing sensitive configuration inputs, always include a visibility toggle with clear ARIA labels ("Show/Hide X") to improve usability without compromising security.
