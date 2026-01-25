@@ -8,7 +8,7 @@ import { GlobalErrorService } from './services/global-error.service';
   imports: [RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.css',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class App implements OnInit {
   protected readonly title = signal('Jules');

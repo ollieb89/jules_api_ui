@@ -12,3 +12,7 @@
 ## 2026-01-15 - Native Dialog Backdrop Interaction
 **Learning:** The native `<dialog>` element does not automatically close when clicking the backdrop, unlike many custom modal implementations. This expectation is strong for users. The backdrop click event targets the `dialog` element itself, allowing easy detection.
 **Action:** Always implement a click handler on `<dialog>` elements to check `event.target === element` and close the dialog to match user expectations.
+
+## 2026-01-25 - Ghost Button Styling Overrides
+**Learning:** The application applies aggressive global styles to `button` elements (in `styles/components/button.css`) which force background and text colors, overriding standard Tailwind utility classes.
+**Action:** When implementing ghost or icon-only buttons using Tailwind, use `!important` modifiers (e.g., `!bg-transparent`, `!text-gray-500`) and explicitly reset border/shadow to override the global component styles.

@@ -2,10 +2,13 @@ import { Injectable, inject } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { ConfirmDialogComponent, ConfirmDialogData } from '../components/confirm-dialog/confirm-dialog.component';
+import {
+  ConfirmDialogComponent,
+  ConfirmDialogData,
+} from '../components/confirm-dialog/confirm-dialog.component';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ConfirmDialogService {
   private dialog = inject(MatDialog);
@@ -22,7 +25,7 @@ export class ConfirmDialogService {
     title: string,
     message: string,
     confirmText: string = 'Confirm',
-    cancelText: string = 'Cancel'
+    cancelText: string = 'Cancel',
   ): Observable<boolean> {
     const dialogRef = this.dialog.open<ConfirmDialogComponent, ConfirmDialogData, boolean>(
       ConfirmDialogComponent,
@@ -32,13 +35,11 @@ export class ConfirmDialogService {
           title,
           message,
           confirmText,
-          cancelText
-        }
-      }
+          cancelText,
+        },
+      },
     );
 
-    return dialogRef.afterClosed().pipe(
-      map(result => result ?? false)
-    );
+    return dialogRef.afterClosed().pipe(map((result) => result ?? false));
   }
 }
