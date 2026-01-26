@@ -9,13 +9,17 @@ import { provideRouter } from '@angular/router';
 describe('SettingsComponent', () => {
   let component: SettingsComponent;
   let fixture: ComponentFixture<SettingsComponent>;
-  let julesService: any;
+  let julesService: {
+    getSettings: ReturnType<typeof vi.fn>;
+    updateApiKey: ReturnType<typeof vi.fn>;
+    testConnection: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(async () => {
     julesService = {
       getSettings: vi.fn(),
       updateApiKey: vi.fn(),
-      testConnection: vi.fn()
+      testConnection: vi.fn(),
     };
 
     julesService.getSettings.mockReturnValue(
@@ -23,18 +27,13 @@ describe('SettingsComponent', () => {
         api_key_configured: true,
         masked_api_key: '****1234',
         created_at: '2024-01-01T00:00:00Z',
-        updated_at: '2024-01-02T00:00:00Z'
-      })
+        updated_at: '2024-01-02T00:00:00Z',
+      }),
     );
-
-
 
     await TestBed.configureTestingModule({
       imports: [SettingsComponent],
-      providers: [
-        { provide: JulesService, useValue: julesService },
-        provideRouter([])
-      ]
+      providers: [{ provide: JulesService, useValue: julesService }, provideRouter([])],
     }).compileComponents();
 
     fixture = TestBed.createComponent(SettingsComponent);
@@ -69,8 +68,8 @@ describe('SettingsComponent', () => {
         message: 'Connection ok',
         api_key_configured: true,
         api_connectivity: 'ok',
-        sources_count: 2
-      })
+        sources_count: 2,
+      }),
     );
 
     fixture.detectChanges();
@@ -89,8 +88,8 @@ describe('SettingsComponent', () => {
         message: 'Connection failed',
         api_key_configured: true,
         api_connectivity: 'error',
-        sources_count: 0
-      })
+        sources_count: 0,
+      }),
     );
 
     fixture.detectChanges();

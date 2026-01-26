@@ -3,17 +3,15 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import {
-  Source,
   Session,
   CreateSession,
-  Activity,
   SendMessageRequest,
   PaginatedSourcesResponse,
   PaginatedSessionsResponse,
   PaginatedActivitiesResponse,
   JulesSettings,
   UpdateApiKeyResponse,
-  TestConnectionResponse
+  TestConnectionResponse,
 } from '../models/jules.model';
 
 @Injectable({ providedIn: 'root' })
@@ -42,7 +40,7 @@ export class JulesService {
 
   getSessions(
     pageSize: number = 100,
-    pageToken?: string | null
+    pageToken?: string | null,
   ): Observable<PaginatedSessionsResponse> {
     let params = new HttpParams().set('page_size', pageSize.toString());
     if (pageToken) {
@@ -60,24 +58,18 @@ export class JulesService {
   }
 
   approvePlan(sessionId: string): Observable<Session> {
-    return this.http.post<Session>(
-      `${this.apiUrl}/sessions/${sessionId}/approve-plan/`,
-      {}
-    );
+    return this.http.post<Session>(`${this.apiUrl}/sessions/${sessionId}/approve-plan/`, {});
   }
 
   sendMessage(sessionId: string, request: SendMessageRequest): Observable<Session> {
-    return this.http.post<Session>(
-      `${this.apiUrl}/sessions/${sessionId}/send-message/`,
-      request
-    );
+    return this.http.post<Session>(`${this.apiUrl}/sessions/${sessionId}/send-message/`, request);
   }
 
   // Activities
   getActivities(
     sessionId: string,
     pageSize: number = 100,
-    pageToken?: string | null
+    pageToken?: string | null,
   ): Observable<PaginatedActivitiesResponse> {
     let params = new HttpParams().set('page_size', pageSize.toString());
     if (pageToken) {
@@ -85,7 +77,7 @@ export class JulesService {
     }
     return this.http.get<PaginatedActivitiesResponse>(
       `${this.apiUrl}/sessions/${sessionId}/activities/`,
-      { params }
+      { params },
     );
   }
 
@@ -95,10 +87,9 @@ export class JulesService {
   }
 
   updateApiKey(apiKey: string): Observable<UpdateApiKeyResponse> {
-    return this.http.post<UpdateApiKeyResponse>(
-      `${this.apiUrl}/settings/api-key/`,
-      { api_key: apiKey }
-    );
+    return this.http.post<UpdateApiKeyResponse>(`${this.apiUrl}/settings/api-key/`, {
+      api_key: apiKey,
+    });
   }
 
   testConnection(): Observable<TestConnectionResponse> {
