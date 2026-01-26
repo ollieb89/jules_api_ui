@@ -87,14 +87,38 @@ interface SettingsResponse {
             <label for="api-key" class="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
               Jules API Key
             </label>
-            <input
-              id="api-key"
-              type="password"
-              formControlName="apiKey"
-              placeholder="Enter your Jules API key"
-              class="w-full px-3 py-2 border border-[var(--color-border-strong)] rounded-lg bg-[var(--color-surface-primary)] text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
-              [style.borderColor]="apiKey?.invalid && apiKey?.touched ? 'var(--color-validation-error)' : null"
-            />
+            <div class="relative">
+              <input
+                id="api-key"
+                [type]="showApiKey() ? 'text' : 'password'"
+                formControlName="apiKey"
+                placeholder="Enter your Jules API key"
+                class="w-full px-3 py-2 pr-10 border border-[var(--color-border-strong)] rounded-lg bg-[var(--color-surface-primary)] text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+                [style.borderColor]="apiKey?.invalid && apiKey?.touched ? 'var(--color-validation-error)' : null"
+              />
+              <button
+                type="button"
+                (click)="showApiKey.set(!showApiKey())"
+                [attr.aria-label]="showApiKey() ? 'Hide API key' : 'Show API key'"
+                class="absolute right-0 top-0 h-full px-3 text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] rounded-r-lg"
+              >
+                @if (showApiKey()) {
+                  <!-- Eye Off Icon -->
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                    <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+                    <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7c.44 0 .87-.03 1.28-.09"/>
+                    <line x1="2" y1="2" x2="22" y2="22"/>
+                  </svg>
+                } @else {
+                  <!-- Eye Icon -->
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                }
+              </button>
+            </div>
             <p class="mt-1 text-xs text-[var(--color-text-tertiary)]">
               Your API key is stored securely and never displayed in plaintext.
             </p>
@@ -172,6 +196,8 @@ export class SettingsComponent implements OnInit {
   apiKeyForm: FormGroup = this.fb.group({
     apiKey: ['', [Validators.required, Validators.minLength(1)]]
   });
+
+  showApiKey = signal(false);
 
   ngOnInit(): void {
     this.loadSettings();
