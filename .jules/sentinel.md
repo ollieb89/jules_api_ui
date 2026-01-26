@@ -2,3 +2,8 @@
 **Vulnerability:** The base class `JulesAuthenticatedViewSet` had `permission_classes = ()`, which overrode the global default `IsAuthenticated` permission. This effectively made all endpoints inheriting from it (including sensitive ones like `SessionViewSet` and `SourceViewSet`) public and accessible without authentication.
 **Learning:** Defining empty `permission_classes` in a DRF ViewSet completely removes all permission checks, even if `authentication_classes` are set. Authentication classes only identify the user (or set AnonymousUser); they do not deny access. Permission classes are responsible for access control.
 **Prevention:** Never leave `permission_classes` empty in a base ViewSet intended to be secure. Always explicitly set `permission_classes = (IsAuthenticated,)` or ensure it inherits the desired defaults by not defining it at all (if defaults are secure). Add unit tests that specifically check for 401/403 responses on protected endpoints using `AnonymousUser`.
+
+## 2024-05-23 - [MEDIUM] Missing Input Length Limit in API Key Update
+**Vulnerability:** `ApiKeyUpdateSerializer` did not enforce a maximum length on the `api_key` field, allowing potentially massive strings to be sent, encrypted (CPU intensive), and stored.
+**Learning:** `serializers.CharField` does not automatically enforce a length limit unless `max_length` is specified. Custom validation functions might miss this check.
+**Prevention:** Always specify `max_length` for `CharField` in serializers, especially for fields that are processed (e.g. encrypted) or stored. Add unit tests that send excessively large payloads to verify rejection.
