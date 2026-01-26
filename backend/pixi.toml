@@ -13,6 +13,7 @@ shell = "python manage.py shell"
 collectstatic = "python manage.py collectstatic --noinput"
 test = "pytest"
 format = "black . && ruff check ."
+lint = "black . --check && ruff check ."
 typecheck = "mypy ."
 setup-env = "python scripts/setup_env.py"
 

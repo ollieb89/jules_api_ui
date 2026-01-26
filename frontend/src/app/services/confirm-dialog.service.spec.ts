@@ -12,18 +12,15 @@ describe('ConfirmDialogService', () => {
 
   beforeEach(() => {
     mockDialogRef = {
-      afterClosed: vi.fn()
+      afterClosed: vi.fn(),
     };
 
     mockDialog = {
-      open: vi.fn().mockReturnValue(mockDialogRef)
+      open: vi.fn().mockReturnValue(mockDialogRef),
     };
 
     TestBed.configureTestingModule({
-      providers: [
-        ConfirmDialogService,
-        { provide: MatDialog, useValue: mockDialog }
-      ]
+      providers: [ConfirmDialogService, { provide: MatDialog, useValue: mockDialog }],
     });
 
     service = TestBed.inject(ConfirmDialogService);
@@ -46,16 +43,16 @@ describe('ConfirmDialogService', () => {
           title: 'Test Title',
           message: 'Test Message',
           confirmText: 'Yes',
-          cancelText: 'No'
-        }
-      })
+          cancelText: 'No',
+        },
+      }),
     );
   });
 
   it('should return true when confirmed', () => {
     mockDialogRef.afterClosed.mockReturnValue(of(true));
 
-    service.confirm('Title', 'Message').subscribe(result => {
+    service.confirm('Title', 'Message').subscribe((result) => {
       expect(result).toBe(true);
     });
   });
@@ -63,7 +60,7 @@ describe('ConfirmDialogService', () => {
   it('should return false when cancelled', () => {
     mockDialogRef.afterClosed.mockReturnValue(of(false));
 
-    service.confirm('Title', 'Message').subscribe(result => {
+    service.confirm('Title', 'Message').subscribe((result) => {
       expect(result).toBe(false);
     });
   });
@@ -71,7 +68,7 @@ describe('ConfirmDialogService', () => {
   it('should return false when dialog is dismissed without result', () => {
     mockDialogRef.afterClosed.mockReturnValue(of(undefined));
 
-    service.confirm('Title', 'Message').subscribe(result => {
+    service.confirm('Title', 'Message').subscribe((result) => {
       expect(result).toBe(false);
     });
   });
@@ -86,9 +83,9 @@ describe('ConfirmDialogService', () => {
       expect.objectContaining({
         data: expect.objectContaining({
           confirmText: 'Confirm',
-          cancelText: 'Cancel'
-        })
-      })
+          cancelText: 'Cancel',
+        }),
+      }),
     );
   });
 });

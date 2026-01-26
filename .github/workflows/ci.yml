@@ -3,13 +3,15 @@ name: CI
 on:
   push:
   pull_request:
+  schedule:
+    - cron: '0 0 * * *'
 
 jobs:
   frontend:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: jules_api
+        working-directory: frontend
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -33,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: jules_backend
+        working-directory: backend
     env:
       DJANGO_SECRET_KEY: ci-secret-key
       DEBUG: "False"
@@ -49,7 +51,7 @@ jobs:
       - name: Migration checks
         run: pixi run python manage.py makemigrations --check --dry-run
       - name: Format checks
-        run: pixi run format
+        run: pixi run lint
       - name: Type checks
         run: pixi run typecheck
       - name: Test suite

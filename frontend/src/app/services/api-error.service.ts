@@ -44,9 +44,10 @@ export class ApiErrorService {
     } else if (error.status >= 500) {
       const apiError = error.error as JulesApiError | undefined;
       if (apiError?.error) {
-        errorMessage = typeof apiError.error === 'string'
-          ? apiError.error
-          : apiError.error.message || 'Server error. Please try again later.';
+        errorMessage =
+          typeof apiError.error === 'string'
+            ? apiError.error
+            : apiError.error.message || 'Server error. Please try again later.';
       } else {
         errorMessage = 'Server error. Please try again later.';
       }
@@ -65,7 +66,7 @@ export class ApiErrorService {
 
     return {
       error: errorMessage,
-      fieldErrors: fieldErrors ?? undefined
+      fieldErrors: fieldErrors ?? undefined,
     };
   }
 
