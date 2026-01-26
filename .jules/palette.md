@@ -12,3 +12,7 @@
 ## 2026-01-15 - Native Dialog Backdrop Interaction
 **Learning:** The native `<dialog>` element does not automatically close when clicking the backdrop, unlike many custom modal implementations. This expectation is strong for users. The backdrop click event targets the `dialog` element itself, allowing easy detection.
 **Action:** Always implement a click handler on `<dialog>` elements to check `event.target === element` and close the dialog to match user expectations.
+
+## 2026-01-26 - Password Visibility Toggles
+**Learning:** Users often struggle with complex strings like API keys when they can't verify the input. Implementing a visibility toggle using Angular signals and relative positioning provides immediate feedback without compromising security.
+**Action:** Always include a "Show/Hide" toggle button for API key and password fields to reduce input errors.

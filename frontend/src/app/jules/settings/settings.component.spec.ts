@@ -100,4 +100,34 @@ describe('SettingsComponent', () => {
     expect(component.connectionStatus()).toBe('error');
     expect(component.error()).toBe('Connection failed');
   });
+
+  it('should toggle API key visibility', () => {
+    fixture.detectChanges();
+
+    // Initial state: password
+    const input = fixture.nativeElement.querySelector('input[id="api-key"]');
+    // Find button by aria-label since we added it dynamically
+    const showButton = fixture.nativeElement.querySelector('button[aria-label="Show API key"]');
+
+    expect(input.type).toBe('password');
+    expect(showButton).toBeTruthy();
+
+    // Click toggle
+    showButton.click();
+    fixture.detectChanges();
+
+    expect(input.type).toBe('text');
+    expect(component.showApiKey()).toBe(true);
+
+    // Check button label update
+    const hideButton = fixture.nativeElement.querySelector('button[aria-label="Hide API key"]');
+    expect(hideButton).toBeTruthy();
+
+    // Click toggle again
+    hideButton.click();
+    fixture.detectChanges();
+
+    expect(input.type).toBe('password');
+    expect(component.showApiKey()).toBe(false);
+  });
 });
