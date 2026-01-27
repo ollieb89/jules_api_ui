@@ -86,7 +86,7 @@ def sanitize_url(url: str) -> str:
             (split_url.scheme, split_url.netloc, split_url.path, sanitized_query, split_url.fragment)
         )
     except Exception:
-        return url
+        return "[redacted]"
 
 
 def log_jules_api_call(
