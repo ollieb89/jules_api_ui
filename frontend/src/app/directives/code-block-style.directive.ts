@@ -1,4 +1,4 @@
-import { Directive, AfterViewInit, ElementRef, Renderer2, OnInit, OnDestroy } from '@angular/core';
+import { Directive, AfterViewInit, ElementRef, Renderer2, OnDestroy } from '@angular/core';
 
 /**
  * Directive to fix code block styling by removing problematic inline styles
@@ -7,14 +7,14 @@ import { Directive, AfterViewInit, ElementRef, Renderer2, OnInit, OnDestroy } fr
  */
 @Directive({
   selector: 'markdown',
-  standalone: true
+  standalone: true,
 })
 export class CodeBlockStyleDirective implements AfterViewInit, OnDestroy {
   private observer?: MutationObserver;
 
   constructor(
     private el: ElementRef<HTMLElement>,
-    private renderer: Renderer2
+    private renderer: Renderer2,
   ) {}
 
   ngAfterViewInit(): void {
@@ -28,7 +28,7 @@ export class CodeBlockStyleDirective implements AfterViewInit, OnDestroy {
 
     this.observer.observe(this.el.nativeElement, {
       childList: true,
-      subtree: true
+      subtree: true,
     });
   }
 
@@ -39,11 +39,13 @@ export class CodeBlockStyleDirective implements AfterViewInit, OnDestroy {
   }
 
   private fixCodeElements(): void {
-    const codeElements = this.el.nativeElement.querySelectorAll('pre code, code[class*="language-"]');
-    
+    const codeElements = this.el.nativeElement.querySelectorAll(
+      'pre code, code[class*="language-"]',
+    );
+
     codeElements.forEach((element) => {
       const htmlElement = element as HTMLElement;
-      
+
       // Remove problematic inline styles
       const stylesToRemove = [
         'display',
@@ -65,10 +67,10 @@ export class CodeBlockStyleDirective implements AfterViewInit, OnDestroy {
         'margin-top',
         'margin-bottom',
         'margin-left',
-        'margin-right'
+        'margin-right',
       ];
 
-      stylesToRemove.forEach(style => {
+      stylesToRemove.forEach((style) => {
         if (htmlElement.style.getPropertyValue(style)) {
           this.renderer.removeStyle(htmlElement, style);
         }
@@ -82,4 +84,3 @@ export class CodeBlockStyleDirective implements AfterViewInit, OnDestroy {
     });
   }
 }
-
