@@ -12,3 +12,7 @@
 ## 2026-01-15 - Native Dialog Backdrop Interaction
 **Learning:** The native `<dialog>` element does not automatically close when clicking the backdrop, unlike many custom modal implementations. This expectation is strong for users. The backdrop click event targets the `dialog` element itself, allowing easy detection.
 **Action:** Always implement a click handler on `<dialog>` elements to check `event.target === element` and close the dialog to match user expectations.
+
+## 2026-02-14 - Semantic Navigation Links
+**Learning:** Using `<button (click)="navigate()">` for navigation breaks native browser behaviors like "Open in new tab" and status bar URL preview. It also misrepresents the element's role to assistive technologies.
+**Action:** Always use `<a routerLink="...">` for navigation actions. For button-like appearance, apply appropriate CSS classes and ensure `inline-block` and `no-underline` are set.
