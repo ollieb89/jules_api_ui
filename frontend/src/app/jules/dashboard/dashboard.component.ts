@@ -183,7 +183,7 @@ import { SessionState } from '../../models/jules.model';
                   </span>
                 </div>
                 
-                <p class="text-sm text-[var(--color-text-secondary)] line-clamp-2 mb-3 h-10">
+                <p class="text-sm text-[var(--color-text-secondary)] line-clamp-2 mb-3 h-10" [title]="session.prompt">
                   {{ session.prompt }}
                 </p>
                 
