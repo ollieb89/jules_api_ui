@@ -39,6 +39,17 @@ describe('UserFormComponent', () => {
     expect(component.getFieldError('email')).toBe('Email is required');
   });
 
+  it('has correct autocomplete attributes', () => {
+    const fixture = TestBed.createComponent(UserFormComponent);
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement as HTMLElement;
+    const nameInput = compiled.querySelector('#name');
+    const emailInput = compiled.querySelector('#email');
+
+    expect(nameInput?.getAttribute('autocomplete')).toBe('name');
+    expect(emailInput?.getAttribute('autocomplete')).toBe('email');
+  });
+
   it('navigates back to the list on cancel', () => {
     const router = TestBed.inject(Router);
     const navigateSpy = vi.spyOn(router, 'navigate');

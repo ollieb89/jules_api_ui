@@ -256,7 +256,7 @@ interface FormattedSession extends Session {
                   </span>
                 </div>
                 
-                <p class="text-sm text-[var(--color-text-secondary)] mb-3 line-clamp-2">
+                <p class="text-sm text-[var(--color-text-secondary)] mb-3 line-clamp-2" [title]="session.prompt">
                   {{ session.prompt }}
                 </p>
                 
