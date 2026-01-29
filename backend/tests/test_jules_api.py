@@ -181,14 +181,30 @@ def test_settings_list_and_update_api_key(api_client):
     assert list_payload["api_key_configured"] is True
     assert list_payload["masked_api_key"] == "secr...1234"
 
+    # Regular user should NOT be able to update API key
     update_response = api_client.post(
         "/api/jules/settings/api-key/",
         data={"api_key": "updated-api-key-5678"},
         format="json",
     )
+    assert update_response.status_code == status.HTTP_403_FORBIDDEN
 
-    assert update_response.status_code == status.HTTP_200_OK
-    update_payload = update_response.json()
+    # Admin user SHOULD be able to update API key
+    user_model = get_user_model()
+    admin = user_model.objects.create_superuser(
+        username="admin", password="password", email="admin@example.com"
+    )
+    admin_client = APIClient()
+    admin_client.force_authenticate(user=admin)
+
+    admin_update_response = admin_client.post(
+        "/api/jules/settings/api-key/",
+        data={"api_key": "updated-api-key-5678"},
+        format="json",
+    )
+
+    assert admin_update_response.status_code == status.HTTP_200_OK
+    update_payload = admin_update_response.json()
     assert update_payload["status"] == "success"
     assert update_payload["masked_api_key"] == "upda...5678"
 
@@ -230,7 +246,10 @@ def test_settings_requires_authentication(anon_client, db):
 
     # Depending on DRF settings, this might be 403 Forbidden or 401 Unauthorized
     # The default IsAuthenticated permission class returns 403 when user is not authenticated
-    assert response.status_code in [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN]
+    assert response.status_code in [
+        status.HTTP_401_UNAUTHORIZED,
+        status.HTTP_403_FORBIDDEN,
+    ]
 
 
 def test_settings_actions_require_authentication(anon_client, db):
@@ -245,13 +264,19 @@ def test_settings_actions_require_authentication(anon_client, db):
         status.HTTP_401_UNAUTHORIZED,
         status.HTTP_403_FORBIDDEN,
     ]
-    assert test_response.status_code in [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN]
+    assert test_response.status_code in [
+        status.HTTP_401_UNAUTHORIZED,
+        status.HTTP_403_FORBIDDEN,
+    ]
 
 
 def test_sessions_require_authentication(anon_client, db):
     response = anon_client.get("/api/jules/sessions/")
 
-    assert response.status_code in [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN]
+    assert response.status_code in [
+        status.HTTP_401_UNAUTHORIZED,
+        status.HTTP_403_FORBIDDEN,
+    ]
 
 
 def test_session_create_requires_authentication(anon_client, db):
@@ -261,4 +286,7 @@ def test_session_create_requires_authentication(anon_client, db):
         format="json",
     )
 
-    assert response.status_code in [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN]
+    assert response.status_code in [
+        status.HTTP_401_UNAUTHORIZED,
+        status.HTTP_403_FORBIDDEN,
+    ]
