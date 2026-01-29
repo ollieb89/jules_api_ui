@@ -391,7 +391,13 @@ class PlanSerializer(serializers.Serializer):
 
         # Ensure plan state is valid
         plan_state = ret.get("state") or "STATE_UNSPECIFIED"
-        valid_plan_states = ["STATE_UNSPECIFIED", "PENDING", "APPROVED", "REJECTED", "COMPLETED"]
+        valid_plan_states = [
+            "STATE_UNSPECIFIED",
+            "PENDING",
+            "APPROVED",
+            "REJECTED",
+            "COMPLETED",
+        ]
         if plan_state not in valid_plan_states:
             plan_state = "STATE_UNSPECIFIED"
 
