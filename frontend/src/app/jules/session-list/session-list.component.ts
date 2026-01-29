@@ -16,6 +16,7 @@ interface FormattedSession extends Session {
   formattedCreateTime: string;
   formattedUpdateTime: string;
   stateBadgeClass: string;
+  sessionId: string;
 }
 
 @Component({
@@ -30,13 +31,13 @@ interface FormattedSession extends Session {
         <div class="flex gap-3">
           <a
             routerLink="/dashboard"
-            class="px-4 py-2 bg-[var(--color-surface-primary)] border border-[var(--color-border-default)] text-[var(--color-text-secondary)] font-semibold rounded-lg transition-colors hover:bg-[var(--color-surface-secondary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+            class="px-4 py-2 bg-[var(--color-surface-primary)] border border-[var(--color-border-default)] text-[var(--color-text-secondary)] font-semibold rounded-lg transition-colors hover:bg-[var(--color-surface-secondary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)] inline-block no-underline text-center"
           >
             Dashboard
           </a>
           <a
             routerLink="/jules/settings"
-            class="px-4 py-2 bg-[var(--color-background-secondary)] hover:bg-[var(--color-background-tertiary)] text-[var(--color-text-secondary)] font-semibold rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+            class="px-4 py-2 bg-[var(--color-background-secondary)] hover:bg-[var(--color-background-tertiary)] text-[var(--color-text-secondary)] font-semibold rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)] inline-block no-underline text-center"
           >
             ⚙️ Settings
           </a>
@@ -52,14 +53,13 @@ interface FormattedSession extends Session {
               🌙
             }
           </button>
-          <button
-            (click)="createSession()"
-            type="button"
+          <a
+            routerLink="/jules/create"
             aria-label="Create new session"
-            class="bg-[var(--color-interactive-primary)] hover:bg-[var(--color-interactive-primary-hover)] active:bg-[var(--color-interactive-primary-active)] text-[var(--color-text-inverse)] font-semibold py-2 px-4 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+            class="bg-[var(--color-interactive-primary)] hover:bg-[var(--color-interactive-primary-hover)] active:bg-[var(--color-interactive-primary-active)] !text-[var(--color-text-inverse)] font-semibold py-2 px-4 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)] inline-block no-underline text-center"
           >
             New Session
-          </button>
+          </a>
         </div>
       </div>
 
@@ -212,14 +212,13 @@ interface FormattedSession extends Session {
       @if (!cacheService.loading() && cacheService.filteredCount() === 0 && cacheService.totalCount() === 0) {
         <div class="bg-[var(--color-surface-secondary)] border border-[var(--color-border-default)] rounded-lg p-8 text-center">
           <p class="text-[var(--color-text-secondary)] mb-4">No sessions found.</p>
-          <button
-            (click)="createSession()"
-            type="button"
+          <a
+            routerLink="/jules/create"
             aria-label="Create first session"
-            class="bg-[var(--color-interactive-primary)] hover:bg-[var(--color-interactive-primary-hover)] text-[var(--color-text-inverse)] font-semibold py-2 px-4 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+            class="bg-[var(--color-interactive-primary)] hover:bg-[var(--color-interactive-primary-hover)] !text-[var(--color-text-inverse)] font-semibold py-2 px-4 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)] inline-block no-underline text-center"
           >
             Create First Session
-          </button>
+          </a>
         </div>
       }
 
@@ -266,23 +265,22 @@ interface FormattedSession extends Session {
                 </div>
                 
                 <div class="flex gap-2">
-                  <button
-                    (click)="viewSession(session.name)"
-                    type="button"
+                  <a
+                    [routerLink]="['/jules', session.sessionId]"
                     [aria-label]="'View session ' + session.display_name"
-                    class="flex-1 text-[var(--color-interactive-primary)] hover:text-[var(--color-interactive-primary-hover)] font-medium text-sm py-1 px-2 rounded hover:bg-[var(--color-surface-info)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+                    class="flex-1 !text-[var(--color-interactive-primary)] hover:!text-[var(--color-interactive-primary-hover)] font-medium text-sm py-1 px-2 rounded hover:bg-[var(--color-surface-info)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)] inline-block no-underline text-center cursor-pointer"
                   >
                     View
-                  </button>
+                  </a>
                   @if (session.state === 'ACTIVE') {
-                    <button
-                      (click)="sendMessage(session.name)"
-                      type="button"
+                    <a
+                      [routerLink]="['/jules', session.sessionId]"
+                      [queryParams]="{ action: 'message' }"
                       [aria-label]="'Send message to session ' + session.display_name"
-                      class="text-[var(--color-text-success)] hover:text-[var(--color-text-success-strong)] font-medium text-sm py-1 px-2 rounded hover:bg-[var(--color-surface-success)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+                      class="!text-[var(--color-text-success)] hover:!text-[var(--color-text-success-strong)] font-medium text-sm py-1 px-2 rounded hover:bg-[var(--color-surface-success)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)] inline-block no-underline text-center cursor-pointer"
                     >
                       Message
-                    </button>
+                    </a>
                   }
                   <button
                     (click)="deleteSession(session.name)"
@@ -356,12 +354,15 @@ export class SessionListComponent implements OnInit {
         }
       }
 
+      const sessionId = this.sessionUtils.extractSessionId(session.name);
+
       return {
         ...session,
         display_name: displayName,
         formattedCreateTime: createTime.toLocaleString(),
         formattedUpdateTime: updateTime.toLocaleString(),
-        stateBadgeClass
+        stateBadgeClass,
+        sessionId
       };
     });
   });
@@ -430,20 +431,6 @@ export class SessionListComponent implements OnInit {
   hasActiveFilters(): boolean {
     const filter = this.cacheService.filter();
     return !!(filter.search || filter.status || filter.source || filter.dateFrom || filter.dateTo);
-  }
-
-  createSession(): void {
-    this.router.navigate(['/jules/create']);
-  }
-
-  viewSession(sessionName: string): void {
-    const id = this.sessionUtils.extractSessionId(sessionName);
-    this.router.navigate(['/jules', id]);
-  }
-
-  sendMessage(sessionName: string): void {
-    const id = this.sessionUtils.extractSessionId(sessionName);
-    this.router.navigate(['/jules', id], { queryParams: { action: 'message' } });
   }
 
   // Delete state
