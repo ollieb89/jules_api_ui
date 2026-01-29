@@ -3,6 +3,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+
 def test_missing_secret_key_raises_in_production():
     base_dir = Path(__file__).resolve().parents[1]
     env = os.environ.copy()
@@ -30,6 +31,7 @@ def test_missing_secret_key_raises_in_production():
 
     assert result.returncode != 0
     assert "DJANGO_SECRET_KEY must be set in production" in result.stderr
+
 
 def test_security_headers_in_production():
     """Verify that security headers are enabled when DEBUG=False."""
