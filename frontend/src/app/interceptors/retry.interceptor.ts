@@ -33,12 +33,9 @@ export const retryInterceptor: HttpInterceptorFn = (req, next) => {
         if (retryAfterSeconds && retryAfterSeconds > 0) {
           return timer(retryAfterSeconds * 1000);
         }
-        const backoff = Math.min(
-          BASE_BACKOFF_MS * 2 ** (retryCount - 1),
-          MAX_BACKOFF_MS
-        );
+        const backoff = Math.min(BASE_BACKOFF_MS * 2 ** (retryCount - 1), MAX_BACKOFF_MS);
         return timer(backoff);
-      }
-    })
+      },
+    }),
   );
 };

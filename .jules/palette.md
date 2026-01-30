@@ -12,3 +12,7 @@
 ## 2026-01-15 - Native Dialog Backdrop Interaction
 **Learning:** The native `<dialog>` element does not automatically close when clicking the backdrop, unlike many custom modal implementations. This expectation is strong for users. The backdrop click event targets the `dialog` element itself, allowing easy detection.
 **Action:** Always implement a click handler on `<dialog>` elements to check `event.target === element` and close the dialog to match user expectations.
+
+## 2026-01-30 - Global Button Styles vs Icon Buttons
+**Learning:** The project applies aggressive global styles (background, padding, border) to all `<button>` elements via `button.css`. This breaks the styling of icon-only buttons or interactive toggles that should appear as text/icons.
+**Action:** When creating icon-only buttons or toggles inside other components, explicitly reset these styles using `!bg-transparent !border-0 !p-1` (or appropriate tailwind classes) to prevent inheriting the primary button look.

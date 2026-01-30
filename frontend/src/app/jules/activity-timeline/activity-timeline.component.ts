@@ -10,7 +10,7 @@ import {
   AfterViewInit,
   OnChanges,
   SimpleChanges,
-  output
+  output,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -49,10 +49,16 @@ interface ActivityGroup {
 
 @Component({
   selector: 'app-activity-timeline',
-  imports: [CommonModule, FormsModule, PlanApprovalComponent, LoadingSpinnerComponent, MatPaginatorModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    PlanApprovalComponent,
+    LoadingSpinnerComponent,
+    MatPaginatorModule,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './activity-timeline.component.html',
-  styleUrl: './activity-timeline.component.css'
+  styleUrl: './activity-timeline.component.css',
 })
 export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewInit {
   @Input({ required: true }) sessionId!: string;
@@ -83,7 +89,7 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
   expandedGroups = signal<Set<number>>(new Set());
 
   formattedActivities = computed<FormattedActivity[]>(() => {
-    const activities = this.currentPageActivities().map(activity => {
+    const activities = this.currentPageActivities().map((activity) => {
       const time = new Date(activity.create_time);
       let activityType = this.parseActivityType(activity);
       let description = '';
@@ -92,9 +98,10 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
 
       if (activity.plan_generated) {
         const planSnapshot = this.planSnapshot();
-        const plan = planSnapshot?.planGeneratedAt === activity.create_time
-          ? planSnapshot.plan
-          : activity.plan_generated.plan;
+        const plan =
+          planSnapshot?.planGeneratedAt === activity.create_time
+            ? planSnapshot.plan
+            : activity.plan_generated.plan;
         activityType = 'Plan Generated';
         description = `${this.getPlanStateLabel(plan.state)} plan with ${plan.steps.length} steps`;
         originator = 'agent';
@@ -106,8 +113,9 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
           description,
           originator,
           iconClass,
-          originatorBadgeClass: 'bg-[var(--color-surface-info)] text-[var(--color-text-info-strong)]',
-          plan
+          originatorBadgeClass:
+            'bg-[var(--color-surface-info)] text-[var(--color-text-info-strong)]',
+          plan,
         };
       } else if (activity.plan_approved) {
         activityType = 'Plan Approved';
@@ -127,9 +135,10 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
         iconClass = 'bg-[var(--color-surface-accent)] text-[var(--color-text-accent)]';
       }
 
-      const originatorBadgeClass = originator === 'agent'
-        ? 'bg-[var(--color-surface-info)] text-[var(--color-text-info-strong)]'
-        : 'bg-[var(--color-surface-success)] text-[var(--color-text-success-strong)]';
+      const originatorBadgeClass =
+        originator === 'agent'
+          ? 'bg-[var(--color-surface-info)] text-[var(--color-text-info-strong)]'
+          : 'bg-[var(--color-surface-success)] text-[var(--color-text-success-strong)]';
 
       return {
         ...activity,
@@ -138,7 +147,7 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
         description,
         originator,
         iconClass,
-        originatorBadgeClass
+        originatorBadgeClass,
       };
     });
 
@@ -147,7 +156,7 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
     if (filter === 'all') {
       return activities;
     }
-    return activities.filter(activity => activity.originator === filter);
+    return activities.filter((activity) => activity.originator === filter);
   });
 
   groupedActivities = computed<ActivityGroup[]>(() => {
@@ -172,17 +181,17 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
               activities: currentProgressGroup,
               summary: `Progress Updates (${currentProgressGroup.length} items)`,
               firstActivity: currentProgressGroup[0],
-              groupIndex: groupIndex++
+              groupIndex: groupIndex++,
             });
           } else {
             // Add individual items
-            currentProgressGroup.forEach(act => {
+            currentProgressGroup.forEach((act) => {
               groups.push({
                 type: 'single',
                 activities: [act],
                 summary: '',
                 firstActivity: act,
-                groupIndex: groupIndex++
+                groupIndex: groupIndex++,
               });
             });
           }
@@ -195,7 +204,7 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
           activities: [activity],
           summary: '',
           firstActivity: activity,
-          groupIndex: groupIndex++
+          groupIndex: groupIndex++,
         });
       }
     }
@@ -208,16 +217,16 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
           activities: currentProgressGroup,
           summary: `Progress Updates (${currentProgressGroup.length} items)`,
           firstActivity: currentProgressGroup[0],
-          groupIndex: groupIndex++
+          groupIndex: groupIndex++,
         });
       } else {
-        currentProgressGroup.forEach(act => {
+        currentProgressGroup.forEach((act) => {
           groups.push({
             type: 'single',
             activities: [act],
             summary: '',
             firstActivity: act,
-            groupIndex: groupIndex++
+            groupIndex: groupIndex++,
           });
         });
       }
@@ -322,7 +331,7 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
         this.planSnapshot.set(null);
         this.planStateChange.emit(null);
         this.loading.set(false);
-      }
+      },
     });
   }
 
@@ -412,23 +421,26 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
   }
 
   private derivePlanSnapshot(activities: Activity[]): PlanSnapshot | null {
-    const planGeneratedActivities = activities.filter(activity => activity.plan_generated?.plan);
-    const planApprovedActivities = activities.filter(activity => activity.plan_approved);
+    const planGeneratedActivities = activities.filter((activity) => activity.plan_generated?.plan);
+    const planApprovedActivities = activities.filter((activity) => activity.plan_approved);
     if (planGeneratedActivities.length === 0 && planApprovedActivities.length === 0) {
       return null;
     }
 
-    const latestPlanGenerated = planGeneratedActivities.reduce<Activity | null>((latest, current) => {
-      if (!latest) {
-        return current;
-      }
-      const latestTime = new Date(latest.create_time).getTime();
-      const currentTime = new Date(current.create_time).getTime();
-      return currentTime > latestTime ? current : latest;
-    }, null);
+    const latestPlanGenerated = planGeneratedActivities.reduce<Activity | null>(
+      (latest, current) => {
+        if (!latest) {
+          return current;
+        }
+        const latestTime = new Date(latest.create_time).getTime();
+        const currentTime = new Date(current.create_time).getTime();
+        return currentTime > latestTime ? current : latest;
+      },
+      null,
+    );
 
     const latestPlanApprovedWithPlan = planApprovedActivities
-      .filter(activity => activity.plan_approved?.plan)
+      .filter((activity) => activity.plan_approved?.plan)
       .reduce<Activity | null>((latest, current) => {
         if (!latest) {
           return current;
@@ -438,8 +450,8 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
         return currentTime > latestTime ? current : latest;
       }, null);
 
-    const basePlan = latestPlanApprovedWithPlan?.plan_approved?.plan
-      ?? latestPlanGenerated?.plan_generated?.plan;
+    const basePlan =
+      latestPlanApprovedWithPlan?.plan_approved?.plan ?? latestPlanGenerated?.plan_generated?.plan;
     if (!basePlan) {
       return null;
     }
@@ -449,28 +461,28 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
     const planState = this.derivePlanState(
       approvalPlan?.state ?? basePlan.state,
       activities,
-      latestPlanGenerated ? new Date(latestPlanGenerated.create_time).getTime() : null
+      latestPlanGenerated ? new Date(latestPlanGenerated.create_time).getTime() : null,
     );
     const plan: Plan = {
       ...basePlan,
       ...approvalPlan,
       state: planState,
-      steps: planSteps.map(step => ({ ...step }))
+      steps: planSteps.map((step) => ({ ...step })),
     };
 
     return {
       plan,
       planGeneratedAt:
-        latestPlanGenerated?.create_time ?? latestPlanApprovedWithPlan?.create_time ?? ''
+        latestPlanGenerated?.create_time ?? latestPlanApprovedWithPlan?.create_time ?? '',
     };
   }
 
   private derivePlanState(
     baseState: PlanState,
     activities: Activity[],
-    latestPlanTime: number | null
+    latestPlanTime: number | null,
   ): PlanState {
-    const planApprovedAfter = activities.some(activity => {
+    const planApprovedAfter = activities.some((activity) => {
       if (!activity.plan_approved) {
         return false;
       }
@@ -521,16 +533,16 @@ export class ActivityTimelineComponent implements OnInit, OnChanges, AfterViewIn
         this.planSnapshot.set(null);
         this.planStateChange.emit(null);
         this.loading.set(false);
-      }
+      },
     });
   }
 
   private getPlanStateLabel(state: PlanState): string {
     const labels: Record<PlanState, string> = {
-      'STATE_UNSPECIFIED': 'Pending',
-      'PENDING': 'Pending',
-      'APPROVED': 'Approved',
-      'REJECTED': 'Rejected'
+      STATE_UNSPECIFIED: 'Pending',
+      PENDING: 'Pending',
+      APPROVED: 'Approved',
+      REJECTED: 'Rejected',
     };
     return labels[state] || state;
   }
