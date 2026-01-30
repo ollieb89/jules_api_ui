@@ -8,8 +8,8 @@ import { vi } from 'vitest';
 describe('SessionCreateComponent', () => {
   let component: SessionCreateComponent;
   let fixture: ComponentFixture<SessionCreateComponent>;
-  let julesService: any;
-  let router: any;
+  let julesService: { getSources: ReturnType<typeof vi.fn>; createSession: ReturnType<typeof vi.fn> };
+  let router: { navigate: ReturnType<typeof vi.fn> };
 
   beforeEach(async () => {
     julesService = {

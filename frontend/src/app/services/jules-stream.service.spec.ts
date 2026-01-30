@@ -5,6 +5,12 @@ import { AuthTokenService } from './auth-token.service';
 import { JulesService } from './jules.service';
 import { vi } from 'vitest';
 
+interface MockEventSource {
+  addEventListener: ReturnType<typeof vi.fn>;
+  removeEventListener: ReturnType<typeof vi.fn>;
+  close: ReturnType<typeof vi.fn>;
+}
+
 describe('JulesStreamService', () => {
   let service: JulesStreamService;
   let mockAuthTokenService: { getToken: ReturnType<typeof vi.fn> };
@@ -12,9 +18,9 @@ describe('JulesStreamService', () => {
     getSessionsEventStreamUrl: ReturnType<typeof vi.fn>;
     getSessionEventStreamUrl: ReturnType<typeof vi.fn>;
   };
-  let mockEventSource: any;
-  let createdSources: any[];
-  let OriginalEventSource: any;
+  let mockEventSource: MockEventSource;
+  let createdSources: MockEventSource[];
+  let OriginalEventSource: unknown;
 
   beforeEach(() => {
     // Mock AuthTokenService
@@ -31,7 +37,7 @@ describe('JulesStreamService', () => {
     createdSources = [];
 
     // Store original EventSource and replace with mock
-    class MockEventSource {
+    class MockEventSourceImpl implements MockEventSource {
       addEventListener = vi.fn();
       removeEventListener = vi.fn();
       close = vi.fn();
@@ -40,7 +46,7 @@ describe('JulesStreamService', () => {
       }
     }
     OriginalEventSource = (globalThis as Record<string, unknown>)['EventSource'];
-    (globalThis as Record<string, unknown>)['EventSource'] = MockEventSource;
+    (globalThis as Record<string, unknown>)['EventSource'] = MockEventSourceImpl;
 
     TestBed.configureTestingModule({
       providers: [
@@ -67,6 +73,7 @@ describe('JulesStreamService', () => {
       return new Promise<void>((resolve, reject) => {
         // Create a new service instance with server platform
         const serverService = TestBed.runInInjectionContext(() => new JulesStreamService());
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const servicePrivate = serverService as any;
         servicePrivate.platformId = 'server';
         servicePrivate.authTokenService = mockAuthTokenService;
@@ -135,9 +142,10 @@ describe('JulesStreamService', () => {
         mockEventSource = createdSources[0];
 
         // Simulate EventSource open event
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const openHandler = mockEventSource.addEventListener.mock.calls.find(
-          (call: any[]) => call[0] === 'open'
-        )[1];
+          (call: unknown[]) => call[0] === 'open'
+        )![1];
         openHandler();
       });
     });
@@ -172,9 +180,10 @@ describe('JulesStreamService', () => {
         mockEventSource = createdSources[0];
 
         // Simulate EventSource sessions_update event
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const updateHandler = mockEventSource.addEventListener.mock.calls.find(
-          (call: any[]) => call[0] === 'sessions_update'
-        )[1];
+          (call: unknown[]) => call[0] === 'sessions_update'
+        )![1];
         updateHandler({ data: JSON.stringify(mockSessions) });
       });
     });
@@ -196,9 +205,10 @@ describe('JulesStreamService', () => {
         mockEventSource = createdSources[0];
 
         // Simulate EventSource sessions_update event with invalid JSON
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const updateHandler = mockEventSource.addEventListener.mock.calls.find(
-          (call: any[]) => call[0] === 'sessions_update'
-        )[1];
+          (call: unknown[]) => call[0] === 'sessions_update'
+        )![1];
         updateHandler({ data: 'invalid json' });
       });
     });
@@ -214,9 +224,10 @@ describe('JulesStreamService', () => {
       mockEventSource = createdSources[0];
 
       // Simulate EventSource error event
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const errorHandler = mockEventSource.addEventListener.mock.calls.find(
-        (call: any[]) => call[0] === 'error'
-      )[1];
+        (call: unknown[]) => call[0] === 'error'
+      )![1];
       errorHandler();
 
       expect(mockEventSource.close).toHaveBeenCalled();
@@ -247,6 +258,7 @@ describe('JulesStreamService', () => {
       return new Promise<void>((resolve, reject) => {
         // Create a new service instance with server platform
         const serverService = TestBed.runInInjectionContext(() => new JulesStreamService());
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const servicePrivate = serverService as any;
         servicePrivate.platformId = 'server';
         servicePrivate.authTokenService = mockAuthTokenService;
@@ -328,9 +340,10 @@ describe('JulesStreamService', () => {
         mockEventSource = createdSources[0];
 
         // Simulate EventSource session_update event
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const updateHandler = mockEventSource.addEventListener.mock.calls.find(
-          (call: any[]) => call[0] === 'session_update'
-        )[1];
+          (call: unknown[]) => call[0] === 'session_update'
+        )![1];
         updateHandler({ data: JSON.stringify(mockSession) });
       });
     });
@@ -352,9 +365,10 @@ describe('JulesStreamService', () => {
         mockEventSource = createdSources[0];
 
         // Simulate EventSource activity_update event
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const activityHandler = mockEventSource.addEventListener.mock.calls.find(
-          (call: any[]) => call[0] === 'activity_update'
-        )[1];
+          (call: unknown[]) => call[0] === 'activity_update'
+        )![1];
         activityHandler({ data: JSON.stringify({ latest_activity_id: 7 }) });
       });
     });
@@ -376,9 +390,10 @@ describe('JulesStreamService', () => {
         mockEventSource = createdSources[0];
 
         // Simulate EventSource session_update event with invalid JSON
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const updateHandler = mockEventSource.addEventListener.mock.calls.find(
-          (call: any[]) => call[0] === 'session_update'
-        )[1];
+          (call: unknown[]) => call[0] === 'session_update'
+        )![1];
         updateHandler({ data: 'invalid json' });
       });
     });
