@@ -181,7 +181,8 @@ export class SessionCacheService {
     this.error.set(null);
 
     const allSessions: Session[] = [];
-    let pageToken: string | null = null;
+    const pageToken: string | null = null;
+    void pageToken;
     let hasMore = true;
 
     const fetchPage = (token: string | null = null): void => {

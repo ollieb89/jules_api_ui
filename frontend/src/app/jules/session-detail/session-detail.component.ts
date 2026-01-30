@@ -13,7 +13,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
-// @ts-ignore: ignore missing types for ngx-markdown
+// @ts-expect-error: ignore missing types for ngx-markdown
 import { MarkdownComponent } from 'ngx-markdown';
 import { JulesService } from '../../services/jules.service';
 import { JulesStreamService } from '../../services/jules-stream.service';

@@ -107,7 +107,8 @@ export class ConfirmationDialogComponent {
     this.cancelled.emit();
   }
 
-  onCancel(event: Event) {
+  onCancel(_event: Event) {
+    void _event;
     this.cancelled.emit();
   }
 
