@@ -87,15 +87,36 @@ interface SettingsResponse {
             <label for="api-key" class="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
               Jules API Key
             </label>
-            <input
-              id="api-key"
-              type="password"
-              formControlName="apiKey"
-              placeholder="Enter your Jules API key"
-              class="w-full px-3 py-2 border border-[var(--color-border-strong)] rounded-lg bg-[var(--color-surface-primary)] text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
-              [style.borderColor]="apiKey?.invalid && apiKey?.touched ? 'var(--color-validation-error)' : null"
-            />
-            <p class="mt-1 text-xs text-[var(--color-text-tertiary)]">
+            <div class="relative">
+              <input
+                id="api-key"
+                [type]="showApiKey() ? 'text' : 'password'"
+                formControlName="apiKey"
+                placeholder="Enter your Jules API key"
+                aria-describedby="api-key-help"
+                class="w-full pl-3 pr-10 py-2 border border-[var(--color-border-strong)] rounded-lg bg-[var(--color-surface-primary)] text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+                [style.borderColor]="apiKey?.invalid && apiKey?.touched ? 'var(--color-validation-error)' : null"
+              />
+              <button
+                type="button"
+                (click)="toggleApiKeyVisibility()"
+                [attr.aria-label]="showApiKey() ? 'Hide API key' : 'Show API key'"
+                class="absolute right-2 top-1/2 -translate-y-1/2 !bg-transparent !border-0 !p-1.5 !text-[var(--color-text-tertiary)] hover:!text-[var(--color-text-secondary)] rounded-md hover:!bg-[var(--color-background-tertiary)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+              >
+                @if (showApiKey()) {
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                  </svg>
+                } @else {
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                }
+              </button>
+            </div>
+            <p id="api-key-help" class="mt-1 text-xs text-[var(--color-text-tertiary)]">
               Your API key is stored securely and never displayed in plaintext.
             </p>
           </div>
@@ -168,6 +189,8 @@ export class SettingsComponent implements OnInit {
   error = signal<string | null>(null);
   successMessage = signal<string | null>(null);
   connectionStatus = signal<'connected' | 'error' | 'unknown'>('unknown');
+
+  showApiKey = signal(false);
 
   apiKeyForm: FormGroup = this.fb.group({
     apiKey: ['', [Validators.required, Validators.minLength(1)]]
@@ -277,6 +300,10 @@ export class SettingsComponent implements OnInit {
       default:
         return 'Unknown';
     }
+  }
+
+  toggleApiKeyVisibility(): void {
+    this.showApiKey.update(value => !value);
   }
 
   get apiKey() {
