@@ -32,10 +32,7 @@ describe('AppComponent', () => {
     const fixture = TestBed.createComponent(AppComponent);
     await fixture.whenStable();
     fixture.detectChanges(); // Ensure change detection runs
-    // const _compiled = fixture.nativeElement as HTMLElement;
-    // The actual title might differ, but let's see if this fixes the crash.
-    // If it fails on text content, I'll know the component rendered at least.
-    // Based on previous run, it crashed before this expectation.
-    // expect(compiled.querySelector('h1')?.textContent).toContain('Hello, jules_api');
+    const app = fixture.componentInstance;
+    expect(app.title()).toBe('Jules');
   });
 });
