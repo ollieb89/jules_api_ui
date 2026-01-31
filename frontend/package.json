@@ -50,26 +50,28 @@
     "tslib": "^2.3.0"
   },
   "devDependencies": {
-    "@angular/build": "^21.0.4",
-    "@angular/cli": "^21.0.4",
-    "@angular/compiler-cli": "^21.0.0",
     "@angular-eslint/builder": "^19.7.1",
     "@angular-eslint/eslint-plugin": "^19.7.1",
     "@angular-eslint/eslint-plugin-template": "^19.7.1",
     "@angular-eslint/template-parser": "^19.7.1",
+    "@angular/build": "^21.0.4",
+    "@angular/cli": "^21.0.4",
+    "@angular/compiler-cli": "^21.0.0",
     "@axe-core/playwright": "^4.10.2",
     "@playwright/test": "^1.54.1",
     "@tailwindcss/postcss": "^4.1.12",
-    "@typescript-eslint/eslint-plugin": "^7.18.0",
-    "@typescript-eslint/parser": "^7.18.0",
     "@types/express": "^5.0.1",
     "@types/node": "^20.17.19",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "@vitest/browser-playwright": "^4.0.18",
     "eslint": "^8.57.1",
     "jsdom": "^27.1.0",
+    "playwright": "^1.58.1",
     "postcss": "^8.5.3",
     "source-map-explorer": "^2.5.3",
     "tailwindcss": "^4.1.12",
     "typescript": "~5.9.2",
-    "vitest": "^4.0.8"
+    "vitest": "4.0.18"
   }
 }

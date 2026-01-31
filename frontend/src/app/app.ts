@@ -10,8 +10,8 @@ import { GlobalErrorService } from './services/global-error.service';
   styleUrl: './app.css',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class App implements OnInit {
-  protected readonly title = signal('Jules');
+export class AppComponent implements OnInit {
+  readonly title = signal('Jules');
   private readonly themeService = inject(ThemeService);
   private readonly router = inject(Router);
   private readonly globalErrorService = inject(GlobalErrorService);

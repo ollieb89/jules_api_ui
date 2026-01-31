@@ -6,7 +6,7 @@ from django.conf import settings
 from django.http import StreamingHttpResponse
 from rest_framework import status, viewsets
 from rest_framework.authentication import SessionAuthentication
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -600,7 +600,7 @@ class JulesHealthViewSet(JulesAuthenticatedViewSet):
 class SettingsViewSet(JulesAuthenticatedViewSet):
     """ViewSet for managing Jules settings (API key configuration)."""
 
-
+    permission_classes = (IsAuthenticated, IsAdminUser)
 
     def list(self, request):  # noqa: ARG002
         """Get current settings (masked API key)."""
