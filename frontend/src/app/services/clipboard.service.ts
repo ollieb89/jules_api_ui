@@ -40,7 +40,7 @@ export class ClipboardService {
       document.body.appendChild(textArea);
       textArea.focus();
       textArea.select();
-      
+
       const successful = document.execCommand('copy');
       document.body.removeChild(textArea);
       return successful;
@@ -67,4 +67,3 @@ export class ClipboardService {
     }
   }
 }
-
