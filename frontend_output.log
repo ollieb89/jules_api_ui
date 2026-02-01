@@ -1,0 +1,524 @@
+$ NG_CLI_ANALYTICS=false ng serve --port 4700
+❯ Building...
+✔ Building...
+Initial chunk files | Names                    |  Raw size
+styles.css          | styles                   | 173.43 kB |
+main.js             | main                     |  17.69 kB |
+chunk-CGKGWTPK.js   | -                        |   3.14 kB |
+chunk-3TDPNUI5.js   | -                        |   1.94 kB |
+chunk-DI463QPF.js   | -                        |   1.58 kB |
+chunk-HBGDH4TH.js   | -                        |   1.52 kB |
+chunk-VUJOFXKG.js   | -                        | 938 bytes |
+chunk-FNRXFYQJ.js   | -                        | 778 bytes |
+
+                    | Initial total            | 201.01 kB
+
+Lazy chunk files    | Names                    |  Raw size
+chunk-7HZUZMBH.js   | session-detail-component | 127.52 kB |
+chunk-5Q2VTJP4.js   | session-list-component   |  62.40 kB |
+chunk-35NPN7FS.js   | phase-two-component      |  58.38 kB |
+chunk-NKTTI735.js   | session-create-component |  46.26 kB |
+chunk-IUMC4MJF.js   | dashboard-component      |  32.43 kB |
+chunk-XSDUGGMD.js   | settings-component       |  25.13 kB |
+chunk-YWABV3YP.js   | user-form-component      |  19.40 kB |
+chunk-NNPUTN4A.js   | user-list-component      |  18.06 kB |
+chunk-BIHABOU2.js   | -                        |  13.98 kB |
+chunk-PYEYS4ZX.js   | -                        |  10.24 kB |
+chunk-B62VGVJC.js   | -                        |   8.23 kB |
+chunk-UI2VZNLO.js   | -                        |   6.31 kB |
+chunk-AJ6WGKT5.js   | -                        |   4.75 kB |
+chunk-7BTYQXGM.js   | -                        |   1.24 kB |
+
+Application bundle generation complete. [5.917 seconds] - 2026-02-01T19:57:26.614Z
+
+Watch mode enabled. Watching for file changes...
+NOTE: Raw file sizes do not reflect development server per-request transformations.
+  ➜  Local:   http://localhost:4700/
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Initial chunk files | Names                  | Raw size
+main.js             | main                   | 17.69 kB |
+
+Lazy chunk files    | Names                  | Raw size
+chunk-QAKF3RAB.js   | session-list-component | 62.40 kB |
+chunk-7D2LFMDE.js   | dashboard-component    | 32.43 kB |
+chunk-RJOZXJW2.js   | -                      | 13.98 kB |
+
+Application bundle generation complete. [19.023 seconds] - 2026-02-01T20:08:16.035Z
+
+Page reload sent to client(s).
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Initial chunk files | Names                    |  Raw size
+styles.css          | styles                   | 173.43 kB |
+main.js             | main                     |  17.69 kB |
+chunk-CGKGWTPK.js   | -                        |   3.14 kB |
+chunk-3TDPNUI5.js   | -                        |   1.94 kB |
+chunk-DI463QPF.js   | -                        |   1.58 kB |
+chunk-HBGDH4TH.js   | -                        |   1.52 kB |
+chunk-VUJOFXKG.js   | -                        | 938 bytes |
+chunk-FNRXFYQJ.js   | -                        | 778 bytes |
+
+                    | Initial total            | 201.01 kB
+
+Lazy chunk files    | Names                    |  Raw size
+chunk-7HZUZMBH.js   | session-detail-component | 127.52 kB |
+chunk-QAKF3RAB.js   | session-list-component   |  62.40 kB |
+chunk-35NPN7FS.js   | phase-two-component      |  58.38 kB |
+chunk-NKTTI735.js   | session-create-component |  46.26 kB |
+chunk-7D2LFMDE.js   | dashboard-component      |  32.43 kB |
+chunk-XSDUGGMD.js   | settings-component       |  25.13 kB |
+chunk-YWABV3YP.js   | user-form-component      |  19.40 kB |
+chunk-NNPUTN4A.js   | user-list-component      |  18.06 kB |
+chunk-RJOZXJW2.js   | -                        |  13.98 kB |
+chunk-PYEYS4ZX.js   | -                        |  10.24 kB |
+chunk-B62VGVJC.js   | -                        |   8.23 kB |
+chunk-UI2VZNLO.js   | -                        |   6.31 kB |
+chunk-AJ6WGKT5.js   | -                        |   4.75 kB |
+chunk-7BTYQXGM.js   | -                        |   1.24 kB |
+
+Application bundle generation complete. [0.872 seconds] - 2026-02-01T20:08:27.942Z
+
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Initial chunk files | Names                    |  Raw size
+styles.css          | styles                   | 173.43 kB |
+main.js             | main                     |  17.69 kB |
+chunk-CGKGWTPK.js   | -                        |   3.14 kB |
+chunk-3TDPNUI5.js   | -                        |   1.94 kB |
+chunk-DI463QPF.js   | -                        |   1.58 kB |
+chunk-HBGDH4TH.js   | -                        |   1.52 kB |
+chunk-VUJOFXKG.js   | -                        | 938 bytes |
+chunk-FNRXFYQJ.js   | -                        | 778 bytes |
+
+                    | Initial total            | 201.01 kB
+
+Lazy chunk files    | Names                    |  Raw size
+chunk-7HZUZMBH.js   | session-detail-component | 127.52 kB |
+chunk-QAKF3RAB.js   | session-list-component   |  62.40 kB |
+chunk-35NPN7FS.js   | phase-two-component      |  58.38 kB |
+chunk-NKTTI735.js   | session-create-component |  46.26 kB |
+chunk-7D2LFMDE.js   | dashboard-component      |  32.43 kB |
+chunk-XSDUGGMD.js   | settings-component       |  25.13 kB |
+chunk-YWABV3YP.js   | user-form-component      |  19.40 kB |
+chunk-NNPUTN4A.js   | user-list-component      |  18.06 kB |
+chunk-RJOZXJW2.js   | -                        |  13.98 kB |
+chunk-PYEYS4ZX.js   | -                        |  10.24 kB |
+chunk-B62VGVJC.js   | -                        |   8.23 kB |
+chunk-UI2VZNLO.js   | -                        |   6.31 kB |
+chunk-AJ6WGKT5.js   | -                        |   4.75 kB |
+chunk-7BTYQXGM.js   | -                        |   1.24 kB |
+
+Application bundle generation complete. [0.410 seconds] - 2026-02-01T20:08:32.516Z
+
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Initial chunk files | Names                    |  Raw size
+main.js             | main                     |  17.69 kB |
+
+Lazy chunk files    | Names                    |  Raw size
+chunk-PU74JROV.js   | session-detail-component | 127.52 kB |
+
+Application bundle generation complete. [2.424 seconds] - 2026-02-01T20:08:56.526Z
+
+Page reload sent to client(s).
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Initial chunk files | Names                    |  Raw size
+styles.css          | styles                   | 173.43 kB |
+main.js             | main                     |  17.69 kB |
+chunk-CGKGWTPK.js   | -                        |   3.14 kB |
+chunk-3TDPNUI5.js   | -                        |   1.94 kB |
+chunk-DI463QPF.js   | -                        |   1.58 kB |
+chunk-HBGDH4TH.js   | -                        |   1.52 kB |
+chunk-VUJOFXKG.js   | -                        | 938 bytes |
+chunk-FNRXFYQJ.js   | -                        | 778 bytes |
+
+                    | Initial total            | 201.01 kB
+
+Lazy chunk files    | Names                    |  Raw size
+chunk-PU74JROV.js   | session-detail-component | 127.52 kB |
+chunk-QAKF3RAB.js   | session-list-component   |  62.40 kB |
+chunk-35NPN7FS.js   | phase-two-component      |  58.38 kB |
+chunk-NKTTI735.js   | session-create-component |  46.26 kB |
+chunk-7D2LFMDE.js   | dashboard-component      |  32.43 kB |
+chunk-XSDUGGMD.js   | settings-component       |  25.13 kB |
+chunk-YWABV3YP.js   | user-form-component      |  19.40 kB |
+chunk-NNPUTN4A.js   | user-list-component      |  18.06 kB |
+chunk-RJOZXJW2.js   | -                        |  13.98 kB |
+chunk-PYEYS4ZX.js   | -                        |  10.24 kB |
+chunk-B62VGVJC.js   | -                        |   8.23 kB |
+chunk-UI2VZNLO.js   | -                        |   6.31 kB |
+chunk-AJ6WGKT5.js   | -                        |   4.75 kB |
+chunk-7BTYQXGM.js   | -                        |   1.24 kB |
+
+Application bundle generation complete. [0.109 seconds] - 2026-02-01T20:09:18.680Z
+
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Initial chunk files | Names               | Raw size
+main.js             | main                | 17.69 kB |
+
+Lazy chunk files    | Names               | Raw size
+chunk-NKSLQWHQ.js   | user-form-component | 19.40 kB |
+
+Application bundle generation complete. [0.791 seconds] - 2026-02-01T20:09:26.325Z
+
+Page reload sent to client(s).
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Initial chunk files | Names                    |  Raw size
+main.js             | main                     |  17.69 kB |
+
+Lazy chunk files    | Names                    |  Raw size
+chunk-YXX3M2Z2.js   | session-detail-component | 127.52 kB |
+chunk-RRJ2Y3A5.js   | session-list-component   |  62.40 kB |
+chunk-BCMP27CP.js   | user-list-component      |  18.06 kB |
+chunk-UN3OHPGT.js   | -                        |  10.24 kB |
+
+Application bundle generation complete. [1.570 seconds] - 2026-02-01T20:09:46.611Z
+
+Page reload sent to client(s).
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Application bundle generation failed. [0.413 seconds] - 2026-02-01T20:10:10.741Z
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2305: Module '"./app/app"' has no exported member 'App'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/main.server.ts:2:9:
+[37m      2 │ import { [32mApp[37m } from './app/app';
+        ╵          [32m~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2305: Module '"./app/app"' has no exported member 'App'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/main.ts:3:9:
+[37m      3 │ import { [32mApp[37m } from './app/app';
+        ╵          [32m~~~[0m
+
+
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Application bundle generation failed. [0.908 seconds] - 2026-02-01T20:10:16.326Z
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2305: Module '"./app/app"' has no exported member 'App'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/main.server.ts:2:9:
+[37m      2 │ import { [32mApp[37m } from './app/app';
+        ╵          [32m~~~[0m
+
+
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Initial chunk files | Names                    |  Raw size
+styles.css          | styles                   | 173.43 kB |
+main.js             | main                     |  17.87 kB |
+chunk-CGKGWTPK.js   | -                        |   3.14 kB |
+chunk-3TDPNUI5.js   | -                        |   1.94 kB |
+chunk-DI463QPF.js   | -                        |   1.58 kB |
+chunk-HBGDH4TH.js   | -                        |   1.52 kB |
+chunk-VUJOFXKG.js   | -                        | 938 bytes |
+chunk-FNRXFYQJ.js   | -                        | 778 bytes |
+
+                    | Initial total            | 201.19 kB
+
+Lazy chunk files    | Names                    |  Raw size
+chunk-YXX3M2Z2.js   | session-detail-component | 127.52 kB |
+chunk-RRJ2Y3A5.js   | session-list-component   |  62.40 kB |
+chunk-35NPN7FS.js   | phase-two-component      |  58.38 kB |
+chunk-NKTTI735.js   | session-create-component |  46.26 kB |
+chunk-7D2LFMDE.js   | dashboard-component      |  32.43 kB |
+chunk-XSDUGGMD.js   | settings-component       |  25.13 kB |
+chunk-NKSLQWHQ.js   | user-form-component      |  19.40 kB |
+chunk-BCMP27CP.js   | user-list-component      |  18.06 kB |
+chunk-RJOZXJW2.js   | -                        |  13.98 kB |
+chunk-UN3OHPGT.js   | -                        |  10.24 kB |
+chunk-B62VGVJC.js   | -                        |   8.23 kB |
+chunk-UI2VZNLO.js   | -                        |   6.31 kB |
+chunk-AJ6WGKT5.js   | -                        |   4.75 kB |
+chunk-7BTYQXGM.js   | -                        |   1.24 kB |
+
+Application bundle generation complete. [0.589 seconds] - 2026-02-01T20:10:47.636Z
+
+Page reload sent to client(s).
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Initial chunk files | Names                    |  Raw size
+styles.css          | styles                   | 173.43 kB |
+main.js             | main                     |  17.87 kB |
+chunk-CGKGWTPK.js   | -                        |   3.14 kB |
+chunk-3TDPNUI5.js   | -                        |   1.94 kB |
+chunk-DI463QPF.js   | -                        |   1.58 kB |
+chunk-HBGDH4TH.js   | -                        |   1.52 kB |
+chunk-VUJOFXKG.js   | -                        | 938 bytes |
+chunk-FNRXFYQJ.js   | -                        | 778 bytes |
+
+                    | Initial total            | 201.19 kB
+
+Lazy chunk files    | Names                    |  Raw size
+chunk-YXX3M2Z2.js   | session-detail-component | 127.52 kB |
+chunk-RRJ2Y3A5.js   | session-list-component   |  62.40 kB |
+chunk-35NPN7FS.js   | phase-two-component      |  58.38 kB |
+chunk-NKTTI735.js   | session-create-component |  46.26 kB |
+chunk-7D2LFMDE.js   | dashboard-component      |  32.43 kB |
+chunk-XSDUGGMD.js   | settings-component       |  25.13 kB |
+chunk-NKSLQWHQ.js   | user-form-component      |  19.40 kB |
+chunk-BCMP27CP.js   | user-list-component      |  18.06 kB |
+chunk-RJOZXJW2.js   | -                        |  13.98 kB |
+chunk-UN3OHPGT.js   | -                        |  10.24 kB |
+chunk-B62VGVJC.js   | -                        |   8.23 kB |
+chunk-UI2VZNLO.js   | -                        |   6.31 kB |
+chunk-AJ6WGKT5.js   | -                        |   4.75 kB |
+chunk-7BTYQXGM.js   | -                        |   1.24 kB |
+
+Application bundle generation complete. [0.094 seconds] - 2026-02-01T20:11:12.393Z
+
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Initial chunk files | Names                    |  Raw size
+main.js             | main                     |  17.87 kB |
+
+Lazy chunk files    | Names                    |  Raw size
+chunk-LC7UAWUS.js   | session-detail-component | 127.52 kB |
+
+Application bundle generation complete. [0.676 seconds] - 2026-02-01T20:11:25.976Z
+
+Page reload sent to client(s).
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Application bundle generation failed. [0.735 seconds] - 2026-02-01T20:11:47.338Z
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2578: Unused '@ts-expect-error' directive.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/jules/session-detail/session-detail.component.ts:7:0:
+[37m      7 │ [32m// @ts-expect-error: ignore missing types for ngx-markdown[37m
+        ╵ [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Application bundle generation failed. [0.100 seconds] - 2026-02-01T20:11:51.328Z
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2578: Unused '@ts-expect-error' directive.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/jules/session-detail/session-detail.component.ts:7:0:
+[37m      7 │ [32m// @ts-expect-error: ignore missing types for ngx-markdown[37m
+        ╵ [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Application bundle generation failed. [0.082 seconds] - 2026-02-01T20:12:09.458Z
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2578: Unused '@ts-expect-error' directive.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/jules/session-detail/session-detail.component.ts:7:0:
+[37m      7 │ [32m// @ts-expect-error: ignore missing types for ngx-markdown[37m
+        ╵ [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Application bundle generation failed. [0.110 seconds] - 2026-02-01T20:12:13.695Z
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2578: Unused '@ts-expect-error' directive.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/jules/session-detail/session-detail.component.ts:7:0:
+[37m      7 │ [32m// @ts-expect-error: ignore missing types for ngx-markdown[37m
+        ╵ [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Application bundle generation failed. [0.082 seconds] - 2026-02-01T20:12:19.256Z
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2578: Unused '@ts-expect-error' directive.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/jules/session-detail/session-detail.component.ts:7:0:
+[37m      7 │ [32m// @ts-expect-error: ignore missing types for ngx-markdown[37m
+        ╵ [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Application bundle generation failed. [0.075 seconds] - 2026-02-01T20:12:36.661Z
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2578: Unused '@ts-expect-error' directive.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/jules/session-detail/session-detail.component.ts:7:0:
+[37m      7 │ [32m// @ts-expect-error: ignore missing types for ngx-markdown[37m
+        ╵ [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Application bundle generation failed. [0.095 seconds] - 2026-02-01T20:12:42.063Z
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2578: Unused '@ts-expect-error' directive.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/jules/session-detail/session-detail.component.ts:7:0:
+[37m      7 │ [32m// @ts-expect-error: ignore missing types for ngx-markdown[37m
+        ╵ [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Application bundle generation failed. [0.158 seconds] - 2026-02-01T20:12:50.424Z
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2578: Unused '@ts-expect-error' directive.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/jules/session-detail/session-detail.component.ts:7:0:
+[37m      7 │ [32m// @ts-expect-error: ignore missing types for ngx-markdown[37m
+        ╵ [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Application bundle generation failed. [0.107 seconds] - 2026-02-01T20:12:57.084Z
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2578: Unused '@ts-expect-error' directive.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/jules/session-detail/session-detail.component.ts:7:0:
+[37m      7 │ [32m// @ts-expect-error: ignore missing types for ngx-markdown[37m
+        ╵ [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Application bundle generation failed. [0.094 seconds] - 2026-02-01T20:13:03.765Z
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2578: Unused '@ts-expect-error' directive.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/jules/session-detail/session-detail.component.ts:7:0:
+[37m      7 │ [32m// @ts-expect-error: ignore missing types for ngx-markdown[37m
+        ╵ [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Application bundle generation failed. [0.259 seconds] - 2026-02-01T20:13:07.871Z
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2578: Unused '@ts-expect-error' directive.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/jules/session-detail/session-detail.component.ts:7:0:
+[37m      7 │ [32m// @ts-expect-error: ignore missing types for ngx-markdown[37m
+        ╵ [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Application bundle generation failed. [0.369 seconds] - 2026-02-01T20:13:40.384Z
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2578: Unused '@ts-expect-error' directive.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/jules/session-detail/session-detail.component.ts:7:0:
+[37m      7 │ [32m// @ts-expect-error: ignore missing types for ngx-markdown[37m
+        ╵ [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Application bundle generation failed. [1.203 seconds] - 2026-02-01T20:17:26.270Z
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2554: Expected 0 arguments, but got 1.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/confirmation-dialog/confirmation-dialog.component.ts:13:25:
+[37m      13 │       (cancel)="onCancel([32m$event[37m)"
+         ╵                          [32m~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2578: Unused '@ts-expect-error' directive.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/jules/session-detail/session-detail.component.ts:7:0:
+[37m      7 │ [32m// @ts-expect-error: ignore missing types for ngx-markdown[37m
+        ╵ [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Application bundle generation failed. [0.540 seconds] - 2026-02-01T20:17:30.982Z
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2554: Expected 0 arguments, but got 1.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/confirmation-dialog/confirmation-dialog.component.ts:13:25:
+[37m      13 │       (cancel)="onCancel([32m$event[37m)"
+         ╵                          [32m~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2578: Unused '@ts-expect-error' directive.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/jules/session-detail/session-detail.component.ts:7:0:
+[37m      7 │ [32m// @ts-expect-error: ignore missing types for ngx-markdown[37m
+        ╵ [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Application bundle generation failed. [0.206 seconds] - 2026-02-01T20:17:53.308Z
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2554: Expected 0 arguments, but got 1.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/confirmation-dialog/confirmation-dialog.component.ts:13:25:
+[37m      13 │       (cancel)="onCancel([32m$event[37m)"
+         ╵                          [32m~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2578: Unused '@ts-expect-error' directive.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/jules/session-detail/session-detail.component.ts:7:0:
+[37m      7 │ [32m// @ts-expect-error: ignore missing types for ngx-markdown[37m
+        ╵ [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Application bundle generation failed. [0.095 seconds] - 2026-02-01T20:18:21.937Z
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2554: Expected 0 arguments, but got 1.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/confirmation-dialog/confirmation-dialog.component.ts:13:25:
+[37m      13 │       (cancel)="onCancel([32m$event[37m)"
+         ╵                          [32m~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2578: Unused '@ts-expect-error' directive.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/jules/session-detail/session-detail.component.ts:7:0:
+[37m      7 │ [32m// @ts-expect-error: ignore missing types for ngx-markdown[37m
+        ╵ [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Application bundle generation failed. [0.108 seconds] - 2026-02-01T20:18:27.332Z
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2554: Expected 0 arguments, but got 1.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/confirmation-dialog/confirmation-dialog.component.ts:13:25:
+[37m      13 │       (cancel)="onCancel([32m$event[37m)"
+         ╵                          [32m~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2578: Unused '@ts-expect-error' directive.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/jules/session-detail/session-detail.component.ts:7:0:
+[37m      7 │ [32m// @ts-expect-error: ignore missing types for ngx-markdown[37m
+        ╵ [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Application bundle generation failed. [0.085 seconds] - 2026-02-01T20:18:33.310Z
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2554: Expected 0 arguments, but got 1.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/confirmation-dialog/confirmation-dialog.component.ts:13:25:
+[37m      13 │       (cancel)="onCancel([32m$event[37m)"
+         ╵                          [32m~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2578: Unused '@ts-expect-error' directive.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/jules/session-detail/session-detail.component.ts:7:0:
+[37m      7 │ [32m// @ts-expect-error: ignore missing types for ngx-markdown[37m
+        ╵ [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
