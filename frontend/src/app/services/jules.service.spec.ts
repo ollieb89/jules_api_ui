@@ -10,7 +10,7 @@ describe('JulesService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [JulesService]
+      providers: [JulesService],
     });
     service = TestBed.inject(JulesService);
     httpMock = TestBed.inject(HttpTestingController);
@@ -29,13 +29,13 @@ describe('JulesService', () => {
             display_name: 'Test Repo',
             github_metadata: {
               repository: 'owner/repo',
-              branch: 'main'
-            }
-          }
-        ]
+              branch: 'main',
+            },
+          },
+        ],
       };
 
-      service.getSources().subscribe(response => {
+      service.getSources().subscribe((response) => {
         expect(response.sources.length).toBe(1);
         expect(response.sources[0].display_name).toBe('Test Repo');
       });
@@ -55,13 +55,15 @@ describe('JulesService', () => {
         prompt: 'Test prompt',
         source: 'sources/test-repo',
         create_time: '2024-01-01T00:00:00Z',
-        update_time: '2024-01-01T00:00:00Z'
+        update_time: '2024-01-01T00:00:00Z',
       };
 
-      service.createSession({ prompt: 'Test prompt', source: 'sources/test-repo' }).subscribe(session => {
-        expect(session.display_name).toBe('Test Session');
-        expect(session.state).toBe('ACTIVE');
-      });
+      service
+        .createSession({ prompt: 'Test prompt', source: 'sources/test-repo' })
+        .subscribe((session) => {
+          expect(session.display_name).toBe('Test Session');
+          expect(session.state).toBe('ACTIVE');
+        });
 
       const req = httpMock.expectOne(`${environment.apiUrl}/jules/sessions/`);
       expect(req.request.method).toBe('POST');
@@ -73,7 +75,7 @@ describe('JulesService', () => {
       const errorPromise = new Promise<{ status: number; error: unknown }>((_, reject) => {
         service.createSession({ prompt: 'Test prompt', source: 'sources/test-repo' }).subscribe({
           next: () => reject(new Error('Expected error')),
-          error: (err) => reject(err)
+          error: (err) => reject(err),
         });
       });
 
@@ -83,7 +85,7 @@ describe('JulesService', () => {
 
       await expect(errorPromise).rejects.toMatchObject({
         status: 500,
-        error: { error: 'Server error' }
+        error: { error: 'Server error' },
       });
     });
   });
@@ -99,13 +101,13 @@ describe('JulesService', () => {
             prompt: 'Test prompt',
             source: 'sources/test-repo',
             create_time: '2024-01-01T00:00:00Z',
-            update_time: '2024-01-01T00:00:00Z'
-          }
+            update_time: '2024-01-01T00:00:00Z',
+          },
         ],
-        next_page_token: null
+        next_page_token: null,
       };
 
-      service.getSessions().subscribe(response => {
+      service.getSessions().subscribe((response) => {
         expect(response.sessions.length).toBe(1);
         expect(response.sessions[0].display_name).toBe('Test Session');
       });
@@ -125,10 +127,10 @@ describe('JulesService', () => {
         prompt: 'Test prompt',
         source: 'sources/test-repo',
         create_time: '2024-01-01T00:00:00Z',
-        update_time: '2024-01-01T00:00:00Z'
+        update_time: '2024-01-01T00:00:00Z',
       };
 
-      service.getSession('test-session').subscribe(session => {
+      service.getSession('test-session').subscribe((session) => {
         expect(session.display_name).toBe('Test Session');
       });
 
@@ -159,14 +161,16 @@ describe('JulesService', () => {
         prompt: 'Test prompt',
         source: 'sources/test-repo',
         create_time: '2024-01-01T00:00:00Z',
-        update_time: '2024-01-01T00:00:00Z'
+        update_time: '2024-01-01T00:00:00Z',
       };
 
-      service.approvePlan('test-session').subscribe(session => {
+      service.approvePlan('test-session').subscribe((session) => {
         expect(session.display_name).toBe('Test Session');
       });
 
-      const req = httpMock.expectOne(`${environment.apiUrl}/jules/sessions/test-session/approve-plan/`);
+      const req = httpMock.expectOne(
+        `${environment.apiUrl}/jules/sessions/test-session/approve-plan/`,
+      );
       expect(req.request.method).toBe('POST');
       req.flush(mockSession);
     });
@@ -181,14 +185,16 @@ describe('JulesService', () => {
         prompt: 'Test prompt',
         source: 'sources/test-repo',
         create_time: '2024-01-01T00:00:00Z',
-        update_time: '2024-01-01T00:00:00Z'
+        update_time: '2024-01-01T00:00:00Z',
       };
 
-      service.sendMessage('test-session', { message: 'Test message' }).subscribe(session => {
+      service.sendMessage('test-session', { message: 'Test message' }).subscribe((session) => {
         expect(session.display_name).toBe('Test Session');
       });
 
-      const req = httpMock.expectOne(`${environment.apiUrl}/jules/sessions/test-session/send-message/`);
+      const req = httpMock.expectOne(
+        `${environment.apiUrl}/jules/sessions/test-session/send-message/`,
+      );
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual({ message: 'Test message' });
       req.flush(mockSession);
@@ -204,20 +210,22 @@ describe('JulesService', () => {
             plan_generated: {
               plan: {
                 steps: [],
-                state: 'PENDING' as const
-              }
+                state: 'PENDING' as const,
+              },
             },
-            create_time: '2024-01-01T00:00:00Z'
-          }
+            create_time: '2024-01-01T00:00:00Z',
+          },
         ],
-        next_page_token: null
+        next_page_token: null,
       };
 
-      service.getActivities('test-session').subscribe(response => {
+      service.getActivities('test-session').subscribe((response) => {
         expect(response.activities.length).toBe(1);
       });
 
-      const req = httpMock.expectOne(`${environment.apiUrl}/jules/sessions/test-session/activities/?page_size=100`);
+      const req = httpMock.expectOne(
+        `${environment.apiUrl}/jules/sessions/test-session/activities/?page_size=100`,
+      );
       expect(req.request.method).toBe('GET');
       req.flush(mockResponse);
     });
@@ -229,10 +237,10 @@ describe('JulesService', () => {
         api_key_configured: true,
         masked_api_key: '****1234',
         created_at: '2024-01-01T00:00:00Z',
-        updated_at: '2024-01-02T00:00:00Z'
+        updated_at: '2024-01-02T00:00:00Z',
       };
 
-      service.getSettings().subscribe(response => {
+      service.getSettings().subscribe((response) => {
         expect(response.api_key_configured).toBe(true);
         expect(response.masked_api_key).toBe('****1234');
       });
@@ -247,10 +255,10 @@ describe('JulesService', () => {
     it('should update the API key', () => {
       const mockResponse = {
         status: 'success',
-        message: 'API key saved'
+        message: 'API key saved',
       };
 
-      service.updateApiKey('test-key').subscribe(response => {
+      service.updateApiKey('test-key').subscribe((response) => {
         expect(response.message).toBe('API key saved');
       });
 
@@ -264,10 +272,10 @@ describe('JulesService', () => {
       const mockResponse = {
         status: 'success',
         message: 'API key saved',
-        masked_api_key: '****9999'
+        masked_api_key: '****9999',
       };
 
-      service.updateApiKey('test-key').subscribe(response => {
+      service.updateApiKey('test-key').subscribe((response) => {
         expect(response.masked_api_key).toBe('****9999');
       });
 
@@ -284,10 +292,10 @@ describe('JulesService', () => {
         message: 'Connection ok',
         api_key_configured: true,
         api_connectivity: 'ok',
-        sources_count: 3
+        sources_count: 3,
       };
 
-      service.testConnection().subscribe(response => {
+      service.testConnection().subscribe((response) => {
         expect(response.status).toBe('success');
         expect(response.sources_count).toBe(3);
       });
