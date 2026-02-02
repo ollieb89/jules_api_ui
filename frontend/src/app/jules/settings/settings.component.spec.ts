@@ -100,4 +100,19 @@ describe('SettingsComponent', () => {
     expect(component.connectionStatus()).toBe('error');
     expect(component.error()).toBe('Connection failed');
   });
+
+  it('should toggle API key visibility', () => {
+    fixture.detectChanges();
+
+    // Initial state
+    expect(component.showApiKey()).toBe(false);
+
+    // Toggle on
+    component.showApiKey.set(true);
+    expect(component.showApiKey()).toBe(true);
+
+    // Toggle off
+    component.showApiKey.set(false);
+    expect(component.showApiKey()).toBe(false);
+  });
 });

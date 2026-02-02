@@ -87,14 +87,28 @@ interface SettingsResponse {
             <label for="api-key" class="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
               Jules API Key
             </label>
-            <input
-              id="api-key"
-              type="password"
-              formControlName="apiKey"
-              placeholder="Enter your Jules API key"
-              class="w-full px-3 py-2 border border-[var(--color-border-strong)] rounded-lg bg-[var(--color-surface-primary)] text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
-              [style.borderColor]="apiKey?.invalid && apiKey?.touched ? 'var(--color-validation-error)' : null"
-            />
+            <div class="relative">
+              <input
+                id="api-key"
+                [type]="showApiKey() ? 'text' : 'password'"
+                formControlName="apiKey"
+                placeholder="Enter your Jules API key"
+                class="w-full pl-3 pr-16 py-2 border border-[var(--color-border-strong)] rounded-lg bg-[var(--color-surface-primary)] text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+                [style.borderColor]="apiKey?.invalid && apiKey?.touched ? 'var(--color-validation-error)' : null"
+              />
+              <button
+                type="button"
+                (click)="showApiKey.set(!showApiKey())"
+                [attr.aria-label]="showApiKey() ? 'Hide API key' : 'Show API key'"
+                class="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 text-xs !bg-transparent !border-0 !text-[var(--color-text-secondary)] hover:!text-[var(--color-text-primary)] rounded hover:!bg-[var(--color-background-tertiary)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)]"
+              >
+                @if (showApiKey()) {
+                  <span aria-hidden="true">Hide</span>
+                } @else {
+                  <span aria-hidden="true">Show</span>
+                }
+              </button>
+            </div>
             <p class="mt-1 text-xs text-[var(--color-text-tertiary)]">
               Your API key is stored securely and never displayed in plaintext.
             </p>
@@ -162,6 +176,7 @@ export class SettingsComponent implements OnInit {
   private fb = inject(FormBuilder);
 
   settings = signal<SettingsResponse | null>(null);
+  showApiKey = signal<boolean>(false);
   loading = signal<boolean>(false);
   saving = signal<boolean>(false);
   testing = signal<boolean>(false);
