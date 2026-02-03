@@ -3,6 +3,7 @@ import { SettingsComponent } from './settings.component';
 import { JulesService } from '../../services/jules.service';
 import { of } from 'rxjs';
 import { vi } from 'vitest';
+import { By } from '@angular/platform-browser';
 
 import { provideRouter } from '@angular/router';
 
@@ -99,5 +100,32 @@ describe('SettingsComponent', () => {
 
     expect(component.connectionStatus()).toBe('error');
     expect(component.error()).toBe('Connection failed');
+  });
+
+  it('should toggle API key visibility', () => {
+    fixture.detectChanges();
+
+    const inputDebugEl = fixture.debugElement.query(By.css('input[formControlName="apiKey"]'));
+    const buttonDebugEl = fixture.debugElement.query(By.css('button[aria-label="Show API key"]'));
+
+    expect(inputDebugEl.nativeElement.type).toBe('password');
+    expect(buttonDebugEl).toBeTruthy();
+
+    // Click toggle button
+    buttonDebugEl.nativeElement.click();
+    fixture.detectChanges();
+
+    expect(component.showApiKey()).toBe(true);
+    expect(inputDebugEl.nativeElement.type).toBe('text');
+
+    const hideButtonDebugEl = fixture.debugElement.query(By.css('button[aria-label="Hide API key"]'));
+    expect(hideButtonDebugEl).toBeTruthy();
+
+    // Click again
+    hideButtonDebugEl.nativeElement.click();
+    fixture.detectChanges();
+
+    expect(component.showApiKey()).toBe(false);
+    expect(inputDebugEl.nativeElement.type).toBe('password');
   });
 });
