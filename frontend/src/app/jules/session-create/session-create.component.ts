@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { JulesService } from '../../services/jules.service';
+import { ClipboardService } from '../../services/clipboard.service';
 import { CreateSession, Source } from '../../models/jules.model';
 import { getApiErrorMessage } from '../../utils/api-error';
 import { parseSourcesResponse, getParserErrorMessage } from '../../utils/api-parsers';
@@ -224,9 +225,21 @@ type WizardStep = 1 | 2 | 3;
           </div>
 
           <!-- Payload Preview -->
-          <div class="mb-6">
+          <div class="mb-6 relative group">
             <h3 class="text-sm font-medium text-[var(--color-text-tertiary)] mb-2">Request Payload</h3>
             <pre class="bg-[var(--color-background-tertiary)] border border-[var(--color-border-default)] rounded-lg p-4 text-xs text-[var(--color-text-primary)] overflow-x-auto">{{ getPayloadPreview() }}</pre>
+            <button
+              type="button"
+              (click)="copyPayload()"
+              class="absolute top-8 right-2 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity px-2 py-1 bg-[var(--color-surface-primary)] border border-[var(--color-border-default)] rounded shadow-sm text-xs font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-secondary)] hover:text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)]"
+              aria-label="Copy payload to clipboard"
+            >
+              @if (copied()) {
+                <span class="text-[var(--color-interactive-success)]">✓ Copied!</span>
+              } @else {
+                Copy
+              }
+            </button>
           </div>
 
           <div class="flex justify-between gap-3 mt-6">
@@ -257,6 +270,7 @@ type WizardStep = 1 | 2 | 3;
 })
 export class SessionCreateComponent {
   private julesService = inject(JulesService);
+  private clipboardService = inject(ClipboardService);
   private router = inject(Router);
   private fb = inject(FormBuilder);
 
@@ -265,6 +279,7 @@ export class SessionCreateComponent {
   loadingSources = signal<boolean>(false);
   error = signal<string | null>(null);
   currentStep = signal<WizardStep>(1);
+  copied = signal<boolean>(false);
 
   form: FormGroup = this.fb.group({
     source: ['', Validators.required],
@@ -367,6 +382,14 @@ export class SessionCreateComponent {
 
   cancel(): void {
     this.router.navigate(['/jules']);
+  }
+
+  copyPayload(): void {
+    this.clipboardService.copyToClipboard(this.getPayloadPreview());
+    this.copied.set(true);
+    setTimeout(() => {
+      this.copied.set(false);
+    }, 2000);
   }
 
   get prompt() {
