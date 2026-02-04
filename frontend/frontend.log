@@ -1,3 +1,0 @@
-$ NG_CLI_ANALYTICS=false ng serve --port 4700
-/usr/bin/bash: line 1: ng: command not found
-error: script "start" exited with code 127
