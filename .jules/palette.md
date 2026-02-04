@@ -12,3 +12,7 @@
 ## 2026-01-15 - Native Dialog Backdrop Interaction
 **Learning:** The native `<dialog>` element does not automatically close when clicking the backdrop, unlike many custom modal implementations. This expectation is strong for users. The backdrop click event targets the `dialog` element itself, allowing easy detection.
 **Action:** Always implement a click handler on `<dialog>` elements to check `event.target === element` and close the dialog to match user expectations.
+
+## 2026-02-04 - Contextual Actions on Hover
+**Learning:** Actions that are useful but not primary (like "Copy to Clipboard") can be kept accessible but visually unobtrusive by using `opacity-0` with `group-hover:opacity-100` and `focus:opacity-100`. This reduces visual clutter while maintaining discoverability and keyboard accessibility.
+**Action:** Use the "hover-reveal" pattern for secondary utility actions on data displays (like code blocks, IDs, or timestamps), ensuring `focus-visible` styles are included for keyboard users.
