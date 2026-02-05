@@ -12,7 +12,9 @@ from .utils import get_correlation_id, log_jules_api_call, sanitize_url
 
 logger = logging.getLogger(__name__)
 
-RETRY_STATUS_CODES = set(getattr(settings, "JULES_API_RETRY_STATUS_CODES", {429, 502, 503, 504}))
+RETRY_STATUS_CODES = set(
+    getattr(settings, "JULES_API_RETRY_STATUS_CODES", {429, 502, 503, 504})
+)
 MAX_RETRIES = int(getattr(settings, "JULES_API_MAX_RETRIES", 2))
 BACKOFF_SECONDS = float(getattr(settings, "JULES_API_BACKOFF_SECONDS", 0.5))
 TIMEOUT_POLICIES: Mapping[str, Any] = getattr(
@@ -41,6 +43,7 @@ class RetryPolicy:
     max_retries: int
     backoff_seconds: float
     status_codes: set[int]
+
 
 _shared_httpx_client: httpx.Client | None = None
 
@@ -131,7 +134,8 @@ class SharedHttpClient:
         correlation_id = get_correlation_id()
         log_metadata = bool(getattr(settings, "JULES_API_LOG_METADATA", False))
         if correlation_id and not (
-            request_headers.get("X-Correlation-ID") or request_headers.get("X-Request-ID")
+            request_headers.get("X-Correlation-ID")
+            or request_headers.get("X-Request-ID")
         ):
             request_headers["X-Correlation-ID"] = correlation_id
 
@@ -148,8 +152,13 @@ class SharedHttpClient:
                     timeout=timeout,
                 )
 
-                if response.status_code in policy.status_codes and attempt < policy.max_retries:
-                    self._sleep_backoff(attempt, url, response.status_code, response, policy)
+                if (
+                    response.status_code in policy.status_codes
+                    and attempt < policy.max_retries
+                ):
+                    self._sleep_backoff(
+                        attempt, url, response.status_code, response, policy
+                    )
                     continue
 
                 response.raise_for_status()
@@ -177,7 +186,9 @@ class SharedHttpClient:
                     response_bytes=len(exc.response.content),
                     error=exc.__class__.__name__,
                     request_headers=request_headers if log_metadata else None,
-                    response_headers=dict(exc.response.headers) if log_metadata else None,
+                    response_headers=(
+                        dict(exc.response.headers) if log_metadata else None
+                    ),
                     request_params=params if log_metadata else None,
                 )
                 raise self._map_http_status_error(exc, attempt, policy) from exc
@@ -272,9 +283,9 @@ class SharedHttpClient:
             "upstream_status": response.status_code,
             "error_type": exc.__class__.__name__,
         }
-        upstream_request_id = response.headers.get("X-Request-ID") or response.headers.get(
-            "X-Correlation-ID"
-        )
+        upstream_request_id = response.headers.get(
+            "X-Request-ID"
+        ) or response.headers.get("X-Correlation-ID")
         if upstream_request_id:
             details["upstream_request_id"] = upstream_request_id
 
@@ -287,7 +298,9 @@ class SharedHttpClient:
             if isinstance(payload.get("error"), dict):
                 error_payload = payload["error"]
                 message = error_payload.get("message", message)
-                details["error_code"] = error_payload.get("status") or error_payload.get("code")
+                details["error_code"] = error_payload.get(
+                    "status"
+                ) or error_payload.get("code")
                 if "details" in error_payload:
                     details["error_details"] = error_payload["details"]
             else:
@@ -361,7 +374,9 @@ class JulesApiClient:
             "prompt": prompt,
             "source": source,
         }
-        response = self._client.request("POST", url, json=payload, timeout_policy="long")
+        response = self._client.request(
+            "POST", url, json=payload, timeout_policy="long"
+        )
         return response.json()
 
     def list_sessions(
@@ -372,7 +387,9 @@ class JulesApiClient:
         params: dict[str, Any] = {"pageSize": page_size}
         if page_token:
             params["pageToken"] = page_token
-        response = self._client.request("GET", url, params=params, timeout_policy="default")
+        response = self._client.request(
+            "GET", url, params=params, timeout_policy="default"
+        )
         return response.json()
 
     def _normalize_session_id(self, session_id: str) -> str:
@@ -406,7 +423,9 @@ class JulesApiClient:
         normalized_id = self._normalize_session_id(session_id)
         url = self._get_url(f"{normalized_id}:sendMessage")
         payload = {"message": message}
-        response = self._client.request("POST", url, json=payload, timeout_policy="long")
+        response = self._client.request(
+            "POST", url, json=payload, timeout_policy="long"
+        )
         return response.json()
 
     def list_activities(
@@ -418,7 +437,9 @@ class JulesApiClient:
         params: dict[str, Any] = {"pageSize": page_size}
         if page_token:
             params["pageToken"] = page_token
-        response = self._client.request("GET", url, params=params, timeout_policy="default")
+        response = self._client.request(
+            "GET", url, params=params, timeout_policy="default"
+        )
         return response.json()
 
     def close(self) -> None:

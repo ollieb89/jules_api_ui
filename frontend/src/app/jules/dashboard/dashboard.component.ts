@@ -55,8 +55,12 @@ import { SessionState } from '../../models/jules.model';
         </div>
         <div class="bg-[var(--color-surface-primary)] shadow-md rounded-lg p-5">
           <p class="text-sm text-[var(--color-text-tertiary)]">Completed</p>
-          <p class="text-3xl font-semibold text-[var(--color-text-success)]">{{ completedCount() }}</p>
-          <p class="text-xs text-[var(--color-text-tertiary)] mt-2">Completion rate {{ completionRateLabel() }}</p>
+          <p class="text-3xl font-semibold text-[var(--color-text-success)]">
+            {{ completedCount() }}
+          </p>
+          <p class="text-xs text-[var(--color-text-tertiary)] mt-2">
+            Completion rate {{ completionRateLabel() }}
+          </p>
         </div>
         <div class="bg-[var(--color-surface-primary)] shadow-md rounded-lg p-5">
           <p class="text-sm text-[var(--color-text-tertiary)]">Failed</p>
@@ -73,8 +77,12 @@ import { SessionState } from '../../models/jules.model';
       <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="bg-[var(--color-surface-primary)] shadow-md rounded-lg p-6 lg:col-span-2">
           <div class="flex items-center justify-between mb-4">
-            <h2 class="text-lg font-semibold text-[var(--color-text-primary)]">Task Completion Rate</h2>
-            <span class="text-sm text-[var(--color-text-tertiary)]">{{ completionRateLabel() }}</span>
+            <h2 class="text-lg font-semibold text-[var(--color-text-primary)]">
+              Task Completion Rate
+            </h2>
+            <span class="text-sm text-[var(--color-text-tertiary)]">{{
+              completionRateLabel()
+            }}</span>
           </div>
           <div class="h-3 rounded-full bg-[var(--color-background-tertiary)] overflow-hidden">
             <div
@@ -149,7 +157,9 @@ import { SessionState } from '../../models/jules.model';
         </div>
 
         @if (recentSessions().length === 0) {
-          <div class="bg-[var(--color-surface-secondary)] border border-[var(--color-border-default)] rounded-lg p-8 text-center">
+          <div
+            class="bg-[var(--color-surface-secondary)] border border-[var(--color-border-default)] rounded-lg p-8 text-center"
+          >
             <p class="text-[var(--color-text-secondary)] mb-4">No sessions found.</p>
             <a
               routerLink="/jules/create"
@@ -166,15 +176,21 @@ import { SessionState } from '../../models/jules.model';
                 class="block bg-[var(--color-surface-primary)] border border-[var(--color-border-default)] rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
               >
                 <div class="flex justify-between items-start mb-2">
-                  <h3 class="font-semibold text-[var(--color-text-primary)] truncate flex-1 group-hover:text-[var(--color-interactive-primary)] transition-colors">
+                  <h3
+                    class="font-semibold text-[var(--color-text-primary)] truncate flex-1 group-hover:text-[var(--color-interactive-primary)] transition-colors"
+                  >
                     {{ session.display_name || 'Untitled Session' }}
                   </h3>
                   <!-- Status Dot -->
-                  <span 
+                  <span
                     class="w-2.5 h-2.5 rounded-full shrink-0 ml-2"
                     [class.bg-[var(--color-text-tertiary)]]="session.state === 'STATE_UNSPECIFIED'"
-                    [class.bg-[var(--color-state-info)]]="session.state === 'ACTIVE' || session.state === 'IN_PROGRESS'"
-                    [class.bg-[var(--color-state-warning)]]="session.state === 'AWAITING_USER_FEEDBACK'"
+                    [class.bg-[var(--color-state-info)]]="
+                      session.state === 'ACTIVE' || session.state === 'IN_PROGRESS'
+                    "
+                    [class.bg-[var(--color-state-warning)]]="
+                      session.state === 'AWAITING_USER_FEEDBACK'
+                    "
                     [class.bg-[var(--color-state-success)]]="session.state === 'COMPLETED'"
                     [class.bg-[var(--color-state-error)]]="session.state === 'FAILED'"
                     [title]="session.state"
@@ -182,14 +198,16 @@ import { SessionState } from '../../models/jules.model';
                     <span class="sr-only">{{ getStateLabel(session.state) }}</span>
                   </span>
                 </div>
-                
+
                 <p class="text-sm text-[var(--color-text-secondary)] line-clamp-2 mb-3 h-10">
                   {{ session.prompt }}
                 </p>
-                
-                <div class="flex items-center justify-between text-xs text-[var(--color-text-tertiary)]">
+
+                <div
+                  class="flex items-center justify-between text-xs text-[var(--color-text-tertiary)]"
+                >
                   <span class="truncate max-w-[60%]">{{ session.source }}</span>
-                  <span>{{ session.update_time | date:'shortDate' }}</span>
+                  <span>{{ session.update_time | date: 'shortDate' }}</span>
                 </div>
               </a>
             }
@@ -197,7 +215,7 @@ import { SessionState } from '../../models/jules.model';
         }
       </section>
     </div>
-  `
+  `,
 })
 export class DashboardComponent implements OnInit {
   private readonly router = inject(Router);
@@ -249,12 +267,12 @@ export class DashboardComponent implements OnInit {
 
   getStateLabel(state: SessionState): string {
     const labels: Record<SessionState, string> = {
-      'STATE_UNSPECIFIED': 'Pending',
-      'ACTIVE': 'Active',
-      'IN_PROGRESS': 'In Progress',
-      'AWAITING_USER_FEEDBACK': 'Awaiting Feedback',
-      'COMPLETED': 'Completed',
-      'FAILED': 'Failed'
+      STATE_UNSPECIFIED: 'Pending',
+      ACTIVE: 'Active',
+      IN_PROGRESS: 'In Progress',
+      AWAITING_USER_FEEDBACK: 'Awaiting Feedback',
+      COMPLETED: 'Completed',
+      FAILED: 'Failed',
     };
     return labels[state] || state;
   }
