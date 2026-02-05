@@ -156,7 +156,9 @@
         <div class="border-t border-[var(--color-border-default)] pt-4 mt-4">
           <h3 class="text-lg font-semibold text-[var(--color-text-primary)] mb-4">Send Message</h3>
           <form [formGroup]="messageForm" (ngSubmit)="sendMessage()" class="flex gap-2">
+            <label for="message-input" class="sr-only">Message</label>
             <input
+              id="message-input"
               type="text"
               formControlName="message"
               placeholder="Type your message..."
@@ -165,12 +167,13 @@
             <button
               type="submit"
               [disabled]="messageForm.invalid || sendingMessage()"
-              class="px-4 py-2 bg-[var(--color-interactive-primary)] hover:bg-[var(--color-interactive-primary-hover)] disabled:bg-[var(--color-interactive-primary-disabled)] text-[var(--color-text-inverse)] font-semibold rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+              class="px-4 py-2 bg-[var(--color-interactive-primary)] hover:bg-[var(--color-interactive-primary-hover)] disabled:bg-[var(--color-interactive-primary-disabled)] text-[var(--color-text-inverse)] font-semibold rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)] inline-flex items-center gap-2"
             >
               @if (sendingMessage()) {
-                Sending...
+                <span class="animate-spin inline-block" aria-hidden="true">↻</span>
+                <span>Sending...</span>
               } @else {
-                Send
+                <span>Send</span>
               }
             </button>
           </form>
