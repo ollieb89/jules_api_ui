@@ -12,3 +12,7 @@
 ## 2026-01-15 - Native Dialog Backdrop Interaction
 **Learning:** The native `<dialog>` element does not automatically close when clicking the backdrop, unlike many custom modal implementations. This expectation is strong for users. The backdrop click event targets the `dialog` element itself, allowing easy detection.
 **Action:** Always implement a click handler on `<dialog>` elements to check `event.target === element` and close the dialog to match user expectations.
+
+## 2026-02-05 - Lightweight Loading Spinners
+**Learning:** Using a simple unicode character `↻` with Tailwind's `animate-spin` class provides a consistent and lightweight loading indicator without the overhead of a separate component or SVG. This pattern is easily applied inside buttons.
+**Action:** Use `<span class="animate-spin inline-block" aria-hidden="true">↻</span>` for button loading states to maintain visual consistency and performance.
