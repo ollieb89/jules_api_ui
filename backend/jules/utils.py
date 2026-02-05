@@ -83,7 +83,13 @@ def sanitize_url(url: str) -> str:
                 sanitized_params.append((key, value))
         sanitized_query = urlencode(sanitized_params, doseq=True)
         return urlunsplit(
-            (split_url.scheme, split_url.netloc, split_url.path, sanitized_query, split_url.fragment)
+            (
+                split_url.scheme,
+                split_url.netloc,
+                split_url.path,
+                sanitized_query,
+                split_url.fragment,
+            )
         )
     except Exception:
         return url
@@ -241,14 +247,17 @@ def handle_api_exception(e: Exception, request: Request | None = None) -> Respon
     return Response(payload, status=status_code)
 
 
-def drf_exception_handler(exc: Exception, context: dict[str, Any] | None) -> Response | None:
+def drf_exception_handler(
+    exc: Exception, context: dict[str, Any] | None
+) -> Response | None:
     response = default_drf_exception_handler(exc, context)
     if response is None:
         return None
     if isinstance(exc, Throttled):
         response.data = {
             "error": {
-                "message": str(exc) or "Request rate limit exceeded. Please retry shortly.",
+                "message": str(exc)
+                or "Request rate limit exceeded. Please retry shortly.",
                 "detail": {"retry_after_seconds": exc.wait},
             },
             "retry_after_seconds": exc.wait,
