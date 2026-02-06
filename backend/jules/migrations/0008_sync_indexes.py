@@ -12,10 +12,14 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddIndex(
             model_name="julessession",
-            index=models.Index(fields=["last_synced_at"], name="jules_sess_last_sy_62f37b_idx"),
+            index=models.Index(
+                fields=["last_synced_at"], name="jules_sess_last_sy_62f37b_idx"
+            ),
         ),
         migrations.AddIndex(
             model_name="julesactivity",
-            index=models.Index(fields=["last_synced_at"], name="jules_acti_last_sy_353f8c_idx"),
+            index=models.Index(
+                fields=["last_synced_at"], name="jules_acti_last_sy_353f8c_idx"
+            ),
         ),
     ]
