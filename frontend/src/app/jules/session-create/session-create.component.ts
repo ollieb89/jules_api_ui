@@ -2,6 +2,7 @@ import { Component, signal, ChangeDetectionStrategy, inject, computed } from '@a
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { LoadingSpinnerComponent } from '../../components/loading-spinner/loading-spinner.component';
 import { JulesService } from '../../services/jules.service';
 import { CreateSession, Source } from '../../models/jules.model';
 import { getApiErrorMessage } from '../../utils/api-error';
@@ -11,7 +12,7 @@ type WizardStep = 1 | 2 | 3;
 
 @Component({
   selector: 'app-session-create',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, LoadingSpinnerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="container mx-auto px-4 py-8 max-w-3xl">
@@ -74,7 +75,11 @@ type WizardStep = 1 | 2 | 3;
           <h2 class="text-xl font-semibold text-[var(--color-text-primary)] mb-4">Select GitHub Repository</h2>
           
           @if (loadingSources()) {
-            <div class="text-[var(--color-text-secondary)]">Loading repositories...</div>
+            <app-loading-spinner
+              label="Loading repositories..."
+              sizeClass="h-6 w-6"
+              colorClass="text-[var(--color-interactive-primary)]"
+            ></app-loading-spinner>
           } @else if (sources().length === 0) {
             <div class="bg-[var(--color-surface-warning)] border border-[var(--color-border-warning)] text-[var(--color-text-warning)] px-4 py-3 rounded mb-4">
               No repositories found. Please configure your GitHub connection.
@@ -244,6 +249,12 @@ type WizardStep = 1 | 2 | 3;
               class="px-4 py-2 bg-[var(--color-interactive-success)] hover:bg-[var(--color-interactive-success-hover)] disabled:bg-[var(--color-interactive-primary-disabled)] text-[var(--color-text-inverse)] font-semibold rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
             >
               @if (loading()) {
+                <app-loading-spinner
+                  label="Creating session..."
+                  sizeClass="h-5 w-5"
+                  colorClass=""
+                  containerClass="inline-flex mr-2"
+                ></app-loading-spinner>
                 Creating...
               } @else {
                 ✓ Create Session
