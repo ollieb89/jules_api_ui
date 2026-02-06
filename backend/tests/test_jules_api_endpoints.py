@@ -288,6 +288,11 @@ def test_activities_list_handles_api_error(api_client, monkeypatch):
 
 
 def test_settings_test_connection_handles_failure(api_client, monkeypatch):
+    # Promote user to staff to access settings
+    user = api_client.handler._force_user
+    user.is_staff = True
+    user.save()
+
     settings_obj = JulesSettings.get_settings()
     settings_obj.set_api_key('api-key-0000')
     settings_obj.save()
@@ -308,6 +313,11 @@ def test_settings_test_connection_handles_failure(api_client, monkeypatch):
 
 
 def test_settings_test_connection_handles_api_request_error(api_client, monkeypatch):
+    # Promote user to staff to access settings
+    user = api_client.handler._force_user
+    user.is_staff = True
+    user.save()
+
     settings_obj = JulesSettings.get_settings()
     settings_obj.set_api_key('api-key-5555')
     settings_obj.save()
