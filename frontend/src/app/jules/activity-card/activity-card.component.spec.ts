@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ActivityCardComponent } from './activity-card.component';
@@ -11,12 +12,12 @@ describe('ActivityCardComponent', () => {
 
   beforeEach(async () => {
     clipboardService = {
-      copyToClipboard: vi.fn().mockResolvedValue(true)
+      copyToClipboard: vi.fn().mockResolvedValue(true),
     };
 
     await TestBed.configureTestingModule({
       imports: [ActivityCardComponent],
-      providers: [{ provide: ClipboardService, useValue: clipboardService }]
+      providers: [{ provide: ClipboardService, useValue: clipboardService }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ActivityCardComponent);
@@ -30,12 +31,12 @@ describe('ActivityCardComponent', () => {
         plan: {
           steps: [
             { title: 'Step 1', description: 'First step', state: 'PENDING' },
-            { title: 'Step 2', description: 'Second step', state: 'COMPLETED' }
+            { title: 'Step 2', description: 'Second step', state: 'COMPLETED' },
           ],
-          state: 'PENDING'
-        }
+          state: 'PENDING',
+        },
       },
-      create_time: '2024-01-01T00:00:00Z'
+      create_time: '2024-01-01T00:00:00Z',
     });
 
     component.planExpanded.set(true);
@@ -54,7 +55,7 @@ describe('ActivityCardComponent', () => {
     fixture.componentRef.setInput('activity', {
       name: 'activities/plan-approved',
       plan_approved: {},
-      create_time: '2024-01-01T00:00:00Z'
+      create_time: '2024-01-01T00:00:00Z',
     });
 
     fixture.detectChanges();
@@ -72,11 +73,11 @@ describe('ActivityCardComponent', () => {
         artifacts: [
           {
             bash_output: 'npm test',
-            git_patch: '@@ -1,1 +1,1 @@\n-old\n+new'
-          }
-        ]
+            git_patch: '@@ -1,1 +1,1 @@\n-old\n+new',
+          },
+        ],
       },
-      create_time: '2024-01-01T00:00:00Z'
+      create_time: '2024-01-01T00:00:00Z',
     });
 
     component.toggleBashOutput(0);
