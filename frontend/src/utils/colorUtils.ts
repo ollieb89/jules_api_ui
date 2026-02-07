@@ -28,9 +28,7 @@ const hexToRgb = (hex: string): { r: number; g: number; b: number } | null => {
 const getRelativeLuminance = ({ r, g, b }: { r: number; g: number; b: number }): number => {
   const channel = (value: number): number => {
     const normalized = value / 255;
-    return normalized <= 0.03928
-      ? normalized / 12.92
-      : Math.pow((normalized + 0.055) / 1.055, 2.4);
+    return normalized <= 0.03928 ? normalized / 12.92 : Math.pow((normalized + 0.055) / 1.055, 2.4);
   };
 
   return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);

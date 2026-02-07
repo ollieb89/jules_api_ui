@@ -1,10 +1,4 @@
-import {
-  ErrorHandler,
-  Injectable,
-  Injector,
-  PLATFORM_ID,
-  inject
-} from '@angular/core';
+import { ErrorHandler, Injectable, Injector, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { NotificationService } from './notification.service';
 import { GlobalErrorService } from './global-error.service';
@@ -17,9 +11,7 @@ export class GlobalErrorHandler implements ErrorHandler {
 
   handleError(error: unknown): void {
     const message =
-      error instanceof Error
-        ? error.message
-        : 'Something went wrong. Please try again.';
+      error instanceof Error ? error.message : 'Something went wrong. Please try again.';
 
     console.error('Unhandled application error:', error);
     if (isPlatformBrowser(this.platformId)) {

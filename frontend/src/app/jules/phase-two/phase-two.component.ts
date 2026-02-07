@@ -70,7 +70,7 @@ interface TaskHistoryItem {
   imports: [CommonModule, RouterModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './phase-two.component.html',
-  styleUrl: './phase-two.component.css'
+  styleUrl: './phase-two.component.css',
 })
 export class PhaseTwoComponent {
   readonly githubConnected = signal<boolean>(true);
@@ -83,7 +83,7 @@ export class PhaseTwoComponent {
       branch: 'feature/retry-handling',
       reviewers: ['alex', 'jordan'],
       status: 'open',
-      updatedAt: 'Today · 9:12 AM'
+      updatedAt: 'Today · 9:12 AM',
     },
     {
       id: 'pr-1037',
@@ -92,7 +92,7 @@ export class PhaseTwoComponent {
       branch: 'feature/activity-filters',
       reviewers: ['sam'],
       status: 'merged',
-      updatedAt: 'Yesterday · 4:40 PM'
+      updatedAt: 'Yesterday · 4:40 PM',
     },
     {
       id: 'pr-1031',
@@ -101,16 +101,36 @@ export class PhaseTwoComponent {
       branch: 'design/dashboard-kpis',
       reviewers: ['taylor', 'morgan'],
       status: 'closed',
-      updatedAt: 'Mon · 2:15 PM'
-    }
+      updatedAt: 'Mon · 2:15 PM',
+    },
   ]);
 
   readonly diffLines = signal<DiffLine[]>([
-    { line: 18, before: 'const isRetryable = status === 502', after: 'const isRetryable = [502, 503].includes(status)', type: 'modified' },
-    { line: 19, before: 'retryAfter = 1000', after: 'retryAfter = Math.min(retryAfter * 1.5, 8000)', type: 'modified' },
-    { line: 20, before: 'logger.info("Retrying request")', after: 'logger.info("Retrying request with backoff")', type: 'modified' },
+    {
+      line: 18,
+      before: 'const isRetryable = status === 502',
+      after: 'const isRetryable = [502, 503].includes(status)',
+      type: 'modified',
+    },
+    {
+      line: 19,
+      before: 'retryAfter = 1000',
+      after: 'retryAfter = Math.min(retryAfter * 1.5, 8000)',
+      type: 'modified',
+    },
+    {
+      line: 20,
+      before: 'logger.info("Retrying request")',
+      after: 'logger.info("Retrying request with backoff")',
+      type: 'modified',
+    },
     { line: 21, before: '', after: 'metrics.track("task_retry", { status })', type: 'added' },
-    { line: 22, before: 'return await request()', after: 'return await request()', type: 'unchanged' }
+    {
+      line: 22,
+      before: 'return await request()',
+      after: 'return await request()',
+      type: 'unchanged',
+    },
   ]);
 
   readonly reviewStatus = signal<'pending' | 'approved' | 'changes_requested'>('pending');
@@ -122,7 +142,7 @@ export class PhaseTwoComponent {
       description: 'Standardize route handlers, add request validation, and update service tests.',
       language: 'TypeScript',
       tags: ['backend', 'validation'],
-      lastUsed: '3 days ago'
+      lastUsed: '3 days ago',
     },
     {
       id: 'template-002',
@@ -130,7 +150,7 @@ export class PhaseTwoComponent {
       description: 'Improve layout spacing, add empty states, and refine interactive states.',
       language: 'Angular',
       tags: ['ui', 'accessibility'],
-      lastUsed: '1 week ago'
+      lastUsed: '1 week ago',
     },
     {
       id: 'template-003',
@@ -138,8 +158,8 @@ export class PhaseTwoComponent {
       description: 'Add lint, typecheck, and unit tests to GitHub Actions workflow.',
       language: 'YAML',
       tags: ['devops'],
-      lastUsed: '2 weeks ago'
-    }
+      lastUsed: '2 weeks ago',
+    },
   ]);
 
   readonly scheduledTasks = signal<ScheduledTask[]>([
@@ -148,22 +168,22 @@ export class PhaseTwoComponent {
       name: 'Nightly regression tasks',
       schedule: 'Weekdays · 1:00 AM',
       nextRun: 'Tonight · 1:00 AM',
-      status: 'active'
+      status: 'active',
     },
     {
       id: 'schedule-002',
       name: 'Monday backlog grooming',
       schedule: 'Mon · 9:00 AM',
       nextRun: 'Next Mon · 9:00 AM',
-      status: 'active'
+      status: 'active',
     },
     {
       id: 'schedule-003',
       name: 'Weekly reporting bundle',
       schedule: 'Fri · 3:30 PM',
       nextRun: 'Fri · 3:30 PM',
-      status: 'paused'
-    }
+      status: 'paused',
+    },
   ]);
 
   readonly webhooks = signal<WebhookConfig[]>([
@@ -174,7 +194,7 @@ export class PhaseTwoComponent {
       events: ['task.completed', 'task.failed'],
       enabled: true,
       lastDelivery: 'Today · 8:52 AM',
-      status: 'healthy'
+      status: 'healthy',
     },
     {
       id: 'webhook-002',
@@ -183,7 +203,7 @@ export class PhaseTwoComponent {
       events: ['task.approved'],
       enabled: true,
       lastDelivery: 'Yesterday · 5:12 PM',
-      status: 'healthy'
+      status: 'healthy',
     },
     {
       id: 'webhook-003',
@@ -192,8 +212,8 @@ export class PhaseTwoComponent {
       events: ['task.created', 'task.updated'],
       enabled: false,
       lastDelivery: 'Last week · 2:32 PM',
-      status: 'degraded'
-    }
+      status: 'degraded',
+    },
   ]);
 
   readonly apiKeys = signal<ApiKeyRecord[]>([
@@ -203,7 +223,7 @@ export class PhaseTwoComponent {
       prefix: 'jules_live_1a2b',
       createdAt: 'Jan 12 · 2025',
       lastUsed: '2 hours ago',
-      status: 'active'
+      status: 'active',
     },
     {
       id: 'key-002',
@@ -211,8 +231,8 @@ export class PhaseTwoComponent {
       prefix: 'jules_live_3c4d',
       createdAt: 'Dec 19 · 2024',
       lastUsed: '3 days ago',
-      status: 'active'
-    }
+      status: 'active',
+    },
   ]);
 
   readonly historyItems = signal<TaskHistoryItem[]>([
@@ -223,7 +243,7 @@ export class PhaseTwoComponent {
       status: 'completed',
       duration: '12m 18s',
       createdAt: 'Today · 7:24 AM',
-      source: 'GitHub / jules-api-ui'
+      source: 'GitHub / jules-api-ui',
     },
     {
       id: 'hist-002',
@@ -232,7 +252,7 @@ export class PhaseTwoComponent {
       status: 'failed',
       duration: '4m 02s',
       createdAt: 'Yesterday · 6:45 PM',
-      source: 'GitHub / jules-backend'
+      source: 'GitHub / jules-backend',
     },
     {
       id: 'hist-003',
@@ -241,7 +261,7 @@ export class PhaseTwoComponent {
       status: 'completed',
       duration: '9m 44s',
       createdAt: 'Yesterday · 1:05 PM',
-      source: 'API / Analytics'
+      source: 'API / Analytics',
     },
     {
       id: 'hist-004',
@@ -250,8 +270,8 @@ export class PhaseTwoComponent {
       status: 'canceled',
       duration: '0m 38s',
       createdAt: 'Mon · 11:18 AM',
-      source: 'Dashboard'
-    }
+      source: 'Dashboard',
+    },
   ]);
 
   readonly historyQuery = signal<string>('');
@@ -261,7 +281,7 @@ export class PhaseTwoComponent {
     const query = this.historyQuery().trim().toLowerCase();
     const status = this.historyStatus();
 
-    return this.historyItems().filter(item => {
+    return this.historyItems().filter((item) => {
       const matchesQuery = query.length === 0 || item.title.toLowerCase().includes(query);
       const matchesStatus = status === 'all' || item.status === status;
       return matchesQuery && matchesStatus;
@@ -269,8 +289,8 @@ export class PhaseTwoComponent {
   });
 
   toggleWebhook(id: string): void {
-    this.webhooks.update(items =>
-      items.map(item => (item.id === id ? { ...item, enabled: !item.enabled } : item))
+    this.webhooks.update((items) =>
+      items.map((item) => (item.id === id ? { ...item, enabled: !item.enabled } : item)),
     );
   }
 
@@ -282,15 +302,15 @@ export class PhaseTwoComponent {
       prefix: `jules_live_${Math.random().toString(16).slice(2, 6)}`,
       createdAt: 'Just now',
       lastUsed: 'Never',
-      status: 'active'
+      status: 'active',
     };
 
-    this.apiKeys.update(keys => [newKey, ...keys]);
+    this.apiKeys.update((keys) => [newKey, ...keys]);
   }
 
   revokeApiKey(id: string): void {
-    this.apiKeys.update(keys =>
-      keys.map(key => (key.id === id ? { ...key, status: 'revoked', lastUsed: 'Revoked' } : key))
+    this.apiKeys.update((keys) =>
+      keys.map((key) => (key.id === id ? { ...key, status: 'revoked', lastUsed: 'Revoked' } : key)),
     );
   }
 
