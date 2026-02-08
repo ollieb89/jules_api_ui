@@ -1,8 +1,4 @@
-import {
-  HttpErrorResponse,
-  HttpInterceptorFn,
-  HttpResponse
-} from '@angular/common/http';
+import { HttpErrorResponse, HttpInterceptorFn, HttpResponse } from '@angular/common/http';
 import { tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 
@@ -24,15 +20,9 @@ export const loggingInterceptor: HttpInterceptorFn = (req, next) => {
       },
       error: (error: HttpErrorResponse) => {
         const elapsed = Date.now() - startedAt;
-        console.error(
-          '[API]',
-          req.method,
-          redactedUrl,
-          `${elapsed}ms`,
-          error.message
-        );
-      }
-    })
+        console.error('[API]', req.method, redactedUrl, `${elapsed}ms`, error.message);
+      },
+    }),
   );
 };
 

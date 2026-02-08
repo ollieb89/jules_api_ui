@@ -12,3 +12,7 @@
 ## 2026-01-15 - Native Dialog Backdrop Interaction
 **Learning:** The native `<dialog>` element does not automatically close when clicking the backdrop, unlike many custom modal implementations. This expectation is strong for users. The backdrop click event targets the `dialog` element itself, allowing easy detection.
 **Action:** Always implement a click handler on `<dialog>` elements to check `event.target === element` and close the dialog to match user expectations.
+
+## 2026-02-08 - Signal Reactivity with Reactive Forms
+**Learning:** Angular `computed` signals only re-evaluate when their signal dependencies change. They do NOT automatically track `FormGroup.valueChanges` or other Observable streams. This leads to stale computed values if form controls are updated without updating a corresponding signal.
+**Action:** Use `toSignal` from `@angular/core/rxjs-interop` to convert `valueChanges` observables into signals when computed values depend on form state.
