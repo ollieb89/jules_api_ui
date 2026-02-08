@@ -36,9 +36,9 @@ export class JulesStreamService {
    */
   private createEventSourceObservable<T>(
     streamUrl: string,
-    eventHandlers: StreamEventHandler<T>[]
+    eventHandlers: StreamEventHandler<T>[],
   ): Observable<T> {
-    return new Observable<T>(observer => {
+    return new Observable<T>((observer) => {
       // Reconnect with capped exponential backoff to avoid rapid reconnect loops.
       const maxReconnectAttempts = 5;
       const baseReconnectDelayMs = 1000;
@@ -118,7 +118,7 @@ export class JulesStreamService {
                 `Failed to handle ${eventType} event:`,
                 error,
                 'Event data:',
-                (event as MessageEvent).data
+                (event as MessageEvent).data,
               );
               observer.next({ type: 'error' } as T);
             }
@@ -142,7 +142,7 @@ export class JulesStreamService {
 
   sessionsStream({
     pollIntervalSeconds = 10,
-    lastUpdate
+    lastUpdate,
   }: {
     pollIntervalSeconds?: number;
     lastUpdate?: string | null;
@@ -158,7 +158,7 @@ export class JulesStreamService {
 
     const params = new URLSearchParams({
       token,
-      poll_interval: pollIntervalSeconds.toString()
+      poll_interval: pollIntervalSeconds.toString(),
     });
 
     if (lastUpdate) {
@@ -174,8 +174,8 @@ export class JulesStreamService {
           const data = JSON.parse((event as MessageEvent).data) as unknown;
           const sessions = parseSessionsList(data);
           observer.next({ type: 'sessions_update', sessions });
-        }
-      }
+        },
+      },
     ]);
   }
 
@@ -184,8 +184,12 @@ export class JulesStreamService {
     {
       pollIntervalSeconds = 5,
       lastUpdate,
-      lastActivityId
-    }: { pollIntervalSeconds?: number; lastUpdate?: string | null; lastActivityId?: number | null } = {}
+      lastActivityId,
+    }: {
+      pollIntervalSeconds?: number;
+      lastUpdate?: string | null;
+      lastActivityId?: number | null;
+    } = {},
   ): Observable<SessionStreamEvent> {
     if (!isPlatformBrowser(this.platformId)) {
       return EMPTY;
@@ -198,7 +202,7 @@ export class JulesStreamService {
 
     const params = new URLSearchParams({
       token,
-      poll_interval: pollIntervalSeconds.toString()
+      poll_interval: pollIntervalSeconds.toString(),
     });
 
     if (lastUpdate) {
@@ -218,21 +222,23 @@ export class JulesStreamService {
           const data = JSON.parse((event as MessageEvent).data) as unknown;
           const session = parseSessionResponse(data);
           observer.next({ type: 'session_update', session });
-        }
+        },
       },
       {
         eventType: 'activity_update',
         handler: (event: Event, observer) => {
           let latestActivityId: number | null | undefined;
           try {
-            const data = JSON.parse((event as MessageEvent).data) as { latest_activity_id?: number };
+            const data = JSON.parse((event as MessageEvent).data) as {
+              latest_activity_id?: number;
+            };
             latestActivityId = data.latest_activity_id ?? null;
           } catch (error) {
             latestActivityId = null;
           }
           observer.next({ type: 'activity_update', latestActivityId });
-        }
-      }
+        },
+      },
     ]);
   }
 }

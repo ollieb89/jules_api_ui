@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SessionCreateComponent } from './session-create.component';
 import { JulesService } from '../../services/jules.service';
+import { ClipboardService } from '../../services/clipboard.service';
 import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { vi } from 'vitest';
@@ -8,16 +9,23 @@ import { vi } from 'vitest';
 describe('SessionCreateComponent', () => {
   let component: SessionCreateComponent;
   let fixture: ComponentFixture<SessionCreateComponent>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let julesService: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let router: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let clipboardService: any;
 
   beforeEach(async () => {
     julesService = {
       getSources: vi.fn(),
-      createSession: vi.fn()
+      createSession: vi.fn(),
     };
     router = {
-      navigate: vi.fn()
+      navigate: vi.fn(),
+    };
+    clipboardService = {
+      copyToClipboard: vi.fn().mockResolvedValue(true),
     };
 
     julesService.getSources.mockReturnValue(
@@ -26,18 +34,19 @@ describe('SessionCreateComponent', () => {
           {
             name: 'sources/test-repo',
             display_name: 'Test Repo',
-            github_metadata: { repository: 'owner/repo', branch: 'main' }
-          }
-        ]
-      })
+            github_metadata: { repository: 'owner/repo', branch: 'main' },
+          },
+        ],
+      }),
     );
 
     await TestBed.configureTestingModule({
       imports: [SessionCreateComponent],
       providers: [
         { provide: JulesService, useValue: julesService },
-        { provide: Router, useValue: router }
-      ]
+        { provide: Router, useValue: router },
+        { provide: ClipboardService, useValue: clipboardService },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(SessionCreateComponent);
@@ -57,7 +66,7 @@ describe('SessionCreateComponent', () => {
       prompt: 'Test prompt for session',
       source: 'sources/test-repo',
       create_time: '2024-01-01T00:00:00Z',
-      update_time: '2024-01-01T00:00:00Z'
+      update_time: '2024-01-01T00:00:00Z',
     };
 
     julesService.createSession.mockReturnValue(of(sessionResponse));
@@ -67,14 +76,14 @@ describe('SessionCreateComponent', () => {
     component.form.setValue({
       source: 'sources/test-repo',
       prompt: 'Test prompt for session',
-      automationMode: false
+      automationMode: false,
     });
 
     component.onSubmit();
 
     expect(julesService.createSession).toHaveBeenCalledWith({
       prompt: 'Test prompt for session',
-      source: 'sources/test-repo'
+      source: 'sources/test-repo',
     });
     expect(router.navigate).toHaveBeenCalledWith(['/jules', 'abc123']);
   });
@@ -87,12 +96,32 @@ describe('SessionCreateComponent', () => {
     component.form.setValue({
       source: 'sources/test-repo',
       prompt: 'Test prompt for session',
-      automationMode: false
+      automationMode: false,
     });
 
     component.onSubmit();
 
     expect(component.error()).toBe('Session failed');
     expect(component.loading()).toBe(false);
+  });
+
+  it('should copy payload to clipboard', async () => {
+    vi.useFakeTimers();
+    component.form.setValue({
+      source: 'sources/test-repo',
+      prompt: 'Test prompt for session',
+      automationMode: false,
+    });
+
+    component.copyPayload();
+    await Promise.resolve(); // Allow promise to resolve
+
+    expect(clipboardService.copyToClipboard).toHaveBeenCalled();
+    expect(component.copiedPayload()).toBe(true);
+
+    vi.advanceTimersByTime(2000);
+
+    expect(component.copiedPayload()).toBe(false);
+    vi.useRealTimers();
   });
 });

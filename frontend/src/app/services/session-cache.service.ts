@@ -67,32 +67,33 @@ export class SessionCacheService {
     // Apply search filter
     if (currentFilter.search && currentFilter.search.trim()) {
       const searchLower = currentFilter.search.toLowerCase().trim();
-      result = result.filter(session =>
-        session.display_name.toLowerCase().includes(searchLower) ||
-        session.prompt.toLowerCase().includes(searchLower)
+      result = result.filter(
+        (session) =>
+          session.display_name.toLowerCase().includes(searchLower) ||
+          session.prompt.toLowerCase().includes(searchLower),
       );
     }
 
     // Apply status filter
     if (currentFilter.status) {
-      result = result.filter(session => session.state === currentFilter.status);
+      result = result.filter((session) => session.state === currentFilter.status);
     }
 
     // Apply source filter
     if (currentFilter.source) {
-      result = result.filter(session => session.source === currentFilter.source);
+      result = result.filter((session) => session.source === currentFilter.source);
     }
 
     // Apply date range filter
     if (currentFilter.dateFrom) {
-      result = result.filter(session => {
+      result = result.filter((session) => {
         const sessionDate = new Date(session.create_time);
         return sessionDate >= currentFilter.dateFrom!;
       });
     }
 
     if (currentFilter.dateTo) {
-      result = result.filter(session => {
+      result = result.filter((session) => {
         const sessionDate = new Date(session.create_time);
         // Set to end of day for inclusive comparison
         const endOfDay = new Date(currentFilter.dateTo!);
@@ -137,18 +138,23 @@ export class SessionCacheService {
 
   // Session counts by status
   readonly totalCount = computed(() => this.sessions().length);
-  readonly activeCount = computed(() => this.sessions().filter(
-    session => ['ACTIVE', 'IN_PROGRESS', 'AWAITING_USER_FEEDBACK'].includes(session.state)
-  ).length);
-  readonly completedCount = computed(() =>
-    this.sessions().filter(session => session.state === 'COMPLETED').length
+  readonly activeCount = computed(
+    () =>
+      this.sessions().filter((session) =>
+        ['ACTIVE', 'IN_PROGRESS', 'AWAITING_USER_FEEDBACK'].includes(session.state),
+      ).length,
   );
-  readonly failedCount = computed(() => this.sessions().filter(session => session.state === 'FAILED').length);
+  readonly completedCount = computed(
+    () => this.sessions().filter((session) => session.state === 'COMPLETED').length,
+  );
+  readonly failedCount = computed(
+    () => this.sessions().filter((session) => session.state === 'FAILED').length,
+  );
 
   // Map of source name to display name for efficient lookup
   readonly sourceMap = computed(() => {
     const map = new Map<string, string>();
-    this.sources().forEach(source => {
+    this.sources().forEach((source) => {
       map.set(source.name, source.display_name);
     });
     return map;
@@ -175,7 +181,7 @@ export class SessionCacheService {
     this.error.set(null);
 
     const allSessions: Session[] = [];
-    let pageToken: string | null = null;
+    const pageToken: string | null = null;
     let hasMore = true;
 
     const fetchPage = (token: string | null = null): void => {
@@ -207,7 +213,7 @@ export class SessionCacheService {
         error: (err: JulesApiError) => {
           this.error.set(getApiErrorMessage(err, 'Failed to load sessions'));
           this.loading.set(false);
-        }
+        },
       });
     };
 
@@ -245,7 +251,7 @@ export class SessionCacheService {
       error: (err: unknown) => {
         this.sourcesError.set(getApiErrorMessage(err, 'Failed to load sources'));
         this.sourcesLoading.set(false);
-      }
+      },
     });
   }
 
@@ -303,10 +309,10 @@ export class SessionCacheService {
     this.streamSubscription = this.streamService
       .sessionsStream({
         pollIntervalSeconds: this.ssePollIntervalSeconds,
-        lastUpdate: this.lastSessionUpdateTime
+        lastUpdate: this.lastSessionUpdateTime,
       })
       .subscribe({
-        next: event => {
+        next: (event) => {
           if (event.type === 'open') {
             this.streamConnected.set(true);
             return;
@@ -322,7 +328,7 @@ export class SessionCacheService {
         complete: () => {
           this.streamConnected.set(false);
           this.streamSubscription = null;
-        }
+        },
       });
   }
 
@@ -343,13 +349,13 @@ export class SessionCacheService {
   deleteSession(sessionId: string): Observable<void> {
     return this.julesService.deleteSession(sessionId).pipe(
       tap(() => {
-        this.sessions.update(current =>
-          current.filter(s => {
+        this.sessions.update((current) =>
+          current.filter((s) => {
             const id = this.sessionUtils.extractSessionId(s.name);
             return id !== sessionId;
-          })
+          }),
         );
-      })
+      }),
     );
   }
 
@@ -393,30 +399,30 @@ export class SessionCacheService {
    */
   readonly uniqueSources = computed(() => {
     const loadedSources = this.sources();
-    
+
     // If sources have been loaded from API, use them (they're already sorted by API)
     if (loadedSources.length > 0) {
-      return loadedSources.map(source => ({
+      return loadedSources.map((source) => ({
         name: source.name,
-        display_name: source.display_name
+        display_name: source.display_name,
       }));
     }
-    
+
     // Fallback: derive sources from sessions if API sources not yet loaded
     const sourceNames = new Set<string>();
     const map = this.sourceMap();
-    
-    this.sessions().forEach(session => {
+
+    this.sessions().forEach((session) => {
       if (session.source) {
         sourceNames.add(session.source);
       }
     });
-    
+
     return Array.from(sourceNames)
       .sort()
-      .map(name => ({
+      .map((name) => ({
         name,
-        display_name: map.get(name) || name
+        display_name: map.get(name) || name,
       }));
   });
 
