@@ -9,8 +9,11 @@ import { vi } from 'vitest';
 describe('SessionCreateComponent', () => {
   let component: SessionCreateComponent;
   let fixture: ComponentFixture<SessionCreateComponent>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let julesService: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let router: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let clipboardService: any;
 
   beforeEach(async () => {
