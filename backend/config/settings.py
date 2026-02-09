@@ -120,7 +120,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 # Use SQLite in-memory database for tests (faster, isolated, no setup needed)
 # Use PostgreSQL for development and production
-if "pytest" in sys.modules or os.getenv("TESTING") == "true":
+if "pytest" in sys.modules or TESTING:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",

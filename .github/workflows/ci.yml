@@ -22,10 +22,10 @@ jobs:
         run: bun install
       - name: Lint
         run: bun run lint
-      - name: Unit tests
-        run: bun run test:ci --browsers=chromium
       - name: Install Playwright browsers
         run: bunx playwright install --with-deps chromium
+      - name: Unit tests
+        run: xvfb-run --auto-servernum bun run test:ci --browsers=chromium --no-watch
       - name: Accessibility tests
         run: bun run test:a11y
 
@@ -37,7 +37,7 @@ jobs:
     env:
       DJANGO_SECRET_KEY: ci-secret-key
       DEBUG: "False"
-      TESTING: "True"
+      TESTING: "true"
       ALLOWED_HOSTS: "localhost,127.0.0.1"
     steps:
       - uses: actions/checkout@v4
