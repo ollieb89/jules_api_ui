@@ -1,5 +1,6 @@
 from typing import Any
 
+
 class ApiRequestError(Exception):
     """Represents an error response from the Jules API or network layer."""
 

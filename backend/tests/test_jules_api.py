@@ -11,7 +11,7 @@ from jules.store import mark_sync_running
 @pytest.fixture
 def api_client(db):
     user_model = get_user_model()
-    user = user_model.objects.create_user(username="tester", password="pass")
+    user = user_model.objects.create_superuser(username="tester", password="pass")
     client = APIClient()
     client.force_authenticate(user=user)
     return client
@@ -230,7 +230,10 @@ def test_settings_requires_authentication(anon_client, db):
 
     # Depending on DRF settings, this might be 403 Forbidden or 401 Unauthorized
     # The default IsAuthenticated permission class returns 403 when user is not authenticated
-    assert response.status_code in [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN]
+    assert response.status_code in [
+        status.HTTP_401_UNAUTHORIZED,
+        status.HTTP_403_FORBIDDEN,
+    ]
 
 
 def test_settings_actions_require_authentication(anon_client, db):
@@ -245,13 +248,19 @@ def test_settings_actions_require_authentication(anon_client, db):
         status.HTTP_401_UNAUTHORIZED,
         status.HTTP_403_FORBIDDEN,
     ]
-    assert test_response.status_code in [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN]
+    assert test_response.status_code in [
+        status.HTTP_401_UNAUTHORIZED,
+        status.HTTP_403_FORBIDDEN,
+    ]
 
 
 def test_sessions_require_authentication(anon_client, db):
     response = anon_client.get("/api/jules/sessions/")
 
-    assert response.status_code in [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN]
+    assert response.status_code in [
+        status.HTTP_401_UNAUTHORIZED,
+        status.HTTP_403_FORBIDDEN,
+    ]
 
 
 def test_session_create_requires_authentication(anon_client, db):
@@ -261,4 +270,7 @@ def test_session_create_requires_authentication(anon_client, db):
         format="json",
     )
 
-    assert response.status_code in [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN]
+    assert response.status_code in [
+        status.HTTP_401_UNAUTHORIZED,
+        status.HTTP_403_FORBIDDEN,
+    ]
