@@ -1,4 +1,5 @@
 import { Component, signal, ChangeDetectionStrategy, inject, computed } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -6,12 +7,13 @@ import { JulesService } from '../../services/jules.service';
 import { CreateSession, Source } from '../../models/jules.model';
 import { getApiErrorMessage } from '../../utils/api-error';
 import { parseSourcesResponse, getParserErrorMessage } from '../../utils/api-parsers';
+import { LoadingSpinnerComponent } from '../../components/loading-spinner/loading-spinner.component';
 
 type WizardStep = 1 | 2 | 3;
 
 @Component({
   selector: 'app-session-create',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, LoadingSpinnerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="container mx-auto px-4 py-8 max-w-3xl">
@@ -74,7 +76,7 @@ type WizardStep = 1 | 2 | 3;
           <h2 class="text-xl font-semibold text-[var(--color-text-primary)] mb-4">Select GitHub Repository</h2>
           
           @if (loadingSources()) {
-            <div class="text-[var(--color-text-secondary)]">Loading repositories...</div>
+            <app-loading-spinner label="Loading repositories..." containerClass="py-8"></app-loading-spinner>
           } @else if (sources().length === 0) {
             <div class="bg-[var(--color-surface-warning)] border border-[var(--color-border-warning)] text-[var(--color-text-warning)] px-4 py-3 rounded mb-4">
               No repositories found. Please configure your GitHub connection.
@@ -88,6 +90,7 @@ type WizardStep = 1 | 2 | 3;
               <select
                 id="source"
                 formControlName="source"
+                [attr.aria-describedby]="source?.invalid && source?.touched ? 'source-error' : null"
                 class="w-full px-3 py-2 border border-[var(--color-border-strong)] rounded-lg bg-[var(--color-surface-primary)] text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
                 style="color-scheme: light dark;"
                 [style.borderColor]="source?.invalid && source?.touched ? 'var(--color-validation-error)' : null"
@@ -98,7 +101,7 @@ type WizardStep = 1 | 2 | 3;
                 }
               </select>
               @if (source?.invalid && source?.touched) {
-                <p class="mt-1 text-sm text-[var(--color-text-error)]">Please select a source repository</p>
+                <p id="source-error" class="mt-1 text-sm text-[var(--color-text-error)]">Please select a source repository</p>
               }
             </div>
 
@@ -151,18 +154,21 @@ type WizardStep = 1 | 2 | 3;
             <textarea
               id="prompt"
               formControlName="prompt"
+              [attr.aria-describedby]="prompt?.invalid && prompt?.touched ? 'prompt-error' : null"
               rows="8"
               class="w-full px-3 py-2 border border-[var(--color-border-strong)] rounded-lg bg-[var(--color-surface-primary)] text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
               [style.borderColor]="prompt?.invalid && prompt?.touched ? 'var(--color-validation-error)' : null"
               placeholder="Describe what you want Jules to do... Be specific about the task, files to modify, and expected outcome."
             ></textarea>
             @if (prompt?.invalid && prompt?.touched) {
-              @if (prompt?.errors?.['required']) {
-                <p class="mt-1 text-sm text-[var(--color-text-error)]">Prompt is required</p>
-              }
-              @if (prompt?.errors?.['minlength']) {
-                <p class="mt-1 text-sm text-[var(--color-text-error)]">Prompt must be at least 10 characters</p>
-              }
+              <div id="prompt-error">
+                @if (prompt?.errors?.['required']) {
+                  <p class="mt-1 text-sm text-[var(--color-text-error)]">Prompt is required</p>
+                }
+                @if (prompt?.errors?.['minlength']) {
+                  <p class="mt-1 text-sm text-[var(--color-text-error)]">Prompt must be at least 10 characters</p>
+                }
+              </div>
             }
             <p class="mt-1 text-xs text-[var(--color-text-tertiary)]">{{ prompt?.value?.length || 0 }} characters</p>
           </div>
@@ -241,9 +247,10 @@ type WizardStep = 1 | 2 | 3;
               type="button"
               (click)="onSubmit()"
               [disabled]="form.invalid || loading()"
-              class="px-4 py-2 bg-[var(--color-interactive-success)] hover:bg-[var(--color-interactive-success-hover)] disabled:bg-[var(--color-interactive-primary-disabled)] text-[var(--color-text-inverse)] font-semibold rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+              class="px-4 py-2 bg-[var(--color-interactive-success)] hover:bg-[var(--color-interactive-success-hover)] disabled:bg-[var(--color-interactive-primary-disabled)] text-[var(--color-text-inverse)] font-semibold rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)] flex items-center"
             >
               @if (loading()) {
+                <app-loading-spinner sizeClass="h-5 w-5" colorClass="text-[var(--color-text-inverse)]" containerClass="!inline-flex mr-2" label="Creating session"></app-loading-spinner>
                 Creating...
               } @else {
                 ✓ Create Session
@@ -272,8 +279,12 @@ export class SessionCreateComponent {
     automationMode: [false]
   });
 
+  private sourceValue = toSignal(this.form.get('source')!.valueChanges, {
+    initialValue: ''
+  });
+
   selectedSource = computed(() => {
-    const sourceName = this.form.get('source')?.value;
+    const sourceName = this.sourceValue();
     if (!sourceName) return null;
     return this.sources().find(s => s.name === sourceName) || null;
   });
