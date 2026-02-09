@@ -7,7 +7,6 @@ import sys
 from pathlib import Path
 from urllib.parse import urlparse
 
-from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -121,7 +120,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 # Use SQLite in-memory database for tests (faster, isolated, no setup needed)
 # Use PostgreSQL for development and production
-if "pytest" in sys.modules or os.getenv("TESTING") == "true":
+if "pytest" in sys.modules or TESTING:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
@@ -129,7 +128,9 @@ if "pytest" in sys.modules or os.getenv("TESTING") == "true":
         }
     }
 else:
-    DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@localhost:5432/jules_db")
+    DATABASE_URL = os.getenv(
+        "DATABASE_URL", "postgresql://user:password@localhost:5432/jules_db"
+    )
     # Parse DATABASE_URL
     parsed = urlparse(DATABASE_URL)
     DATABASES = {
@@ -181,9 +182,7 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
-    "DEFAULT_PERMISSION_CLASSES": (
-        "rest_framework.permissions.IsAuthenticated",
-    ),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 100,
     "DEFAULT_THROTTLE_CLASSES": (
@@ -245,7 +244,9 @@ SSE_MIN_POLL_INTERVAL_SECONDS = float(os.getenv("SSE_MIN_POLL_INTERVAL_SECONDS",
 SSE_MAX_POLL_INTERVAL_SECONDS = float(os.getenv("SSE_MAX_POLL_INTERVAL_SECONDS", "60"))
 
 # Jules API Configuration
-JULES_API_BASE_URL = os.getenv("JULES_API_BASE_URL", "https://jules.googleapis.com").rstrip("/")
+JULES_API_BASE_URL = os.getenv(
+    "JULES_API_BASE_URL", "https://jules.googleapis.com"
+).rstrip("/")
 JULES_API_VERSION = os.getenv("JULES_API_VERSION", "v1alpha").strip("/")
 JULES_API_KEY = os.getenv("JULES_API_KEY", "")
 
