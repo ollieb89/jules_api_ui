@@ -99,6 +99,7 @@ export class CodeBlockStyleDirective implements AfterViewInit, OnDestroy {
           // Apply classes (hidden by default, shown on group hover)
           const buttonClasses = [
             'absolute', 'top-2', 'right-2',
+            'z-10', // Ensure it stays on top
             'px-2', 'py-1',
             'bg-[var(--color-background-tertiary)]',
             'hover:bg-[var(--color-background-secondary)]',
@@ -111,7 +112,8 @@ export class CodeBlockStyleDirective implements AfterViewInit, OnDestroy {
             'focus-visible:ring-offset-2',
             'focus-visible:ring-offset-[var(--color-focus-ring-offset)]',
             'opacity-0',
-            'group-hover:opacity-100'
+            'group-hover:opacity-100',
+            'focus-visible:opacity-100' // Ensure visible on focus
           ];
 
           buttonClasses.forEach(cls => this.renderer.addClass(button, cls));
