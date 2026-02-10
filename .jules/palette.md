@@ -12,3 +12,7 @@
 ## 2026-01-15 - Native Dialog Backdrop Interaction
 **Learning:** The native `<dialog>` element does not automatically close when clicking the backdrop, unlike many custom modal implementations. This expectation is strong for users. The backdrop click event targets the `dialog` element itself, allowing easy detection.
 **Action:** Always implement a click handler on `<dialog>` elements to check `event.target === element` and close the dialog to match user expectations.
+
+## 2026-02-10 - Markdown Code Block Enhancements
+**Learning:** Enhancing rendered Markdown content (like code blocks) with interactive elements (copy buttons) is cleanest via a Directive that manipulates the DOM post-render. This avoids modifying the underlying markdown parser or content string and ensures consistent behavior across the app.
+**Action:** Use `Renderer2` in Directives to inject cross-cutting UI enhancements into dynamically generated content like Markdown.
