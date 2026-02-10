@@ -5,7 +5,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { JulesService } from '../../services/jules.service';
-import { Plan, Step, StepState, PlanState } from '../../models/jules.model';
+import { Plan, StepState, PlanState } from '../../models/jules.model';
 import { getApiErrorMessage } from '../../utils/api-error';
 
 @Component({
@@ -20,6 +20,7 @@ export class PlanApprovalComponent {
   @Input({ required: true }) sessionId!: string;
   
   private julesService = inject(JulesService);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private router = inject(Router);
 
   approving = signal<boolean>(false);

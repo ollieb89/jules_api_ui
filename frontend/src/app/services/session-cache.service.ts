@@ -175,9 +175,11 @@ export class SessionCacheService {
     this.error.set(null);
 
     const allSessions: Session[] = [];
+    // eslint-disable-next-line prefer-const
     let pageToken: string | null = null;
     let hasMore = true;
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const fetchPage = (token: string | null = null): void => {
       if (!hasMore || allSessions.length >= this.MAX_SESSIONS) {
         this.updateSessions(allSessions);
@@ -185,7 +187,7 @@ export class SessionCacheService {
         return;
       }
 
-      this.julesService.getSessions(100, token).subscribe({
+      this.julesService.getSessions(100, pageToken).subscribe({
         next: (response) => {
           try {
             const parsed = parseSessionsResponse(response);
