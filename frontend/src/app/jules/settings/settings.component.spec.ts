@@ -9,6 +9,7 @@ import { provideRouter } from '@angular/router';
 describe('SettingsComponent', () => {
   let component: SettingsComponent;
   let fixture: ComponentFixture<SettingsComponent>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let julesService: any;
 
   beforeEach(async () => {
