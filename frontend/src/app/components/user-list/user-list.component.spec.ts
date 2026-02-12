@@ -1,5 +1,4 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
-import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { PLATFORM_ID } from '@angular/core';
 import { of } from 'rxjs';
@@ -71,7 +70,7 @@ describe('UserListComponent', () => {
     expect(component.users().length).toBe(2);
 
     // Setup user to delete
-    component.userToDelete.set(1);
+    component.userToDelete.set({ id: 1, name: 'Alice Smith', email: 'alice@example.com', created_at: '2023-01-01T10:00:00Z' });
 
     // Execute confirmation
     component.onConfirmDelete();
@@ -85,5 +84,14 @@ describe('UserListComponent', () => {
 
     // Verify NO reload happened
     expect(userService.getUsers).not.toHaveBeenCalled();
+  });
+
+  it('generates correct confirmation message', () => {
+    // Default message
+    expect(component.deleteConfirmationMessage()).toContain('this user');
+
+    // Message with user name
+    component.userToDelete.set({ id: 1, name: 'Alice Smith', email: 'alice@example.com', created_at: '2023-01-01T10:00:00Z' });
+    expect(component.deleteConfirmationMessage()).toContain('Alice Smith');
   });
 });

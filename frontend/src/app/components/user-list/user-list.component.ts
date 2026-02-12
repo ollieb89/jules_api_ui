@@ -26,7 +26,7 @@ export class UserListComponent implements OnInit {
   users = signal<User[]>([]);
   loading = signal<boolean>(false);
   error = signal<string | null>(null);
-  userToDelete = signal<number | null>(null);
+  userToDelete = signal<User | null>(null);
 
   @ViewChild(ConfirmationDialogComponent) confirmDialog!: ConfirmationDialogComponent;
 
@@ -35,6 +35,13 @@ export class UserListComponent implements OnInit {
       ...user,
       formattedDate: new Date(user.created_at).toLocaleDateString()
     }));
+  });
+
+  deleteConfirmationMessage = computed(() => {
+    const user = this.userToDelete();
+    return user
+      ? `Are you sure you want to delete ${user.name}? This action cannot be undone.`
+      : 'Are you sure you want to delete this user? This action cannot be undone.';
   });
 
   ngOnInit(): void {
@@ -63,20 +70,20 @@ export class UserListComponent implements OnInit {
     });
   }
 
-  deleteUser(id: number): void {
+  deleteUser(user: User): void {
     if (isPlatformBrowser(this.platformId as object)) {
-      this.userToDelete.set(id);
+      this.userToDelete.set(user);
       this.confirmDialog.showModal();
     } else {
       // SSR fallback: proceed with deletion (unlikely to be clicked in SSR, but good practice)
-      this.performDelete(id);
+      this.performDelete(user.id);
     }
   }
 
   onConfirmDelete(): void {
-    const id = this.userToDelete();
-    if (id) {
-      this.performDelete(id);
+    const user = this.userToDelete();
+    if (user) {
+      this.performDelete(user.id);
     }
   }
 
