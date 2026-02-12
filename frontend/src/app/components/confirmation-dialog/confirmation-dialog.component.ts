@@ -10,7 +10,7 @@ import { LoadingSpinnerComponent } from '../loading-spinner/loading-spinner.comp
     <dialog
       #dialog
       class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-0 backdrop:bg-black/50 min-w-[320px] max-w-lg text-left"
-      (cancel)="onCancel($event)"
+      (cancel)="onCancel()"
       (click)="onBackdropClick($event)"
     >
       <div class="p-6">
@@ -87,7 +87,7 @@ export class ConfirmationDialogComponent {
     this.cancelled.emit();
   }
 
-  onCancel(event: Event) {
+  onCancel() {
     this.cancelled.emit();
   }
 
