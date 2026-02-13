@@ -12,3 +12,7 @@
 ## 2026-01-15 - Native Dialog Backdrop Interaction
 **Learning:** The native `<dialog>` element does not automatically close when clicking the backdrop, unlike many custom modal implementations. This expectation is strong for users. The backdrop click event targets the `dialog` element itself, allowing easy detection.
 **Action:** Always implement a click handler on `<dialog>` elements to check `event.target === element` and close the dialog to match user expectations.
+
+## 2026-02-18 - Detached Action Buttons
+**Learning:** Action buttons detached from their context (e.g., in a header) that attempt to submit a form create confusion when validation fails silently (button is disabled).
+**Action:** Configure detached buttons to navigate to and focus the relevant form/input instead of directly submitting, allowing the user to address validation issues.

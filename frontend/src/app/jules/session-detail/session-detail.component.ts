@@ -1,9 +1,8 @@
-import { Component, OnInit, OnDestroy, signal, ChangeDetectionStrategy, inject, computed, ViewChild, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, ChangeDetectionStrategy, inject, computed, ViewChild, PLATFORM_ID, ElementRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
-// @ts-ignore: ignore missing types for ngx-markdown
 import { MarkdownComponent } from 'ngx-markdown';
 import { JulesService } from '../../services/jules.service';
 import { JulesStreamService } from '../../services/jules-stream.service';
@@ -38,6 +37,7 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
 
   @ViewChild('deleteDialog') deleteDialog!: ConfirmationDialogComponent;
   @ViewChild(ActivityTimelineComponent) activityTimeline?: ActivityTimelineComponent;
+  @ViewChild('messageInput') messageInput?: ElementRef<HTMLInputElement>;
 
   session = signal<Session | null>(null);
   loading = signal<boolean>(false);
@@ -158,6 +158,13 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
           this.sendingMessage.set(false);
         }
       });
+    }
+  }
+
+  focusMessageInput(): void {
+    if (this.messageInput?.nativeElement) {
+      this.messageInput.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      this.messageInput.nativeElement.focus();
     }
   }
 

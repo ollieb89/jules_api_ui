@@ -65,10 +65,10 @@
         
         @if (session()!.state === 'ACTIVE') {
           <button
-            (click)="sendMessage()"
+            (click)="focusMessageInput()"
             type="button"
-            [disabled]="messageForm.invalid || sendingMessage()"
-            [attr.aria-label]="sendingMessage() ? 'Sending message' : 'Send a message to the agent'"
+            [disabled]="sendingMessage()"
+            aria-label="Scroll to message input"
             class="px-4 py-2 bg-[var(--color-interactive-primary)] hover:bg-[var(--color-interactive-primary-hover)] active:bg-[var(--color-interactive-primary-active)] text-[var(--color-text-inverse)] font-medium rounded-lg transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)] inline-flex items-center gap-2 shadow-sm hover:shadow"
           >
             <span aria-hidden="true">💬</span>
@@ -157,6 +157,7 @@
           <h3 class="text-lg font-semibold text-[var(--color-text-primary)] mb-4">Send Message</h3>
           <form [formGroup]="messageForm" (ngSubmit)="sendMessage()" class="flex gap-2">
             <input
+              #messageInput
               type="text"
               formControlName="message"
               placeholder="Type your message..."
