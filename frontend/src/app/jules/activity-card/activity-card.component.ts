@@ -1,9 +1,9 @@
-import { Component, input, signal, ChangeDetectionStrategy, inject, computed } from '@angular/core';
+import { Component, input, signal, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { Activity, PlanGeneratedActivity, ProgressUpdatedActivity } from '../../models/jules.model';
+import { Activity } from '../../models/jules.model';
 import { ClipboardService } from '../../services/clipboard.service';
 
 interface DiffLine {
@@ -271,10 +271,6 @@ export class ActivityCardComponent {
       'FAILED': 'Failed'
     };
     return labels[state] || state;
-  }
-
-  getStepStateClass(state: string): string {
-    return 'mat-chip mat-standard-chip mat-mdc-chip';
   }
 
   getStepStateColor(state: string): string {
