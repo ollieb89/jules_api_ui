@@ -87,7 +87,8 @@ export class ConfirmationDialogComponent {
     this.cancelled.emit();
   }
 
-  onCancel(event: Event) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onCancel(_event: Event) {
     this.cancelled.emit();
   }
 
