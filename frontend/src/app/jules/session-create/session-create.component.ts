@@ -6,12 +6,13 @@ import { JulesService } from '../../services/jules.service';
 import { CreateSession, Source } from '../../models/jules.model';
 import { getApiErrorMessage } from '../../utils/api-error';
 import { parseSourcesResponse, getParserErrorMessage } from '../../utils/api-parsers';
+import { LoadingSpinnerComponent } from '../../components/loading-spinner/loading-spinner.component';
 
 type WizardStep = 1 | 2 | 3;
 
 @Component({
   selector: 'app-session-create',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, LoadingSpinnerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="container mx-auto px-4 py-8 max-w-3xl">
@@ -74,7 +75,7 @@ type WizardStep = 1 | 2 | 3;
           <h2 class="text-xl font-semibold text-[var(--color-text-primary)] mb-4">Select GitHub Repository</h2>
           
           @if (loadingSources()) {
-            <div class="text-[var(--color-text-secondary)]">Loading repositories...</div>
+            <app-loading-spinner label="Loading repositories..." containerClass="py-4"></app-loading-spinner>
           } @else if (sources().length === 0) {
             <div class="bg-[var(--color-surface-warning)] border border-[var(--color-border-warning)] text-[var(--color-text-warning)] px-4 py-3 rounded mb-4">
               No repositories found. Please configure your GitHub connection.
@@ -241,10 +242,11 @@ type WizardStep = 1 | 2 | 3;
               type="button"
               (click)="onSubmit()"
               [disabled]="form.invalid || loading()"
-              class="px-4 py-2 bg-[var(--color-interactive-success)] hover:bg-[var(--color-interactive-success-hover)] disabled:bg-[var(--color-interactive-primary-disabled)] text-[var(--color-text-inverse)] font-semibold rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
+              class="px-4 py-2 bg-[var(--color-interactive-success)] hover:bg-[var(--color-interactive-success-hover)] disabled:bg-[var(--color-interactive-primary-disabled)] text-[var(--color-text-inverse)] font-semibold rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)] flex items-center"
             >
               @if (loading()) {
-                Creating...
+                <app-loading-spinner sizeClass="h-4 w-4" colorClass="text-[var(--color-text-inverse)]" containerClass="" label="Creating..."></app-loading-spinner>
+                <span class="ml-2">Creating...</span>
               } @else {
                 ✓ Create Session
               }
