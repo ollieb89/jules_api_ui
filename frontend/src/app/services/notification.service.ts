@@ -4,7 +4,7 @@ import { MatSnackBar, MatSnackBarConfig } from '@angular/material/snack-bar';
 export type NotificationType = 'success' | 'error' | 'info' | 'warning';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class NotificationService {
   private snackBar = inject(MatSnackBar);
@@ -17,7 +17,7 @@ export class NotificationService {
       duration,
       horizontalPosition: 'end',
       verticalPosition: 'top',
-      panelClass: this.getPanelClass(type)
+      panelClass: this.getPanelClass(type),
     };
 
     this.snackBar.open(message, 'Close', config);
@@ -59,7 +59,7 @@ export class NotificationService {
       success: 'snackbar-success',
       error: 'snackbar-error',
       info: 'snackbar-info',
-      warning: 'snackbar-warning'
+      warning: 'snackbar-warning',
     };
     return classes[type];
   }

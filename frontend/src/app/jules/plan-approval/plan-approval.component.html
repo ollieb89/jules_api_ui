@@ -6,9 +6,9 @@
         {{ getPlanStateLabel(plan.state) }}
       </mat-chip>
     </div>
-    
+
     @if (error()) {
-      <div 
+      <div
         class="bg-[var(--color-surface-error)] border border-[var(--color-border-error)] text-[var(--color-text-error)] px-3 py-2 rounded text-sm mt-2"
         role="alert"
       >
@@ -19,7 +19,9 @@
 
   <ul class="list-disc space-y-2 mb-4 pl-5">
     @for (step of plan.steps; track $index) {
-      <li class="text-base text-[var(--color-text-primary)] leading-relaxed flex justify-between items-start gap-2">
+      <li
+        class="text-base text-[var(--color-text-primary)] leading-relaxed flex justify-between items-start gap-2"
+      >
         <span class="flex-1">{{ step.title || step.description || 'Step ' + ($index + 1) }}</span>
         <mat-chip [color]="getStepStateColor(step.state)" class="flex-shrink-0 align-top">
           {{ getStepStateLabel(step.state) }}

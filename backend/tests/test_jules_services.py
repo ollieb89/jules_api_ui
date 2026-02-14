@@ -61,6 +61,7 @@ class TestSharedHttpClientBackoff:
 
     def test_retry_after_header_takes_precedence(self, shared_client):
         from jules.services import _resolve_retry_policy
+
         policy = _resolve_retry_policy("default")
         response = httpx.Response(
             429,
@@ -71,6 +72,7 @@ class TestSharedHttpClientBackoff:
 
     def test_invalid_retry_after_falls_back_to_exponential(self, shared_client):
         from jules.services import _resolve_retry_policy
+
         policy = _resolve_retry_policy("default")
         response = httpx.Response(
             503,
@@ -141,7 +143,9 @@ class TestSharedHttpClientRequest:
     def test_http_status_error_maps_to_api_request_error(self, shared_client):
         request = httpx.Request("GET", "http://example.com")
         response = httpx.Response(
-            400, request=request, json={"error": {"message": "Bad request", "status": "BAD"}}
+            400,
+            request=request,
+            json={"error": {"message": "Bad request", "status": "BAD"}},
         )
 
         with patch.object(shared_client._client, "request", return_value=response):
@@ -154,7 +158,9 @@ class TestSharedHttpClientRequest:
         assert err.details["error_code"] == "BAD"
         assert "Bad request" in err.user_message
 
-    def test_request_error_maps_to_service_unavailable(self, shared_client, monkeypatch):
+    def test_request_error_maps_to_service_unavailable(
+        self, shared_client, monkeypatch
+    ):
         monkeypatch.setattr("jules.services.MAX_RETRIES", 0)
         # Update retry policies as well since _resolve_retry_policy uses defaults from there if not found/updated
         monkeypatch.setattr(
@@ -187,7 +193,9 @@ class TestSharedHttpClientRequest:
         mock_response.content = b"ok"
         mock_response.raise_for_status = Mock()
 
-        with patch.object(shared_client._client, "request", return_value=mock_response) as req:
+        with patch.object(
+            shared_client._client, "request", return_value=mock_response
+        ) as req:
             shared_client.request("GET", "http://example.com", timeout_policy="long")
 
         _, kwargs = req.call_args
@@ -202,7 +210,9 @@ class TestJulesApiClientMethods:
         mock_response = Mock()
         mock_response.json = Mock(return_value={"sources": []})
 
-        with patch.object(client._client, "request", return_value=mock_response) as mock_req:
+        with patch.object(
+            client._client, "request", return_value=mock_response
+        ) as mock_req:
             result = client.list_sources()
 
         mock_req.assert_called_once()
@@ -212,7 +222,9 @@ class TestJulesApiClientMethods:
         mock_response = Mock()
         mock_response.json = Mock(return_value={"session": "123"})
 
-        with patch.object(client._client, "request", return_value=mock_response) as mock_req:
+        with patch.object(
+            client._client, "request", return_value=mock_response
+        ) as mock_req:
             result = client.create_session("test prompt", "source")
 
         mock_req.assert_called_once()
@@ -224,7 +236,9 @@ class TestJulesApiClientMethods:
         mock_response = Mock()
         mock_response.raise_for_status = Mock()
 
-        with patch.object(client._client, "request", return_value=mock_response) as mock_req:
+        with patch.object(
+            client._client, "request", return_value=mock_response
+        ) as mock_req:
             client.delete_session("session123")
 
         mock_req.assert_called_once()
