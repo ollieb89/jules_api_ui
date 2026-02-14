@@ -26,8 +26,8 @@ def test_user_cannot_edit_other_user():
     payload = {"name": "Hacked by A"}
     response = client.patch(f"/api/users/{app_user_b.id}/", payload, format='json')
 
-    # 5. Assert that the request was Forbidden
-    assert response.status_code == status.HTTP_403_FORBIDDEN
+    # 5. Assert that the request was Forbidden or Not Found (due to queryset filtering)
+    assert response.status_code in [status.HTTP_403_FORBIDDEN, status.HTTP_404_NOT_FOUND]
 
     app_user_b.refresh_from_db()
     assert app_user_b.name == "User B"
