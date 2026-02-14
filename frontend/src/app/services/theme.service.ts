@@ -5,13 +5,13 @@ export type ThemeMode = 'light' | 'dark' | 'system';
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
   private readonly STORAGE_KEY = 'jules-theme-mode';
-  
+
   // Current theme mode preference (light, dark, or system)
   private readonly mode = signal<ThemeMode>(this.loadStoredMode());
-  
+
   // Computed effective theme (light or dark, resolved from system preference if mode is 'system')
   readonly theme = signal<'light' | 'dark'>(this.resolveTheme(this.mode()));
-  
+
   constructor() {
     // Watch for system preference changes
     if (typeof window !== 'undefined') {
@@ -21,32 +21,32 @@ export class ThemeService {
           this.theme.set(this.resolveTheme('system'));
         }
       });
-      
+
       // Persist theme changes to localStorage
       effect(() => {
         const currentMode = this.mode();
         const effectiveTheme = this.theme();
-        
+
         localStorage.setItem(this.STORAGE_KEY, currentMode);
         this.applyTheme(effectiveTheme);
       });
     }
   }
-  
+
   /**
    * Get current theme mode preference
    */
   getMode(): ThemeMode {
     return this.mode();
   }
-  
+
   /**
    * Get current effective theme (light or dark)
    */
   getTheme(): 'light' | 'dark' {
     return this.theme();
   }
-  
+
   /**
    * Set theme mode (light, dark, or system)
    */
@@ -54,7 +54,7 @@ export class ThemeService {
     this.mode.set(mode);
     this.theme.set(this.resolveTheme(mode));
   }
-  
+
   /**
    * Toggle between light and dark (ignores system preference)
    */
@@ -62,7 +62,7 @@ export class ThemeService {
     const currentTheme = this.theme();
     this.setMode(currentTheme === 'light' ? 'dark' : 'light');
   }
-  
+
   /**
    * Load stored theme mode from localStorage, defaulting to 'system'
    */
@@ -70,14 +70,14 @@ export class ThemeService {
     if (typeof window === 'undefined') {
       return 'system';
     }
-    
+
     const stored = localStorage.getItem(this.STORAGE_KEY);
     if (stored === 'light' || stored === 'dark' || stored === 'system') {
       return stored;
     }
     return 'system';
   }
-  
+
   /**
    * Resolve effective theme from mode preference
    */
@@ -90,7 +90,7 @@ export class ThemeService {
     }
     return mode;
   }
-  
+
   /**
    * Apply theme class to HTML element
    */
@@ -98,7 +98,7 @@ export class ThemeService {
     if (typeof document === 'undefined') {
       return;
     }
-    
+
     const html = document.documentElement;
     if (theme === 'dark') {
       html.classList.add('dark');
@@ -107,4 +107,3 @@ export class ThemeService {
     }
   }
 }
-
