@@ -23,6 +23,17 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated, IsProfileOwnerOrAdmin]
 
+    def get_queryset(self):
+        """
+        Return users.
+        Regular users can only see their own profile.
+        Admins can see all users.
+        """
+        user = self.request.user
+        if user.is_staff:
+            return User.objects.all()
+        return User.objects.filter(email=user.email)
+
     def get_serializer_class(self):
         """Return appropriate serializer class based on action."""
         if self.action == "create":
