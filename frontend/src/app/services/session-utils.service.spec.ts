@@ -6,7 +6,7 @@ describe('SessionUtilsService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [SessionUtilsService]
+      providers: [SessionUtilsService],
     });
     service = TestBed.inject(SessionUtilsService);
   });
