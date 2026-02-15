@@ -12,6 +12,6 @@ export const julesApiErrorInterceptor: HttpInterceptorFn = (req, next) => {
       const normalizedError: JulesApiError = apiErrorService.normalizeError(error);
       console.error('API error:', normalizedError.error, error);
       return throwError(() => normalizedError);
-    })
+    }),
   );
 };

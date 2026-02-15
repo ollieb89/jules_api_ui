@@ -11,6 +11,12 @@ class JulesConfig(AppConfig):
     name = "jules"
 
     def ready(self) -> None:
+        # Avoid accessing the database during CI checks like makemigrations
+        import sys
+
+        if "makemigrations" in sys.argv or "migrate" in sys.argv or "check" in sys.argv:
+            return
+
         from django_q.models import Schedule
 
         try:

@@ -14,7 +14,13 @@ export interface Source {
 }
 
 // Session types
-export type SessionState = 'STATE_UNSPECIFIED' | 'ACTIVE' | 'IN_PROGRESS' | 'AWAITING_USER_FEEDBACK' | 'COMPLETED' | 'FAILED';
+export type SessionState =
+  | 'STATE_UNSPECIFIED'
+  | 'ACTIVE'
+  | 'IN_PROGRESS'
+  | 'AWAITING_USER_FEEDBACK'
+  | 'COMPLETED'
+  | 'FAILED';
 
 export interface Session {
   name: string;
@@ -129,11 +135,11 @@ export interface TestConnectionResponse {
 // API Error types
 export interface JulesApiError {
   error:
-  | string
-  | {
-    message?: string;
-    detail?: unknown;
-  };
+    | string
+    | {
+        message?: string;
+        detail?: unknown;
+      };
   retry_after_seconds?: number;
   fieldErrors?: ApiError;
 }
