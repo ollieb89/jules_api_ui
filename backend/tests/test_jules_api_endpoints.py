@@ -17,6 +17,17 @@ def api_client(db):
     return client
 
 
+@pytest.fixture
+def admin_client(db):
+    user_model = get_user_model()
+    user = user_model.objects.create_superuser(
+        username='admin', password='pass', email='admin@example.com'
+    )
+    client = APIClient()
+    client.force_authenticate(user=user)
+    return client
+
+
 def test_sources_list_serializes_optional_metadata(api_client, monkeypatch):
     class StubClient:
         def list_sources(self):
@@ -287,7 +298,7 @@ def test_activities_list_handles_api_error(api_client, monkeypatch):
     assert payload['retry_after_seconds'] == 1
 
 
-def test_settings_test_connection_handles_failure(api_client, monkeypatch):
+def test_settings_test_connection_handles_failure(admin_client, monkeypatch):
     settings_obj = JulesSettings.get_settings()
     settings_obj.set_api_key('api-key-0000')
     settings_obj.save()
@@ -298,7 +309,7 @@ def test_settings_test_connection_handles_failure(api_client, monkeypatch):
 
     monkeypatch.setattr('jules.views.JulesApiClient', lambda: StubClient())
 
-    response = api_client.post('/api/jules/settings/test/')
+    response = admin_client.post('/api/jules/settings/test/')
 
     assert response.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
     payload = response.json()
@@ -307,7 +318,7 @@ def test_settings_test_connection_handles_failure(api_client, monkeypatch):
     assert payload['error'] == 'service down'
 
 
-def test_settings_test_connection_handles_api_request_error(api_client, monkeypatch):
+def test_settings_test_connection_handles_api_request_error(admin_client, monkeypatch):
     settings_obj = JulesSettings.get_settings()
     settings_obj.set_api_key('api-key-5555')
     settings_obj.save()
@@ -323,7 +334,7 @@ def test_settings_test_connection_handles_api_request_error(api_client, monkeypa
 
     monkeypatch.setattr('jules.views.JulesApiClient', lambda: StubClient())
 
-    response = api_client.post('/api/jules/settings/test/')
+    response = admin_client.post('/api/jules/settings/test/')
 
     assert response.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
     payload = response.json()

@@ -3,10 +3,10 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import {
-  Source,
+
   Session,
   CreateSession,
-  Activity,
+
   SendMessageRequest,
   PaginatedSourcesResponse,
   PaginatedSessionsResponse,
