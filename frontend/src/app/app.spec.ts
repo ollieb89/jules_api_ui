@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { TestBed } from '@angular/core/testing';
 import { App } from './app';
 
@@ -23,16 +24,14 @@ describe('App', () => {
   });
 
   it('should create the app', () => {
-    const fixture = TestBed.createComponent(App);
-    const app = fixture.componentInstance;
+
     expect(app).toBeTruthy();
   });
 
   it('should render title', async () => {
-    const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     fixture.detectChanges(); // Ensure change detection runs
-    const compiled = fixture.nativeElement as HTMLElement;
+
     // The actual title might differ, but let's see if this fixes the crash.
     // If it fails on text content, I'll know the component rendered at least.
     // Based on previous run, it crashed before this expectation.

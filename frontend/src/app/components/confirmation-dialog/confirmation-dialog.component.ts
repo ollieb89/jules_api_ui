@@ -87,11 +87,11 @@ export class ConfirmationDialogComponent {
     this.cancelled.emit();
   }
 
-  onCancel(event: Event) {
+  onCancel() {
     this.cancelled.emit();
   }
 
-  onBackdropClick(event: MouseEvent) {
+  onBackdropClick() {
     if (event.target === this.dialog.nativeElement) {
       this.close();
     }

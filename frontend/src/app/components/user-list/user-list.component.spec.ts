@@ -1,6 +1,4 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
-import { Router } from '@angular/router';
-import { RouterTestingModule } from '@angular/router/testing';
 import { PLATFORM_ID } from '@angular/core';
 import { of } from 'rxjs';
 import { vi } from 'vitest';
@@ -33,7 +31,7 @@ describe('UserListComponent', () => {
     };
 
     await TestBed.configureTestingModule({
-      imports: [UserListComponent, RouterTestingModule.withRoutes([])],
+      imports: [UserListComponentTestingModule.withRoutes([])],
       providers: [
         { provide: UserService, useValue: userService },
         { provide: PLATFORM_ID, useValue: 'browser' }
@@ -53,7 +51,6 @@ describe('UserListComponent', () => {
   it('renders "Add User" link with correct routerLink', () => {
     const link = fixture.nativeElement.querySelector('a[aria-label="Add new user"]');
     expect(link).toBeTruthy();
-    // Angular's RouterTestingModule should update the href property
     expect(link.getAttribute('href')).toBe('/users/new');
   });
 

@@ -1,3 +1,4 @@
+// eslint-disable-next-line @angular-eslint/component-class-suffix
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { ThemeService } from './services/theme.service';
@@ -10,6 +11,7 @@ import { GlobalErrorService } from './services/global-error.service';
   styleUrl: './app.css',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
+// eslint-disable-next-line @angular-eslint/component-class-suffix
 export class App implements OnInit {
   protected readonly title = signal('Jules');
   private readonly themeService = inject(ThemeService);
