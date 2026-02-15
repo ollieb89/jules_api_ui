@@ -14,12 +14,12 @@ describe('DashboardComponent', () => {
       failedCount: vi.fn(() => 1),
       lastUpdated: vi.fn(() => new Date('2024-01-01T10:00:00Z')),
       sessions: vi.fn(() => []),
-      startAutoRefresh: vi.fn()
+      startAutoRefresh: vi.fn(),
     };
 
     const themeService = {
       toggle: vi.fn(),
-      getTheme: vi.fn(() => 'light')
+      getTheme: vi.fn(() => 'light'),
     };
 
     await TestBed.configureTestingModule({
@@ -27,8 +27,8 @@ describe('DashboardComponent', () => {
       providers: [
         { provide: SessionCacheService, useValue: cacheService },
         { provide: ThemeService, useValue: themeService },
-        provideRouter([])
-      ]
+        provideRouter([]),
+      ],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(DashboardComponent);
@@ -43,8 +43,22 @@ describe('DashboardComponent', () => {
 
   it('renders recent sessions and navigates on click', async () => {
     const mockSessions = [
-      { name: 'sessions/1', display_name: 'Session 1', state: 'ACTIVE', prompt: 'Prompt 1', source: 'Source 1', update_time: '2024-01-02T10:00:00Z' },
-      { name: 'sessions/2', display_name: 'Session 2', state: 'COMPLETED', prompt: 'Prompt 2', source: 'Source 2', update_time: '2024-01-01T10:00:00Z' }
+      {
+        name: 'sessions/1',
+        display_name: 'Session 1',
+        state: 'ACTIVE',
+        prompt: 'Prompt 1',
+        source: 'Source 1',
+        update_time: '2024-01-02T10:00:00Z',
+      },
+      {
+        name: 'sessions/2',
+        display_name: 'Session 2',
+        state: 'COMPLETED',
+        prompt: 'Prompt 2',
+        source: 'Source 2',
+        update_time: '2024-01-01T10:00:00Z',
+      },
     ];
 
     const cacheService = {
@@ -54,12 +68,12 @@ describe('DashboardComponent', () => {
       failedCount: vi.fn(() => 0),
       lastUpdated: vi.fn(() => new Date()),
       sessions: vi.fn(() => mockSessions),
-      startAutoRefresh: vi.fn()
+      startAutoRefresh: vi.fn(),
     };
 
     const themeService = {
       toggle: vi.fn(),
-      getTheme: vi.fn(() => 'light')
+      getTheme: vi.fn(() => 'light'),
     };
 
     await TestBed.configureTestingModule({
@@ -67,8 +81,8 @@ describe('DashboardComponent', () => {
       providers: [
         { provide: SessionCacheService, useValue: cacheService },
         { provide: ThemeService, useValue: themeService },
-        provideRouter([])
-      ]
+        provideRouter([]),
+      ],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(DashboardComponent);
@@ -88,8 +102,8 @@ describe('DashboardComponent', () => {
     expect(compiled.textContent).toContain('Session 2');
 
     // Look for the anchor tag for Session 1
-    const sessionLink = Array.from(compiled.querySelectorAll('a')).find(
-      el => el.textContent?.includes('Session 1')
+    const sessionLink = Array.from(compiled.querySelectorAll('a')).find((el) =>
+      el.textContent?.includes('Session 1'),
     );
 
     if (sessionLink) {

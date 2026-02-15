@@ -6,13 +6,10 @@
   </div>
 
   @if (loading() && isEditMode()) {
-    <app-loading-spinner
-      label="Loading user data..."
-      containerClass="py-12"
-    ></app-loading-spinner>
+    <app-loading-spinner label="Loading user data..." containerClass="py-12"></app-loading-spinner>
   } @else {
     @if (error()) {
-      <div 
+      <div
         class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4"
         role="alert"
         aria-live="assertive"
@@ -39,7 +36,9 @@
           autofocus
         />
         @if (getFieldError('name')) {
-          <p id="name-error" class="mt-1 text-sm text-red-600" role="alert">{{ getFieldError('name') }}</p>
+          <p id="name-error" class="mt-1 text-sm text-red-600" role="alert">
+            {{ getFieldError('name') }}
+          </p>
         }
       </div>
 
@@ -59,7 +58,9 @@
           [class.border-red-500]="getFieldError('email')"
         />
         @if (getFieldError('email')) {
-          <p id="email-error" class="mt-1 text-sm text-red-600" role="alert">{{ getFieldError('email') }}</p>
+          <p id="email-error" class="mt-1 text-sm text-red-600" role="alert">
+            {{ getFieldError('email') }}
+          </p>
         }
       </div>
 

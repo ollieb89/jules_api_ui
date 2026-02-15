@@ -23,20 +23,22 @@ export interface ConfirmDialogData {
       <button mat-raised-button color="warn" (click)="onConfirm()">{{ data.confirmText }}</button>
     </mat-dialog-actions>
   `,
-  styles: [`
-    :host {
-      display: block;
-    }
-    
-    mat-dialog-content {
-      padding: 20px 0;
-      min-height: 60px;
-    }
-    
-    mat-dialog-actions {
-      padding: 16px 0 0 0;
-    }
-  `]
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+
+      mat-dialog-content {
+        padding: 20px 0;
+        min-height: 60px;
+      }
+
+      mat-dialog-actions {
+        padding: 16px 0 0 0;
+      }
+    `,
+  ],
 })
 export class ConfirmDialogComponent {
   data = inject<ConfirmDialogData>(MAT_DIALOG_DATA);

@@ -13,7 +13,7 @@ import {
   Step,
   StepState,
   TestConnectionResponse,
-  UpdateApiKeyResponse
+  UpdateApiKeyResponse,
 } from '../models/jules.model';
 
 type UnknownRecord = Record<string, unknown>;
@@ -24,7 +24,7 @@ const sessionStates = new Set<SessionState>([
   'IN_PROGRESS',
   'AWAITING_USER_FEEDBACK',
   'COMPLETED',
-  'FAILED'
+  'FAILED',
 ]);
 
 const stepStates = new Set<StepState>([
@@ -32,15 +32,10 @@ const stepStates = new Set<StepState>([
   'PENDING',
   'IN_PROGRESS',
   'COMPLETED',
-  'FAILED'
+  'FAILED',
 ]);
 
-const planStates = new Set<PlanState>([
-  'STATE_UNSPECIFIED',
-  'PENDING',
-  'APPROVED',
-  'REJECTED'
-]);
+const planStates = new Set<PlanState>(['STATE_UNSPECIFIED', 'PENDING', 'APPROVED', 'REJECTED']);
 
 const isRecord = (value: unknown): value is UnknownRecord =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -98,7 +93,7 @@ const parseArtifact = (value: unknown): Artifact => {
   return {
     change_set: asOptionalRecord(value['change_set'], 'artifact.change_set') ?? null,
     bash_output: asNullableString(value['bash_output'], 'artifact.bash_output') ?? null,
-    git_patch: asNullableString(value['git_patch'], 'artifact.git_patch') ?? null
+    git_patch: asNullableString(value['git_patch'], 'artifact.git_patch') ?? null,
   };
 };
 
@@ -119,7 +114,9 @@ const parseStep = (value: unknown): Step => {
     title: asNullableString(value['title'], 'step.title') ?? undefined,
     description: asNullableString(value['description'], 'step.description') ?? undefined,
     state: state as StepState,
-    artifacts: value['artifacts'] ? asArray(value['artifacts'], 'step.artifacts', parseArtifact) : null
+    artifacts: value['artifacts']
+      ? asArray(value['artifacts'], 'step.artifacts', parseArtifact)
+      : null,
   };
 };
 
@@ -138,7 +135,7 @@ const parsePlan = (value: unknown): Plan => {
 
   return {
     steps,
-    state: state as PlanState
+    state: state as PlanState,
   };
 };
 
@@ -157,20 +154,20 @@ const parseSource = (value: unknown): Source => {
     display_name: asString(value['display_name'], 'source.display_name'),
     github_metadata: githubMetadata
       ? {
-        repository: asString(
-          (githubMetadata as UnknownRecord)['repository'],
-          'source.github_metadata.repository'
-        ),
-        branch: asNullableString(
-          (githubMetadata as UnknownRecord)['branch'],
-          'source.github_metadata.branch'
-        ),
-        commit: asNullableString(
-          (githubMetadata as UnknownRecord)['commit'],
-          'source.github_metadata.commit'
-        )
-      }
-      : null
+          repository: asString(
+            (githubMetadata as UnknownRecord)['repository'],
+            'source.github_metadata.repository',
+          ),
+          branch: asNullableString(
+            (githubMetadata as UnknownRecord)['branch'],
+            'source.github_metadata.branch',
+          ),
+          commit: asNullableString(
+            (githubMetadata as UnknownRecord)['commit'],
+            'source.github_metadata.commit',
+          ),
+        }
+      : null,
   };
 };
 
@@ -192,7 +189,7 @@ const parseSession = (value: unknown): Session => {
     prompt: asString(value['prompt'], 'session.prompt'),
     source: asString(value['source'], 'session.source'),
     create_time: asString(value['create_time'], 'session.create_time'),
-    update_time: asString(value['update_time'], 'session.update_time')
+    update_time: asString(value['update_time'], 'session.update_time'),
   };
 };
 
@@ -229,34 +226,34 @@ const parseActivity = (value: unknown): Activity => {
       : null,
     plan_approved: planApproved
       ? {
-        plan: (planApproved as UnknownRecord)['plan']
-          ? parsePlan((planApproved as UnknownRecord)['plan'])
-          : undefined
-      }
+          plan: (planApproved as UnknownRecord)['plan']
+            ? parsePlan((planApproved as UnknownRecord)['plan'])
+            : undefined,
+        }
       : null,
     progress_updated: progressUpdated
       ? {
-        title:
-          asNullableString(
-            (progressUpdated as UnknownRecord)['title'],
-            'activity.progress_updated.title'
-          ) ?? undefined,
-        description:
-          asNullableString(
-            (progressUpdated as UnknownRecord)['description'],
-            'activity.progress_updated.description'
-          ) ?? undefined,
-        artifacts: (progressUpdated as UnknownRecord)['artifacts']
-          ? asArray(
-            (progressUpdated as UnknownRecord)['artifacts'],
-            'activity.progress_updated.artifacts',
-            parseArtifact
-          )
-          : null
-      }
+          title:
+            asNullableString(
+              (progressUpdated as UnknownRecord)['title'],
+              'activity.progress_updated.title',
+            ) ?? undefined,
+          description:
+            asNullableString(
+              (progressUpdated as UnknownRecord)['description'],
+              'activity.progress_updated.description',
+            ) ?? undefined,
+          artifacts: (progressUpdated as UnknownRecord)['artifacts']
+            ? asArray(
+                (progressUpdated as UnknownRecord)['artifacts'],
+                'activity.progress_updated.artifacts',
+                parseArtifact,
+              )
+            : null,
+        }
       : null,
     session_completed: sessionCompleted ? {} : null,
-    create_time: asString(value['create_time'], 'activity.create_time')
+    create_time: asString(value['create_time'], 'activity.create_time'),
   };
 };
 
@@ -273,7 +270,7 @@ export const parseSourcesResponse = (value: unknown): PaginatedSourcesResponse =
   }
 
   return {
-    sources: asArray(value['sources'], 'sources', parseSource)
+    sources: asArray(value['sources'], 'sources', parseSource),
   };
 };
 
@@ -284,7 +281,7 @@ export const parseSessionsResponse = (value: unknown): PaginatedSessionsResponse
 
   return {
     sessions: asArray(value['sessions'], 'sessions', parseSession),
-    next_page_token: asNullableString(value['next_page_token'], 'sessions.next_page_token') ?? null
+    next_page_token: asNullableString(value['next_page_token'], 'sessions.next_page_token') ?? null,
   };
 };
 
@@ -300,7 +297,8 @@ export const parseActivitiesResponse = (value: unknown): PaginatedActivitiesResp
 
   return {
     activities: asArray(value['activities'], 'activities', parseActivity),
-    next_page_token: asNullableString(value['next_page_token'], 'activities.next_page_token') ?? null
+    next_page_token:
+      asNullableString(value['next_page_token'], 'activities.next_page_token') ?? null,
   };
 };
 
@@ -321,7 +319,7 @@ export const parseSettingsResponse = (value: unknown): JulesSettings => {
     api_key_configured: apiKeyConfigured,
     masked_api_key: asNullableString(value['masked_api_key'], 'settings.masked_api_key') ?? null,
     created_at: asString(value['created_at'], 'settings.created_at'),
-    updated_at: asString(value['updated_at'], 'settings.updated_at')
+    updated_at: asString(value['updated_at'], 'settings.updated_at'),
   };
 };
 
@@ -333,7 +331,8 @@ export const parseUpdateApiKeyResponse = (value: unknown): UpdateApiKeyResponse 
   return {
     status: asString(value['status'], 'update_api_key.status'),
     message: asString(value['message'], 'update_api_key.message'),
-    masked_api_key: asNullableString(value['masked_api_key'], 'update_api_key.masked_api_key') ?? undefined
+    masked_api_key:
+      asNullableString(value['masked_api_key'], 'update_api_key.masked_api_key') ?? undefined,
   };
 };
 
@@ -358,6 +357,6 @@ export const parseTestConnectionResponse = (value: unknown): TestConnectionRespo
       asNullableString(value['api_connectivity'], 'test_connection.api_connectivity') ?? undefined,
     sources_count:
       asOptionalNumber(value['sources_count'], 'test_connection.sources_count') ?? undefined,
-    error: asNullableString(value['error'], 'test_connection.error') ?? undefined
+    error: asNullableString(value['error'], 'test_connection.error') ?? undefined,
   };
 };
