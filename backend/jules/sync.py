@@ -11,4 +11,3 @@ def upsert_session(session_data: dict) -> JulesSession:
 def upsert_activities(session: JulesSession, activities: list[dict]) -> None:
     for activity in activities:
         upsert_activity_from_api(session, activity)
-
