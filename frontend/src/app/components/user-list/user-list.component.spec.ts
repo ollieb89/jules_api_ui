@@ -1,5 +1,4 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
-import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { PLATFORM_ID } from '@angular/core';
 import { of } from 'rxjs';
@@ -71,7 +70,7 @@ describe('UserListComponent', () => {
     expect(component.users().length).toBe(2);
 
     // Setup user to delete
-    component.userToDelete.set(1);
+    component.userToDelete.set(component.users()[0]);
 
     // Execute confirmation
     component.onConfirmDelete();
