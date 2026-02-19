@@ -1,5 +1,4 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
-import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { PLATFORM_ID } from '@angular/core';
 import { of } from 'rxjs';
@@ -24,20 +23,30 @@ describe('UserListComponent', () => {
       getUsers: vi.fn(() =>
         of({
           results: [
-            { id: 1, name: 'Alice Smith', email: 'alice@example.com', created_at: '2023-01-01T10:00:00Z' },
-            { id: 2, name: 'Bob Jones', email: 'bob@example.com', created_at: '2023-01-02T11:00:00Z' }
-          ]
-        })
+            {
+              id: 1,
+              name: 'Alice Smith',
+              email: 'alice@example.com',
+              created_at: '2023-01-01T10:00:00Z',
+            },
+            {
+              id: 2,
+              name: 'Bob Jones',
+              email: 'bob@example.com',
+              created_at: '2023-01-02T11:00:00Z',
+            },
+          ],
+        }),
       ),
-      deleteUser: vi.fn(() => of({}))
+      deleteUser: vi.fn(() => of({})),
     };
 
     await TestBed.configureTestingModule({
       imports: [UserListComponent, RouterTestingModule.withRoutes([])],
       providers: [
         { provide: UserService, useValue: userService },
-        { provide: PLATFORM_ID, useValue: 'browser' }
-      ]
+        { provide: PLATFORM_ID, useValue: 'browser' },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(UserListComponent);
@@ -85,5 +94,14 @@ describe('UserListComponent', () => {
 
     // Verify NO reload happened
     expect(userService.getUsers).not.toHaveBeenCalled();
+  });
+
+  it('updates confirmation dialog message with user name', () => {
+    // Setup user to delete
+    component.deleteUser(1);
+    fixture.detectChanges();
+
+    const dialog = fixture.nativeElement.querySelector('app-confirmation-dialog');
+    expect(dialog.textContent).toContain('Are you sure you want to delete Alice Smith?');
   });
 });

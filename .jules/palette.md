@@ -12,3 +12,7 @@
 ## 2026-01-15 - Native Dialog Backdrop Interaction
 **Learning:** The native `<dialog>` element does not automatically close when clicking the backdrop, unlike many custom modal implementations. This expectation is strong for users. The backdrop click event targets the `dialog` element itself, allowing easy detection.
 **Action:** Always implement a click handler on `<dialog>` elements to check `event.target === element` and close the dialog to match user expectations.
+
+## 2026-02-19 - Explicit Confirmation Messages
+**Learning:** Generic "Are you sure?" messages for destructive actions can lead to errors if the user context is lost. Including the specific entity name (e.g., "Delete Alice?") reinforces the action and prevents accidental deletion of the wrong item.
+**Action:** Always include the name or identifier of the item being acted upon in confirmation dialogs.
