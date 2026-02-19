@@ -18,6 +18,17 @@ def api_client(db):
 
 
 @pytest.fixture
+def admin_client(db):
+    user_model = get_user_model()
+    user = user_model.objects.create_user(
+        username="admin_tester", password="pass", is_staff=True
+    )
+    client = APIClient()
+    client.force_authenticate(user=user)
+    return client
+
+
+@pytest.fixture
 def anon_client():
     return APIClient()
 
@@ -169,19 +180,19 @@ def test_activities_list_pagination_and_serializers(api_client, monkeypatch):
     ]
 
 
-def test_settings_list_and_update_api_key(api_client):
+def test_settings_list_and_update_api_key(admin_client):
     settings_obj = JulesSettings.get_settings()
     settings_obj.set_api_key("secret-api-key-1234")
     settings_obj.save()
 
-    list_response = api_client.get("/api/jules/settings/")
+    list_response = admin_client.get("/api/jules/settings/")
 
     assert list_response.status_code == status.HTTP_200_OK
     list_payload = list_response.json()
     assert list_payload["api_key_configured"] is True
     assert list_payload["masked_api_key"] == "secr...1234"
 
-    update_response = api_client.post(
+    update_response = admin_client.post(
         "/api/jules/settings/api-key/",
         data={"api_key": "updated-api-key-5678"},
         format="json",
@@ -193,7 +204,7 @@ def test_settings_list_and_update_api_key(api_client):
     assert update_payload["masked_api_key"] == "upda...5678"
 
 
-def test_settings_test_connection_success(api_client, monkeypatch):
+def test_settings_test_connection_success(admin_client, monkeypatch):
     settings_obj = JulesSettings.get_settings()
     settings_obj.set_api_key("connection-key-9999")
     settings_obj.save()
@@ -204,7 +215,7 @@ def test_settings_test_connection_success(api_client, monkeypatch):
 
     monkeypatch.setattr("jules.views.JulesApiClient", lambda: StubClient())
 
-    response = api_client.post("/api/jules/settings/test/")
+    response = admin_client.post("/api/jules/settings/test/")
 
     assert response.status_code == status.HTTP_200_OK
     payload = response.json()
@@ -230,7 +241,10 @@ def test_settings_requires_authentication(anon_client, db):
 
     # Depending on DRF settings, this might be 403 Forbidden or 401 Unauthorized
     # The default IsAuthenticated permission class returns 403 when user is not authenticated
-    assert response.status_code in [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN]
+    assert response.status_code in [
+        status.HTTP_401_UNAUTHORIZED,
+        status.HTTP_403_FORBIDDEN,
+    ]
 
 
 def test_settings_actions_require_authentication(anon_client, db):
@@ -245,13 +259,19 @@ def test_settings_actions_require_authentication(anon_client, db):
         status.HTTP_401_UNAUTHORIZED,
         status.HTTP_403_FORBIDDEN,
     ]
-    assert test_response.status_code in [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN]
+    assert test_response.status_code in [
+        status.HTTP_401_UNAUTHORIZED,
+        status.HTTP_403_FORBIDDEN,
+    ]
 
 
 def test_sessions_require_authentication(anon_client, db):
     response = anon_client.get("/api/jules/sessions/")
 
-    assert response.status_code in [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN]
+    assert response.status_code in [
+        status.HTTP_401_UNAUTHORIZED,
+        status.HTTP_403_FORBIDDEN,
+    ]
 
 
 def test_session_create_requires_authentication(anon_client, db):
@@ -261,4 +281,7 @@ def test_session_create_requires_authentication(anon_client, db):
         format="json",
     )
 
-    assert response.status_code in [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN]
+    assert response.status_code in [
+        status.HTTP_401_UNAUTHORIZED,
+        status.HTTP_403_FORBIDDEN,
+    ]
