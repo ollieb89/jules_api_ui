@@ -1,9 +1,18 @@
-import { Component, OnInit, OnDestroy, signal, ChangeDetectionStrategy, inject, computed, ViewChild, PLATFORM_ID } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  signal,
+  ChangeDetectionStrategy,
+  inject,
+  computed,
+  ViewChild,
+  PLATFORM_ID,
+} from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
-// @ts-ignore: ignore missing types for ngx-markdown
 import { MarkdownComponent } from 'ngx-markdown';
 import { JulesService } from '../../services/jules.service';
 import { JulesStreamService } from '../../services/jules-stream.service';
@@ -23,10 +32,19 @@ interface PRInfo {
 
 @Component({
   selector: 'app-session-detail',
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, ActivityTimelineComponent, MarkdownComponent, CodeBlockStyleDirective, LoadingSpinnerComponent, ConfirmationDialogComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    ReactiveFormsModule,
+    ActivityTimelineComponent,
+    MarkdownComponent,
+    CodeBlockStyleDirective,
+    LoadingSpinnerComponent,
+    ConfirmationDialogComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './session-detail.component.html',
-  styleUrl: './session-detail.component.css'
+  styleUrl: './session-detail.component.css',
 })
 export class SessionDetailComponent implements OnInit, OnDestroy {
   private julesService = inject(JulesService);
@@ -58,7 +76,7 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
   private lastActivityId: number | null = null;
 
   messageForm: FormGroup = this.fb.group({
-    message: ['', [Validators.required, Validators.minLength(1)]]
+    message: ['', [Validators.required, Validators.minLength(1)]],
   });
 
   sendingMessage = signal<boolean>(false);
@@ -87,7 +105,7 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
         this.startLiveUpdates();
 
         // Check for action query param (e.g., ?action=message)
-        this.route.queryParams.subscribe(params => {
+        this.route.queryParams.subscribe((params) => {
           if (params['action'] === 'message' && this.session()) {
             // Focus message input (would need ViewChild for actual focus)
           }
@@ -124,7 +142,7 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
       error: (err: unknown) => {
         this.error.set(getApiErrorMessage(err, 'Failed to load session'));
         this.loading.set(false);
-      }
+      },
     });
   }
 
@@ -156,7 +174,7 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
         error: (err: unknown) => {
           this.error.set(getApiErrorMessage(err, 'Failed to send message'));
           this.sendingMessage.set(false);
-        }
+        },
       });
     }
   }
@@ -181,7 +199,7 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
       error: (err: unknown) => {
         this.error.set(getApiErrorMessage(err, 'Failed to approve plan'));
         this.approvingPlan.set(false);
-      }
+      },
     });
   }
 
@@ -198,7 +216,7 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
       error: (err: unknown) => {
         this.deleteDialog.reset();
         this.error.set(getApiErrorMessage(err, 'Failed to delete session'));
-      }
+      },
     });
   }
 
@@ -219,10 +237,10 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
       .sessionStream(this.sessionId(), {
         pollIntervalSeconds: 60,
         lastUpdate: this.lastSessionUpdateTime,
-        lastActivityId: this.lastActivityId
+        lastActivityId: this.lastActivityId,
       })
       .subscribe({
-        next: event => {
+        next: (event) => {
           if (event.type === 'open') {
             this.streamConnected.set(true);
             return;
@@ -246,32 +264,35 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
         complete: () => {
           this.streamConnected.set(false);
           this.streamSubscription = null;
-        }
+        },
       });
   }
 
   getStateLabel(state: SessionState): string {
     const labels: Record<SessionState, string> = {
-      'STATE_UNSPECIFIED': 'Pending',
-      'ACTIVE': 'Active',
-      'IN_PROGRESS': 'In Progress',
-      'AWAITING_USER_FEEDBACK': 'Awaiting Feedback',
-      'COMPLETED': 'Completed',
-      'FAILED': 'Failed'
+      STATE_UNSPECIFIED: 'Pending',
+      ACTIVE: 'Active',
+      IN_PROGRESS: 'In Progress',
+      AWAITING_USER_FEEDBACK: 'Awaiting Feedback',
+      COMPLETED: 'Completed',
+      FAILED: 'Failed',
     };
     return labels[state] || state;
   }
 
   getStateBadgeClass(state: SessionState): string {
     const classes: Record<SessionState, string> = {
-      'STATE_UNSPECIFIED': 'bg-[var(--color-background-tertiary)] text-[var(--color-text-secondary)]',
-      'ACTIVE': 'bg-[var(--color-surface-info)] text-[var(--color-text-info-strong)]',
-      'IN_PROGRESS': 'bg-[var(--color-surface-info)] text-[var(--color-text-info-strong)]',
-      'AWAITING_USER_FEEDBACK': 'bg-[var(--color-surface-warning)] text-[var(--color-text-warning-strong)]',
-      'COMPLETED': 'bg-[var(--color-surface-success)] text-[var(--color-text-success-strong)]',
-      'FAILED': 'bg-[var(--color-surface-error)] text-[var(--color-text-error-strong)]'
+      STATE_UNSPECIFIED: 'bg-[var(--color-background-tertiary)] text-[var(--color-text-secondary)]',
+      ACTIVE: 'bg-[var(--color-surface-info)] text-[var(--color-text-info-strong)]',
+      IN_PROGRESS: 'bg-[var(--color-surface-info)] text-[var(--color-text-info-strong)]',
+      AWAITING_USER_FEEDBACK:
+        'bg-[var(--color-surface-warning)] text-[var(--color-text-warning-strong)]',
+      COMPLETED: 'bg-[var(--color-surface-success)] text-[var(--color-text-success-strong)]',
+      FAILED: 'bg-[var(--color-surface-error)] text-[var(--color-text-error-strong)]',
     };
-    return classes[state] || 'bg-[var(--color-background-tertiary)] text-[var(--color-text-secondary)]';
+    return (
+      classes[state] || 'bg-[var(--color-background-tertiary)] text-[var(--color-text-secondary)]'
+    );
   }
 
   getPRStatusBadgeClass(status?: string): string {

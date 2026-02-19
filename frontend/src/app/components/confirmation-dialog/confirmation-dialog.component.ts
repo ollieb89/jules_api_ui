@@ -1,4 +1,12 @@
-import { Component, ElementRef, EventEmitter, Input, Output, ViewChild, signal } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  Output,
+  ViewChild,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LoadingSpinnerComponent } from '../loading-spinner/loading-spinner.component';
 
@@ -10,7 +18,7 @@ import { LoadingSpinnerComponent } from '../loading-spinner/loading-spinner.comp
     <dialog
       #dialog
       class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-0 backdrop:bg-black/50 min-w-[320px] max-w-lg text-left"
-      (cancel)="onCancel($event)"
+      (cancel)="onCancel()"
       (click)="onBackdropClick($event)"
     >
       <div class="p-6">
@@ -45,26 +53,38 @@ import { LoadingSpinnerComponent } from '../loading-spinner/loading-spinner.comp
       </div>
     </dialog>
   `,
-  styles: [`
-    dialog {
-      border: none;
-    }
-    dialog::backdrop {
-      background: rgba(0, 0, 0, 0.5);
-      animation: fade-in 0.2s ease-out;
-    }
-    dialog[open] {
-      animation: zoom-in 0.2s ease-out;
-    }
-    @keyframes fade-in {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    @keyframes zoom-in {
-      from { transform: scale(0.95); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
-    }
-  `]
+  styles: [
+    `
+      dialog {
+        border: none;
+      }
+      dialog::backdrop {
+        background: rgba(0, 0, 0, 0.5);
+        animation: fade-in 0.2s ease-out;
+      }
+      dialog[open] {
+        animation: zoom-in 0.2s ease-out;
+      }
+      @keyframes fade-in {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      @keyframes zoom-in {
+        from {
+          transform: scale(0.95);
+          opacity: 0;
+        }
+        to {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+    `,
+  ],
 })
 export class ConfirmationDialogComponent {
   @Input() title = 'Confirm Action';
@@ -87,7 +107,7 @@ export class ConfirmationDialogComponent {
     this.cancelled.emit();
   }
 
-  onCancel(event: Event) {
+  onCancel() {
     this.cancelled.emit();
   }
 
