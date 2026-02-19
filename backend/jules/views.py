@@ -6,7 +6,7 @@ from django.conf import settings
 from django.http import StreamingHttpResponse
 from rest_framework import status, viewsets
 from rest_framework.authentication import SessionAuthentication
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -41,7 +41,7 @@ from .store import (
     upsert_activity_from_api,
     upsert_session_from_api,
 )
-from .sse import clamp_interval, should_close_stream, validate_interval
+from .sse import should_close_stream, validate_interval
 from .utils import handle_api_exception
 from .streaming import publish, subscribe, unsubscribe
 
@@ -100,7 +100,11 @@ class SessionViewSet(JulesAuthenticatedViewSet):
             try:
                 sessions = get_cached_sessions_payload()
                 latest_update = max(
-                    (session.get("updateTime") for session in sessions if session.get("updateTime")),
+                    (
+                        session.get("updateTime")
+                        for session in sessions
+                        if session.get("updateTime")
+                    ),
                     default=None,
                 )
                 if latest_update and latest_update != last_update:
@@ -130,7 +134,9 @@ class SessionViewSet(JulesAuthenticatedViewSet):
             finally:
                 unsubscribe("sessions", queue)
 
-        response = StreamingHttpResponse(event_stream(), content_type="text/event-stream")
+        response = StreamingHttpResponse(
+            event_stream(), content_type="text/event-stream"
+        )
         response["Cache-Control"] = "no-cache"
         response["X-Accel-Buffering"] = "no"
         return response
@@ -204,7 +210,9 @@ class SessionViewSet(JulesAuthenticatedViewSet):
             nonlocal last_update
             while True:
                 if should_close_stream(
-                    stream_started_at, settings.SSE_MAX_CONNECTION_SECONDS, "sessions.live"
+                    stream_started_at,
+                    settings.SSE_MAX_CONNECTION_SECONDS,
+                    "sessions.live",
                 ):
                     break
                 try:
@@ -235,7 +243,9 @@ class SessionViewSet(JulesAuthenticatedViewSet):
 
                 time.sleep(poll_interval)
 
-        response = StreamingHttpResponse(event_stream(), content_type="text/event-stream")
+        response = StreamingHttpResponse(
+            event_stream(), content_type="text/event-stream"
+        )
         response["Cache-Control"] = "no-cache"
         response["X-Accel-Buffering"] = "no"
         return response
@@ -363,12 +373,16 @@ class SessionViewSet(JulesAuthenticatedViewSet):
         session_name = normalize_session_name(pk)
         last_update = request.query_params.get("last_update")
         last_activity_id_param = request.query_params.get("last_activity_id")
-        last_activity_id = int(last_activity_id_param) if last_activity_id_param else None
+        last_activity_id = (
+            int(last_activity_id_param) if last_activity_id_param else None
+        )
         stream_started_at = time.monotonic()
 
         def get_latest_activity_id() -> int | None:
             latest_activity = (
-                JulesActivity.objects.filter(session__name=session_name).order_by("-id").first()
+                JulesActivity.objects.filter(session__name=session_name)
+                .order_by("-id")
+                .first()
             )
             return latest_activity.id if latest_activity else None
 
@@ -434,7 +448,9 @@ class SessionViewSet(JulesAuthenticatedViewSet):
             finally:
                 unsubscribe(topic, queue)
 
-        response = StreamingHttpResponse(event_stream(), content_type="text/event-stream")
+        response = StreamingHttpResponse(
+            event_stream(), content_type="text/event-stream"
+        )
         response["Cache-Control"] = "no-cache"
         response["X-Accel-Buffering"] = "no"
         return response
@@ -480,7 +496,9 @@ class SessionViewSet(JulesAuthenticatedViewSet):
                         yield f"data: {json.dumps(session_payload)}\n\n"
                         last_update = session_update_time
 
-                    activities_data = client.list_activities(session_id=pk, page_size=20)
+                    activities_data = client.list_activities(
+                        session_id=pk, page_size=20
+                    )
                     activities = activities_data.get("activities", [])
                     if activities:
                         for activity in activities:
@@ -490,8 +508,13 @@ class SessionViewSet(JulesAuthenticatedViewSet):
                             (activity.get("create_time") for activity in activities),
                             default=None,
                         )
-                        if latest_activity_time and latest_activity_time != last_activity_time:
-                            activity_serializer = ActivitySerializer(data=activities, many=True)
+                        if (
+                            latest_activity_time
+                            and latest_activity_time != last_activity_time
+                        ):
+                            activity_serializer = ActivitySerializer(
+                                data=activities, many=True
+                            )
                             activity_serializer.is_valid(raise_exception=True)
                             yield "event: activity_update\n"
                             yield f"data: {json.dumps(activity_serializer.data)}\n\n"
@@ -507,7 +530,9 @@ class SessionViewSet(JulesAuthenticatedViewSet):
 
                 time.sleep(poll_interval)
 
-        response = StreamingHttpResponse(event_stream(), content_type="text/event-stream")
+        response = StreamingHttpResponse(
+            event_stream(), content_type="text/event-stream"
+        )
         response["Cache-Control"] = "no-cache"
         response["X-Accel-Buffering"] = "no"
         return response
@@ -531,7 +556,9 @@ class SessionViewSet(JulesAuthenticatedViewSet):
 
         def event_generator():
             yield "retry: 5000\n\n"
-            last_seen = int(last_event_id) if last_event_id and last_event_id.isdigit() else 0
+            last_seen = (
+                int(last_event_id) if last_event_id and last_event_id.isdigit() else 0
+            )
             while True:
                 if should_close_stream(
                     stream_started_at,
@@ -539,10 +566,9 @@ class SessionViewSet(JulesAuthenticatedViewSet):
                     f"activity.stream.{session_name}",
                 ):
                     break
-                activities = (
-                    JulesActivity.objects.filter(session__name=session_name, id__gt=last_seen)
-                    .order_by("id")[:100]
-                )
+                activities = JulesActivity.objects.filter(
+                    session__name=session_name, id__gt=last_seen
+                ).order_by("id")[:100]
                 for activity in activities:
                     payload = JulesActivitySerializer(activity).data
                     yield f"id: {activity.id}\n"
@@ -551,7 +577,9 @@ class SessionViewSet(JulesAuthenticatedViewSet):
                     last_seen = activity.id
                 time.sleep(heartbeat)
 
-        response = StreamingHttpResponse(event_generator(), content_type="text/event-stream")
+        response = StreamingHttpResponse(
+            event_generator(), content_type="text/event-stream"
+        )
         response["Cache-Control"] = "no-cache"
         return response
 
@@ -600,17 +628,19 @@ class JulesHealthViewSet(JulesAuthenticatedViewSet):
 class SettingsViewSet(JulesAuthenticatedViewSet):
     """ViewSet for managing Jules settings (API key configuration)."""
 
-
+    permission_classes = (IsAuthenticated, IsAdminUser)
 
     def list(self, request):  # noqa: ARG002
         """Get current settings (masked API key)."""
         settings = JulesSettings.get_settings()
-        serializer = JulesSettingsSerializer({
-            "api_key_configured": bool(settings.get_api_key()),
-            "masked_api_key": settings.get_masked_api_key(),
-            "created_at": settings.created_at,
-            "updated_at": settings.updated_at,
-        })
+        serializer = JulesSettingsSerializer(
+            {
+                "api_key_configured": bool(settings.get_api_key()),
+                "masked_api_key": settings.get_masked_api_key(),
+                "created_at": settings.created_at,
+                "updated_at": settings.updated_at,
+            }
+        )
         return Response(serializer.data)
 
     @action(detail=False, methods=["post"], url_path="api-key")
@@ -719,7 +749,9 @@ class SyncStatusViewSet(JulesAuthenticatedViewSet):
             nonlocal last_update
             while True:
                 if should_close_stream(
-                    stream_started_at, settings.SSE_MAX_CONNECTION_SECONDS, "sync.status"
+                    stream_started_at,
+                    settings.SSE_MAX_CONNECTION_SECONDS,
+                    "sync.status",
                 ):
                     break
                 try:
@@ -742,7 +774,9 @@ class SyncStatusViewSet(JulesAuthenticatedViewSet):
 
                 time.sleep(poll_interval)
 
-        response = StreamingHttpResponse(event_stream(), content_type="text/event-stream")
+        response = StreamingHttpResponse(
+            event_stream(), content_type="text/event-stream"
+        )
         response["Cache-Control"] = "no-cache"
         response["X-Accel-Buffering"] = "no"
         return response

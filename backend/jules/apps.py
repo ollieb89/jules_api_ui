@@ -11,7 +11,12 @@ class JulesConfig(AppConfig):
     name = "jules"
 
     def ready(self) -> None:
+        import sys
         from django_q.models import Schedule
+
+        # Avoid running schedule setup during migrations or tests
+        if any(cmd in sys.argv for cmd in ["makemigrations", "migrate", "test", "check"]):
+            return
 
         try:
             Schedule.objects.get_or_create(
