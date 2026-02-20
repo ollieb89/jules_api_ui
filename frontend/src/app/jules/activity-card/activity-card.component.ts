@@ -1,303 +1,156 @@
-import { Component, input, signal, ChangeDetectionStrategy, inject, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { MatChipsModule } from '@angular/material/chips';
+import { Component, input, signal, ChangeDetectionStrategy, inject } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
+import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { Activity, PlanGeneratedActivity, ProgressUpdatedActivity } from '../../models/jules.model';
-import { ClipboardService } from '../../services/clipboard.service';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MarkdownModule } from 'ngx-markdown';
 
-interface DiffLine {
-  type: 'add' | 'remove' | 'context' | 'header';
-  content: string;
-  lineNumber?: number;
-}
+import { Activity, StepState, PlanState } from '../../models/jules.model';
+import { ClipboardService } from '../../services/clipboard.service';
+import { CodeBlockStyleDirective } from '../../directives/code-block-style.directive';
 
 @Component({
   selector: 'app-activity-card',
-  imports: [CommonModule, MatChipsModule, MatButtonModule, MatIconModule],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <div class="bg-[var(--color-surface-primary)] border border-[var(--color-border-default)] rounded-lg p-4 shadow-sm">
-      <div class="flex justify-between items-start mb-3">
-        <div class="flex items-center gap-2">
-          <h3 class="text-lg font-semibold m-0 text-[var(--color-text-primary)]">{{ getActivityTitle() }}</h3>
-          <mat-chip color="accent">
-            {{ getOriginator() === 'agent' ? 'Agent' : 'User' }}
-          </mat-chip>
-        </div>
-        <span class="text-xs text-[var(--color-text-tertiary)]">{{ getFormattedTime() }}</span>
-      </div>
-      
-      <p class="text-sm text-[var(--color-text-secondary)] mb-3 leading-relaxed">{{ getDescription() }}</p>
-      
-      <!-- Plan Generated -->
-      @if (activity().plan_generated) {
-        <div class="mt-4">
-          <button
-            (click)="togglePlanExpanded()"
-            type="button"
-            class="flex items-center gap-2 text-sm font-medium text-[var(--color-interactive-primary)] hover:text-[var(--color-interactive-primary-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
-          >
-            @if (planExpanded()) {
-              ▼
-            } @else {
-              ▶
-            }
-            Plan Steps ({{ activity()!.plan_generated!.plan.steps.length }})
-          </button>
-          
-          @if (planExpanded()) {
-            <ol class="list-decimal list-inside space-y-2 mt-3 pl-4 border-l-2 border-[var(--color-border-default)]">
-              @for (step of activity()!.plan_generated!.plan.steps; track $index) {
-                <li class="text-base text-[var(--color-text-primary)] leading-relaxed">
-                  <span class="inline-block mr-2">{{ step.title || step.description || 'Step ' + ($index + 1) }}</span>
-                  <mat-chip [color]="getStepStateColor(step.state)" class="!ml-2">
-                    {{ getStepStateLabel(step.state) }}
-                  </mat-chip>
-                </li>
-              }
-            </ol>
-          }
-        </div>
-      }
-      
-      <!-- Progress Updated -->
-      @if (activity().progress_updated) {
-        <div class="mt-4">
-          @if (activity()!.progress_updated!.artifacts && activity()!.progress_updated!.artifacts!.length > 0) {
-            @for (artifact of activity()!.progress_updated!.artifacts; track $index) {
-              @if (artifact.bash_output) {
-                <div class="mt-3">
-                  <button
-                    (click)="toggleBashOutput($index)"
-                    type="button"
-                    class="flex items-center gap-2 text-sm font-medium text-[var(--color-interactive-primary)] hover:text-[var(--color-interactive-primary-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
-                  >
-                    @if (isBashOutputExpanded($index)) {
-                      ▼
-                    } @else {
-                      ▶
-                    }
-                    Bash Output
-                  </button>
-                  
-                  @if (isBashOutputExpanded($index)) {
-                    <div class="mt-2 relative">
-                      <pre class="bg-[var(--color-background-tertiary)] text-[var(--color-text-primary)] p-4 rounded-lg overflow-x-auto text-xs font-mono max-h-96 overflow-y-auto">{{ artifact.bash_output }}</pre>
-                      <button
-                        (click)="copyToClipboard(artifact.bash_output || '')"
-                        type="button"
-                        class="absolute top-2 right-2 px-2 py-1 bg-[var(--color-background-tertiary)] hover:bg-[var(--color-background-secondary)] text-[var(--color-text-primary)] text-xs rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
-                        title="Copy to clipboard"
-                      >
-                        📋 Copy
-                      </button>
-                    </div>
-                  }
-                </div>
-              }
-              
-              @if (artifact.git_patch) {
-                <div class="mt-3">
-                  <button
-                    (click)="toggleDiffExpanded($index)"
-                    type="button"
-                    class="flex items-center gap-2 text-sm font-medium text-[var(--color-interactive-primary)] hover:text-[var(--color-interactive-primary-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
-                  >
-                    @if (isDiffExpanded($index)) {
-                      ▼
-                    } @else {
-                      ▶
-                    }
-                    Changeset
-                  </button>
-                  
-                  @if (isDiffExpanded($index)) {
-                    <div class="mt-2 relative">
-                      <div class="diff-container">
-                        @for (line of parseDiff(artifact.git_patch); track $index) {
-                          <div 
-                            [class]="'diff-line ' + getDiffLineClass(line.type)"
-                          >
-                            {{ line.content }}
-                          </div>
-                        }
-                      </div>
-                      <button
-                        (click)="copyToClipboard(artifact.git_patch || '')"
-                        type="button"
-                        class="absolute top-2 right-2 px-2 py-1 bg-[var(--color-background-tertiary)] hover:bg-[var(--color-background-secondary)] text-[var(--color-text-primary)] text-xs rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)]"
-                        title="Copy to clipboard"
-                      >
-                        📋 Copy
-                      </button>
-                    </div>
-                  }
-                </div>
-              }
-            }
-          }
-        </div>
-      }
-      
-      <!-- Message (if we add message activity type in future) -->
-      @if (activity().plan_approved || activity().session_completed) {
-        <div class="mt-3 p-3 bg-[var(--color-surface-secondary)] rounded-lg">
-          <p class="text-sm text-[var(--color-text-secondary)]">
-            @if (activity().plan_approved) {
-              Plan has been approved and execution can proceed.
-            } @else if (activity().session_completed) {
-              Session has been completed successfully.
-            }
-          </p>
-        </div>
-      }
-    </div>
-  `
+  standalone: true,
+  imports: [
+    CommonModule,
+    DatePipe,
+    MatCardModule,
+    MatButtonModule,
+    MatIconModule,
+    MatChipsModule,
+    MatExpansionModule,
+    MatProgressSpinnerModule,
+    MatTooltipModule,
+    MarkdownModule,
+    CodeBlockStyleDirective
+  ],
+  templateUrl: './activity-card.component.html',
+  styleUrl: './activity-card.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ActivityCardComponent {
   activity = input.required<Activity>();
+  planExpanded = signal(false);
+  bashOutputExpanded = signal<Record<number, boolean>>({});
+  diffExpanded = signal<Record<number, boolean>>({});
   
   private clipboardService = inject(ClipboardService);
-  
-  planExpanded = signal<boolean>(false);
-  private bashOutputExpandedState = signal<Record<number, boolean>>({});
-  private diffExpandedState = signal<Record<number, boolean>>({});
-  copySuccess = signal<Record<string, boolean>>({});
-  
-  isBashOutputExpanded = (index: number): boolean => {
-    return this.bashOutputExpandedState()[index] || false;
-  };
-  
-  isDiffExpanded = (index: number): boolean => {
-    return this.diffExpandedState()[index] || false;
-  };
 
-  getActivityTitle(): string {
-    const act = this.activity();
-    if (act.plan_generated) {
-      return 'Plan Generated';
-    } else if (act.plan_approved) {
-      return 'Plan Approved';
-    } else if (act.progress_updated) {
-      return 'Progress Updated';
-    } else if (act.session_completed) {
-      return 'Session Completed';
-    }
-    return 'Activity';
+  getActivityTypeLabel(activity: Activity): string {
+    if (activity.plan_generated) return 'Plan Generated';
+    if (activity.plan_approved) return 'Plan Approved';
+    if (activity.plan_rejected) return 'Plan Rejected';
+    if (activity.progress_updated) return 'Progress Updated';
+    if (activity.error_occurred) return 'Error Occurred';
+    return 'Unknown Activity';
   }
 
-  getDescription(): string {
-    const act = this.activity();
-    if (act.plan_generated) {
-      return `Plan with ${act.plan_generated.plan.steps.length} steps`;
-    } else if (act.plan_approved) {
-      return 'Plan has been approved';
-      } else if (act.progress_updated) {
-        const step = act.progress_updated;
-        return step.title || step.description || 'Progress updated';
-    } else if (act.session_completed) {
-      return 'Session has been completed';
-    }
-    return '';
+  getActivityIcon(activity: Activity): string {
+    if (activity.plan_generated) return 'assignment';
+    if (activity.plan_approved) return 'check_circle';
+    if (activity.plan_rejected) return 'cancel';
+    if (activity.progress_updated) return 'update';
+    if (activity.error_occurred) return 'error';
+    return 'info';
   }
 
-  getOriginator(): 'agent' | 'user' {
-    if (this.activity().plan_approved) {
-      return 'user';
-    }
-    return 'agent';
-  }
-
-  getOriginatorBadgeClass(): string {
-    if (this.getOriginator() === 'agent') {
-      return 'bg-[var(--color-surface-info)] text-[var(--color-text-info-strong)]';
-    }
-    return 'bg-[var(--color-surface-success)] text-[var(--color-text-success-strong)]';
-  }
-
-  getFormattedTime(): string {
-    return new Date(this.activity().create_time).toLocaleString();
+  getActivityColorClass(activity: Activity): string {
+    if (activity.plan_generated) return 'text-blue-500';
+    if (activity.plan_approved) return 'text-green-500';
+    if (activity.plan_rejected) return 'text-red-500';
+    if (activity.progress_updated) return 'text-purple-500';
+    if (activity.error_occurred) return 'text-red-600';
+    return 'text-gray-500';
   }
 
   togglePlanExpanded(): void {
-    this.planExpanded.set(!this.planExpanded());
+    this.planExpanded.update(v => !v);
   }
 
   toggleBashOutput(index: number): void {
-    const current = this.bashOutputExpandedState();
-    this.bashOutputExpandedState.set({ ...current, [index]: !current[index] });
+    this.bashOutputExpanded.update(state => ({
+      ...state,
+      [index]: !state[index]
+    }));
   }
 
   toggleDiffExpanded(index: number): void {
-    const current = this.diffExpandedState();
-    this.diffExpandedState.set({ ...current, [index]: !current[index] });
+    this.diffExpanded.update(state => ({
+      ...state,
+      [index]: !state[index]
+    }));
   }
 
-  parseDiff(patch: string): DiffLine[] {
-    const lines = patch.split('\n');
-    return lines.map(line => {
-      if (line.startsWith('@@')) {
-        return { type: 'header', content: line };
-      } else if (line.startsWith('+') && !line.startsWith('+++')) {
-        return { type: 'add', content: line };
-      } else if (line.startsWith('-') && !line.startsWith('---')) {
-        return { type: 'remove', content: line };
-      } else {
-        return { type: 'context', content: line };
-      }
-    });
+  copyToClipboard(text: string): void {
+    this.clipboardService.copyToClipboard(text);
   }
 
-  getDiffLineClass(type: DiffLine['type']): string {
-    switch (type) {
-      case 'add':
-        return 'diff-line-add';
-      case 'remove':
-        return 'diff-line-remove';
-      case 'header':
-        return 'diff-line-header';
-      default:
-        return 'diff-line-context';
-    }
-  }
-
-  getStepStateLabel(state: string): string {
-    const labels: Record<string, string> = {
+  getStepStateLabel(state: StepState): string {
+    const labels: Record<StepState, string> = {
       'STATE_UNSPECIFIED': 'Pending',
       'PENDING': 'Pending',
       'IN_PROGRESS': 'In Progress',
       'COMPLETED': 'Completed',
-      'FAILED': 'Failed'
+      'FAILED': 'Failed',
+      'SKIPPED': 'Skipped'
     };
     return labels[state] || state;
   }
 
-  getStepStateClass(state: string): string {
-    return 'mat-chip mat-standard-chip mat-mdc-chip';
-  }
-
-  getStepStateColor(state: string): string {
-    const colors: Record<string, string> = {
-      'STATE_UNSPECIFIED': '',
-      'PENDING': 'accent',
-      'IN_PROGRESS': 'primary',
-      'COMPLETED': 'primary',
-      'FAILED': 'warn'
+  getStepStateClass(state: StepState): string {
+    const classes: Record<StepState, string> = {
+      'STATE_UNSPECIFIED': 'bg-gray-100 text-gray-800',
+      'PENDING': 'bg-gray-100 text-gray-800',
+      'IN_PROGRESS': 'bg-blue-100 text-blue-800',
+      'COMPLETED': 'bg-green-100 text-green-800',
+      'FAILED': 'bg-red-100 text-red-800',
+      'SKIPPED': 'bg-yellow-100 text-yellow-800'
     };
-    return colors[state] || '';
+    return classes[state] || 'bg-gray-100 text-gray-800';
   }
 
-  async copyToClipboard(text: string): Promise<void> {
-    const success = await this.clipboardService.copyToClipboard(text);
-    if (success) {
-      const current = this.copySuccess();
-      this.copySuccess.set({ ...current, [text.substring(0, 20)]: true });
-      setTimeout(() => {
-        const updated = this.copySuccess();
-        delete updated[text.substring(0, 20)];
-        this.copySuccess.set({ ...updated });
-      }, 2000);
-    }
+  getStepStateIcon(state: StepState): string {
+    const icons: Record<StepState, string> = {
+      'STATE_UNSPECIFIED': 'schedule',
+      'PENDING': 'schedule',
+      'IN_PROGRESS': 'pending',
+      'COMPLETED': 'check_circle',
+      'FAILED': 'error',
+      'SKIPPED': 'skip_next'
+    };
+    return icons[state] || 'help';
+  }
+
+  getPlanStateLabel(state: PlanState): string {
+    const labels: Record<PlanState, string> = {
+      'STATE_UNSPECIFIED': 'Unknown',
+      'PENDING_APPROVAL': 'Pending Approval',
+      'APPROVED': 'Approved',
+      'REJECTED': 'Rejected',
+      'IN_PROGRESS': 'In Progress',
+      'COMPLETED': 'Completed',
+      'FAILED': 'Failed',
+      'CANCELLED': 'Cancelled'
+    };
+    return labels[state] || state;
+  }
+
+  getPlanStateColor(state: PlanState): string {
+    const colors: Record<PlanState, string> = {
+      'STATE_UNSPECIFIED': 'gray',
+      'PENDING_APPROVAL': 'blue',
+      'APPROVED': 'green',
+      'REJECTED': 'red',
+      'IN_PROGRESS': 'purple',
+      'COMPLETED': 'green',
+      'FAILED': 'red',
+      'CANCELLED': 'gray'
+    };
+    return colors[state] || 'gray';
   }
 }
