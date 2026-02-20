@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: jules_api
+        working-directory: frontend
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -23,7 +23,7 @@ jobs:
       - name: Lint
         run: bun run lint
       - name: Unit tests
-        run: bun run test -- --watch=false --browsers=ChromeHeadless
+        run: bun run test -- --watch=false
       - name: Install Playwright browsers
         run: bunx playwright install --with-deps chromium
       - name: Accessibility tests
@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: jules_backend
+        working-directory: backend
     env:
       DJANGO_SECRET_KEY: ci-secret-key
       DEBUG: "False"
@@ -42,6 +42,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: prefix-dev/setup-pixi@v0.7.0
+        with:
+          manifest-path: backend/pixi.toml
       - name: Install dependencies
         run: pixi install
       - name: Django deploy checks
@@ -49,7 +51,9 @@ jobs:
       - name: Migration checks
         run: pixi run python manage.py makemigrations --check --dry-run
       - name: Format checks
-        run: pixi run format
+        run: |
+          pixi run black --check .
+          pixi run ruff check .
       - name: Type checks
         run: pixi run typecheck
       - name: Test suite
