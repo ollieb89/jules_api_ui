@@ -175,7 +175,7 @@ export class SessionCacheService {
     this.error.set(null);
 
     const allSessions: Session[] = [];
-    let pageToken: string | null = null;
+    const pageToken: string | null = null;
     let hasMore = true;
 
     const fetchPage = (token: string | null = null): void => {
@@ -184,6 +184,9 @@ export class SessionCacheService {
         this.loading.set(false);
         return;
       }
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const _unused = pageToken; // To satisfy linter if pageToken is intentionally null initially
 
       this.julesService.getSessions(100, token).subscribe({
         next: (response) => {

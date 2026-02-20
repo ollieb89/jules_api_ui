@@ -1,5 +1,4 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
-import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { PLATFORM_ID } from '@angular/core';
 import { of } from 'rxjs';
@@ -71,7 +70,7 @@ describe('UserListComponent', () => {
     expect(component.users().length).toBe(2);
 
     // Setup user to delete
-    component.userToDelete.set(1);
+    component.userToDelete.set(component.users()[0]);
 
     // Execute confirmation
     component.onConfirmDelete();
@@ -85,5 +84,13 @@ describe('UserListComponent', () => {
 
     // Verify NO reload happened
     expect(userService.getUsers).not.toHaveBeenCalled();
+  });
+
+  it('updates the confirmation dialog message when a user is selected for deletion', () => {
+    const user = component.users()[0];
+    component.deleteUser(user);
+    fixture.detectChanges();
+
+    expect(component.deleteMessage()).toBe('Are you sure you want to delete Alice Smith? This action cannot be undone.');
   });
 });

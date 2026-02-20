@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: jules_api
+        working-directory: frontend
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -33,15 +33,32 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: jules_backend
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: jules_db
+          POSTGRES_USER: jules
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     env:
       DJANGO_SECRET_KEY: ci-secret-key
+      DATABASE_URL: postgres://jules:password@localhost:5432/jules_db
       DEBUG: "False"
       TESTING: "True"
       ALLOWED_HOSTS: "localhost,127.0.0.1"
     steps:
       - uses: actions/checkout@v4
       - uses: prefix-dev/setup-pixi@v0.7.0
+        with:
+          manifest-path: backend/pixi.toml
       - name: Install dependencies
         run: pixi install
       - name: Django deploy checks
