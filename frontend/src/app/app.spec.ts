@@ -1,41 +1,42 @@
 import { TestBed } from '@angular/core/testing';
-import { App } from './app';
+import { AppComponent } from './app';
+import { RouterOutlet } from '@angular/router';
+import { ThemeService } from './services/theme.service';
+import { GlobalErrorService } from './services/global-error.service';
+import { signal } from '@angular/core';
 
-describe('App', () => {
+describe('AppComponent', () => {
+  let themeServiceMock: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+  let globalErrorServiceMock: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+
   beforeEach(async () => {
-    Object.defineProperty(window, 'matchMedia', {
-      writable: true,
-      value: (query: any) => ({
-        matches: false,
-        media: query,
-        onchange: null,
-        addListener: () => {}, // Deprecated
-        removeListener: () => {}, // Deprecated
-        addEventListener: () => {},
-        removeEventListener: () => {},
-        dispatchEvent: () => {},
-      }),
-    });
+    themeServiceMock = {
+      setMode: () => {},
+      getMode: () => 'light'
+    };
+    globalErrorServiceMock = {
+      error: signal(null),
+      clear: () => {}
+    };
 
     await TestBed.configureTestingModule({
-      imports: [App],
+      imports: [AppComponent, RouterOutlet],
+      providers: [
+        { provide: ThemeService, useValue: themeServiceMock },
+        { provide: GlobalErrorService, useValue: globalErrorServiceMock }
+      ]
     }).compileComponents();
   });
 
   it('should create the app', () => {
-    const fixture = TestBed.createComponent(App);
+    const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
     expect(app).toBeTruthy();
   });
 
-  it('should render title', async () => {
-    const fixture = TestBed.createComponent(App);
-    await fixture.whenStable();
-    fixture.detectChanges(); // Ensure change detection runs
-    const compiled = fixture.nativeElement as HTMLElement;
-    // The actual title might differ, but let's see if this fixes the crash.
-    // If it fails on text content, I'll know the component rendered at least.
-    // Based on previous run, it crashed before this expectation.
-    // expect(compiled.querySelector('h1')?.textContent).toContain('Hello, jules_api');
+  it(`should have the 'Jules' title`, () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.componentInstance as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+    expect(app.title()).toEqual('Jules');
   });
 });

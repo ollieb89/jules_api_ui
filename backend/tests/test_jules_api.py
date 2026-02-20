@@ -11,7 +11,9 @@ from jules.store import mark_sync_running
 @pytest.fixture
 def api_client(db):
     user_model = get_user_model()
-    user = user_model.objects.create_user(username="tester", password="pass")
+    user = user_model.objects.create_user(
+        username="tester", password="pass", is_staff=True
+    )
     client = APIClient()
     client.force_authenticate(user=user)
     return client

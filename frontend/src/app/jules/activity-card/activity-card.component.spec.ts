@@ -5,9 +5,9 @@ import { ClipboardService } from '../../services/clipboard.service';
 import { vi } from 'vitest';
 
 describe('ActivityCardComponent', () => {
-  let component: ActivityCardComponent;
+  let component: any; // eslint-disable-line @typescript-eslint/no-explicit-any
   let fixture: ComponentFixture<ActivityCardComponent>;
-  let clipboardService: any;
+  let clipboardService: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
   beforeEach(async () => {
     clipboardService = {
