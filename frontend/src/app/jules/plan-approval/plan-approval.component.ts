@@ -5,7 +5,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { JulesService } from '../../services/jules.service';
-import { Plan, Step, StepState, PlanState } from '../../models/jules.model';
+import { Plan, StepState, PlanState } from '../../models/jules.model';
 import { getApiErrorMessage } from '../../utils/api-error';
 
 @Component({
@@ -13,12 +13,12 @@ import { getApiErrorMessage } from '../../utils/api-error';
   imports: [CommonModule, MatChipsModule, MatButtonModule, MatIconModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './plan-approval.component.html',
-  styleUrl: './plan-approval.component.css'
+  styleUrl: './plan-approval.component.css',
 })
 export class PlanApprovalComponent {
   @Input({ required: true }) plan!: Plan;
   @Input({ required: true }) sessionId!: string;
-  
+
   private julesService = inject(JulesService);
   private router = inject(Router);
 
@@ -31,63 +31,42 @@ export class PlanApprovalComponent {
 
   getStepStateLabel(state: StepState): string {
     const labels: Record<StepState, string> = {
-      'STATE_UNSPECIFIED': 'Pending',
-      'PENDING': 'Pending',
-      'IN_PROGRESS': 'In Progress',
-      'COMPLETED': 'Completed',
-      'FAILED': 'Failed'
+      STATE_UNSPECIFIED: 'Pending',
+      PENDING: 'Pending',
+      IN_PROGRESS: 'In Progress',
+      COMPLETED: 'Completed',
+      FAILED: 'Failed',
     };
     return labels[state] || state;
   }
 
   getPlanStateLabel(state: PlanState): string {
     const labels: Record<PlanState, string> = {
-      'STATE_UNSPECIFIED': 'Pending',
-      'PENDING': 'Pending',
-      'APPROVED': 'Approved',
-      'REJECTED': 'Rejected'
+      STATE_UNSPECIFIED: 'Pending',
+      PENDING: 'Pending',
+      APPROVED: 'Approved',
+      REJECTED: 'Rejected',
     };
     return labels[state] || state;
   }
 
-  getStepStateClass(state: StepState): string {
-    const classes: Record<StepState, string> = {
-      'STATE_UNSPECIFIED': 'mat-chip mat-standard-chip mat-mdc-chip',
-      'PENDING': 'mat-chip mat-standard-chip mat-mdc-chip',
-      'IN_PROGRESS': 'mat-chip mat-standard-chip mat-mdc-chip',
-      'COMPLETED': 'mat-chip mat-standard-chip mat-mdc-chip',
-      'FAILED': 'mat-chip mat-standard-chip mat-mdc-chip'
-    };
-    return classes[state] || 'mat-chip mat-standard-chip mat-mdc-chip';
-  }
-
-  getPlanStateClass(state: PlanState): string {
-    const classes: Record<PlanState, string> = {
-      'STATE_UNSPECIFIED': 'mat-chip mat-standard-chip mat-mdc-chip',
-      'PENDING': 'mat-chip mat-standard-chip mat-mdc-chip',
-      'APPROVED': 'mat-chip mat-standard-chip mat-mdc-chip',
-      'REJECTED': 'mat-chip mat-standard-chip mat-mdc-chip'
-    };
-    return classes[state] || 'mat-chip mat-standard-chip mat-mdc-chip';
-  }
-
   getStepStateColor(state: StepState): string {
     const colors: Record<StepState, string> = {
-      'STATE_UNSPECIFIED': '',
-      'PENDING': 'accent',
-      'IN_PROGRESS': 'primary',
-      'COMPLETED': 'primary',
-      'FAILED': 'warn'
+      STATE_UNSPECIFIED: '',
+      PENDING: 'accent',
+      IN_PROGRESS: 'primary',
+      COMPLETED: 'primary',
+      FAILED: 'warn',
     };
     return colors[state] || '';
   }
 
   getPlanStateColor(state: PlanState): string {
     const colors: Record<PlanState, string> = {
-      'STATE_UNSPECIFIED': '',
-      'PENDING': 'accent',
-      'APPROVED': 'primary',
-      'REJECTED': 'warn'
+      STATE_UNSPECIFIED: '',
+      PENDING: 'accent',
+      APPROVED: 'primary',
+      REJECTED: 'warn',
     };
     return colors[state] || '';
   }
@@ -106,7 +85,7 @@ export class PlanApprovalComponent {
       error: (err: unknown) => {
         this.error.set(getApiErrorMessage(err, 'Failed to approve plan'));
         this.approving.set(false);
-      }
+      },
     });
   }
 }

@@ -19,7 +19,7 @@
   @if (loading() && activities().length === 0) {
     <app-loading-spinner label="Loading activities..." containerClass="py-12"></app-loading-spinner>
   } @else if (error()) {
-    <div 
+    <div
       class="bg-[var(--color-surface-error)] border-2 border-[var(--color-border-error)] text-[var(--color-text-error)] px-6 py-4 rounded-lg mb-4 shadow-md"
       role="alert"
       aria-live="assertive"
@@ -42,7 +42,10 @@
       Retry Loading
     </button>
   } @else if (formattedActivities().length === 0) {
-    <div class="bg-[var(--color-surface-secondary)] border-2 border-[var(--color-border-default)] rounded-lg p-10 text-center shadow-sm" role="status">
+    <div
+      class="bg-[var(--color-surface-secondary)] border-2 border-[var(--color-border-default)] rounded-lg p-10 text-center shadow-sm"
+      role="status"
+    >
       <div class="text-4xl mb-4" aria-hidden="true">
         @if (originatorFilter() !== 'all') {
           🔍
@@ -72,13 +75,16 @@
         @for (group of groupedActivities(); track group.groupIndex) {
           @if (group.type === 'single') {
             <!-- Single Activity -->
-            <div 
-              class="relative flex gap-4" 
+            <div
+              class="relative flex gap-4"
               role="article"
               [attr.aria-label]="group.firstActivity.activityType + ' activity'"
             >
-              <div 
-                [class]="'flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold shadow-sm ' + group.firstActivity.iconClass"
+              <div
+                [class]="
+                  'flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold shadow-sm ' +
+                  group.firstActivity.iconClass
+                "
                 [attr.aria-label]="group.firstActivity.activityType + ' icon'"
                 role="img"
               >
@@ -94,29 +100,44 @@
                   •
                 }
               </div>
-              <div class="flex-1 bg-[var(--color-surface-primary)] border border-[var(--color-border-default)] rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-200">
+              <div
+                class="flex-1 bg-[var(--color-surface-primary)] border border-[var(--color-border-default)] rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-200"
+              >
                 <div class="flex justify-between items-start mb-2">
                   <div class="flex items-center gap-2 flex-wrap">
-                    <h3 class="font-semibold text-[var(--color-text-primary)] text-base">{{ group.firstActivity.activityType }}</h3>
-                    <span 
-                      [class]="'px-2 py-1 rounded-full text-xs font-medium border ' + group.firstActivity.originatorBadgeClass"
-                      [attr.aria-label]="'Activity by ' + (group.firstActivity.originator === 'agent' ? 'agent' : 'user')"
+                    <h3 class="font-semibold text-[var(--color-text-primary)] text-base">
+                      {{ group.firstActivity.activityType }}
+                    </h3>
+                    <span
+                      [class]="
+                        'px-2 py-1 rounded-full text-xs font-medium border ' +
+                        group.firstActivity.originatorBadgeClass
+                      "
+                      [attr.aria-label]="
+                        'Activity by ' +
+                        (group.firstActivity.originator === 'agent' ? 'agent' : 'user')
+                      "
                     >
                       {{ group.firstActivity.originator === 'agent' ? 'Agent' : 'User' }}
                     </span>
                   </div>
-                  <time 
-                    class="text-xs text-[var(--color-text-tertiary)] whitespace-nowrap ml-2" 
+                  <time
+                    class="text-xs text-[var(--color-text-tertiary)] whitespace-nowrap ml-2"
                     [attr.datetime]="group.firstActivity.create_time"
                   >
                     {{ group.firstActivity.formattedTime }}
                   </time>
                 </div>
-                <p class="text-sm text-[var(--color-text-secondary)] leading-relaxed">{{ group.firstActivity.description }}</p>
-                
+                <p class="text-sm text-[var(--color-text-secondary)] leading-relaxed">
+                  {{ group.firstActivity.description }}
+                </p>
+
                 @if (group.firstActivity.plan_generated && group.firstActivity.plan) {
                   <div class="mt-4">
-                    <app-plan-approval [plan]="group.firstActivity.plan" [sessionId]="sessionId"></app-plan-approval>
+                    <app-plan-approval
+                      [plan]="group.firstActivity.plan"
+                      [sessionId]="sessionId"
+                    ></app-plan-approval>
                   </div>
                 }
               </div>
@@ -124,13 +145,15 @@
           } @else {
             <!-- Grouped Activities -->
             <div class="relative flex gap-4" role="region" [attr.aria-label]="group.summary">
-              <div 
+              <div
                 class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold bg-[var(--color-surface-warning)] text-[var(--color-text-warning)] shadow-sm"
                 aria-hidden="true"
               >
                 ⚙️
               </div>
-              <div class="flex-1 bg-[var(--color-surface-primary)] border-2 border-[var(--color-border-default)] rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
+              <div
+                class="flex-1 bg-[var(--color-surface-primary)] border-2 border-[var(--color-border-default)] rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+              >
                 <!-- Group Header (Clickable) -->
                 <button
                   (click)="toggleGroup(group.groupIndex)"
@@ -138,39 +161,59 @@
                   type="button"
                   [attr.aria-expanded]="isGroupExpanded(group.groupIndex)"
                   [attr.aria-controls]="'group-content-' + group.groupIndex"
-                  [attr.aria-label]="group.summary + '. ' + (isGroupExpanded(group.groupIndex) ? 'Expanded. Press Enter or Space to collapse' : 'Collapsed. Press Enter or Space to expand')"
+                  [attr.aria-label]="
+                    group.summary +
+                    '. ' +
+                    (isGroupExpanded(group.groupIndex)
+                      ? 'Expanded. Press Enter or Space to collapse'
+                      : 'Collapsed. Press Enter or Space to expand')
+                  "
                   class="w-full p-4 text-left hover:bg-[var(--color-background-secondary)] active:bg-[var(--color-background-tertiary)] transition-colors duration-150 rounded-t-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-focus-ring-offset)] cursor-pointer"
                 >
                   <div class="flex justify-between items-start mb-2">
                     <div class="flex items-center gap-3">
-                      <span 
+                      <span
                         class="text-base transition-transform duration-200 inline-block"
-                        [style.transform]="isGroupExpanded(group.groupIndex) ? 'rotate(90deg)' : 'rotate(0deg)'"
+                        [style.transform]="
+                          isGroupExpanded(group.groupIndex) ? 'rotate(90deg)' : 'rotate(0deg)'
+                        "
                         aria-hidden="true"
                       >
                         ▶
                       </span>
-                      <h3 class="font-semibold text-[var(--color-text-primary)] text-base">{{ group.summary }}</h3>
-                      <span 
+                      <h3 class="font-semibold text-[var(--color-text-primary)] text-base">
+                        {{ group.summary }}
+                      </h3>
+                      <span
                         class="px-2 py-1 rounded-full text-xs font-medium bg-[var(--color-surface-info)] text-[var(--color-text-info-strong)] border border-[var(--color-border-info)]"
                         aria-label="Agent activities"
                       >
                         Agent
                       </span>
                     </div>
-                    <span class="text-xs text-[var(--color-text-tertiary)] whitespace-nowrap ml-4" aria-label="Time range">
-                      {{ group.firstActivity.formattedTime }} - {{ group.activities[group.activities.length - 1].formattedTime }}
+                    <span
+                      class="text-xs text-[var(--color-text-tertiary)] whitespace-nowrap ml-4"
+                      aria-label="Time range"
+                    >
+                      {{ group.firstActivity.formattedTime }} -
+                      {{ group.activities[group.activities.length - 1].formattedTime }}
                     </span>
                   </div>
-                  <p class="text-sm text-[var(--color-text-secondary)] ml-8 flex items-center gap-2">
+                  <p
+                    class="text-sm text-[var(--color-text-secondary)] ml-8 flex items-center gap-2"
+                  >
                     <span aria-hidden="true">💡</span>
-                    <span>{{ isGroupExpanded(group.groupIndex) ? 'Collapse' : 'Expand' }} to {{ isGroupExpanded(group.groupIndex) ? 'hide' : 'view' }} individual progress updates</span>
+                    <span
+                      >{{ isGroupExpanded(group.groupIndex) ? 'Collapse' : 'Expand' }} to
+                      {{ isGroupExpanded(group.groupIndex) ? 'hide' : 'view' }} individual progress
+                      updates</span
+                    >
                   </p>
                 </button>
 
                 <!-- Expanded Group Content -->
                 @if (isGroupExpanded(group.groupIndex)) {
-                  <div 
+                  <div
                     [id]="'group-content-' + group.groupIndex"
                     class="border-t border-[var(--color-border-default)] p-4 bg-[var(--color-background-secondary)] animate-fadeIn"
                     role="region"
@@ -178,23 +221,35 @@
                   >
                     <div class="space-y-3">
                       @for (activity of group.activities; track activity.name; let idx = $index) {
-                        <div 
+                        <div
                           class="bg-[var(--color-surface-primary)] border border-[var(--color-border-default)] rounded-lg p-3 hover:border-[var(--color-border-strong)] transition-colors duration-150"
                           role="article"
-                          [attr.aria-label]="'Progress update ' + (idx + 1) + ' of ' + group.activities.length"
+                          [attr.aria-label]="
+                            'Progress update ' + (idx + 1) + ' of ' + group.activities.length
+                          "
                         >
                           <div class="flex justify-between items-start mb-1">
-                            <h4 class="text-sm font-medium text-[var(--color-text-primary)] flex items-center gap-2">
-                              <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[var(--color-background-tertiary)] text-xs font-semibold" aria-hidden="true">
+                            <h4
+                              class="text-sm font-medium text-[var(--color-text-primary)] flex items-center gap-2"
+                            >
+                              <span
+                                class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[var(--color-background-tertiary)] text-xs font-semibold"
+                                aria-hidden="true"
+                              >
                                 {{ idx + 1 }}
                               </span>
                               {{ activity.activityType }}
                             </h4>
-                            <time class="text-xs text-[var(--color-text-tertiary)]" [attr.datetime]="activity.create_time">
+                            <time
+                              class="text-xs text-[var(--color-text-tertiary)]"
+                              [attr.datetime]="activity.create_time"
+                            >
                               {{ activity.formattedTime }}
                             </time>
                           </div>
-                          <p class="text-xs text-[var(--color-text-secondary)] ml-7">{{ activity.description }}</p>
+                          <p class="text-xs text-[var(--color-text-secondary)] ml-7">
+                            {{ activity.description }}
+                          </p>
                         </div>
                       }
                     </div>
@@ -205,7 +260,7 @@
           }
         }
       </div>
-      
+
       @if (showPagination) {
         <div class="mt-6">
           <mat-paginator
