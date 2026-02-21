@@ -9,7 +9,7 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   webServer: {
-    command: 'bun run start -- --port 4700',
+    command: 'bun run start',
     url: 'http://127.0.0.1:4700',
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
