@@ -9,14 +9,11 @@ describe('NotificationService', () => {
 
   beforeEach(() => {
     mockSnackBar = {
-      open: vi.fn()
+      open: vi.fn(),
     };
 
     TestBed.configureTestingModule({
-      providers: [
-        NotificationService,
-        { provide: MatSnackBar, useValue: mockSnackBar }
-      ]
+      providers: [NotificationService, { provide: MatSnackBar, useValue: mockSnackBar }],
     });
 
     service = TestBed.inject(NotificationService);
@@ -33,8 +30,8 @@ describe('NotificationService', () => {
       'Close',
       expect.objectContaining({
         duration: 3000,
-        panelClass: 'snackbar-success'
-      })
+        panelClass: 'snackbar-success',
+      }),
     );
   });
 
@@ -45,8 +42,8 @@ describe('NotificationService', () => {
       'Close',
       expect.objectContaining({
         duration: 5000,
-        panelClass: 'snackbar-error'
-      })
+        panelClass: 'snackbar-error',
+      }),
     );
   });
 
@@ -57,8 +54,8 @@ describe('NotificationService', () => {
       'Close',
       expect.objectContaining({
         duration: 3000,
-        panelClass: 'snackbar-info'
-      })
+        panelClass: 'snackbar-info',
+      }),
     );
   });
 
@@ -69,8 +66,8 @@ describe('NotificationService', () => {
       'Close',
       expect.objectContaining({
         duration: 4000,
-        panelClass: 'snackbar-warning'
-      })
+        panelClass: 'snackbar-warning',
+      }),
     );
   });
 });

@@ -41,7 +41,7 @@ from .store import (
     upsert_activity_from_api,
     upsert_session_from_api,
 )
-from .sse import clamp_interval, should_close_stream, validate_interval
+from .sse import should_close_stream, validate_interval
 from .utils import handle_api_exception
 from .streaming import publish, subscribe, unsubscribe
 
