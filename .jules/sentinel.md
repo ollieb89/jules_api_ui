@@ -2,3 +2,8 @@
 **Vulnerability:** The base class `JulesAuthenticatedViewSet` had `permission_classes = ()`, which overrode the global default `IsAuthenticated` permission. This effectively made all endpoints inheriting from it (including sensitive ones like `SessionViewSet` and `SourceViewSet`) public and accessible without authentication.
 **Learning:** Defining empty `permission_classes` in a DRF ViewSet completely removes all permission checks, even if `authentication_classes` are set. Authentication classes only identify the user (or set AnonymousUser); they do not deny access. Permission classes are responsible for access control.
 **Prevention:** Never leave `permission_classes` empty in a base ViewSet intended to be secure. Always explicitly set `permission_classes = (IsAuthenticated,)` or ensure it inherits the desired defaults by not defining it at all (if defaults are secure). Add unit tests that specifically check for 401/403 responses on protected endpoints using `AnonymousUser`.
+
+## 2026-02-21 - [CRITICAL] Privilege Escalation in Settings ViewSet
+**Vulnerability:** `SettingsViewSet` inherited `IsAuthenticated` from `JulesAuthenticatedViewSet` but exposed global API key management to all authenticated users (including non-admins).
+**Learning:** ViewSets handling sensitive global configurations must explicitly override `permission_classes` to include role-based checks (like `IsAdminUser`) in addition to authentication. Standard authenticated users should not have access to administrative settings.
+**Prevention:** Audit all ViewSets dealing with sensitive or global configuration. Add `IsAdminUser` to `permission_classes` for administrative endpoints. Implement tests that specifically verify 403 Forbidden for authenticated non-admin users.
