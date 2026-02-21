@@ -1,8 +1,6 @@
 import pytest
 from rest_framework.test import APIClient
-from rest_framework import status
 from django.contrib.auth.models import User
-from jules.views import SessionViewSet
 
 @pytest.fixture
 def api_client():
