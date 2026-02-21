@@ -6,7 +6,7 @@ from django.conf import settings
 from django.http import StreamingHttpResponse
 from rest_framework import status, viewsets
 from rest_framework.authentication import SessionAuthentication
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -41,7 +41,7 @@ from .store import (
     upsert_activity_from_api,
     upsert_session_from_api,
 )
-from .sse import clamp_interval, should_close_stream, validate_interval
+from .sse import should_close_stream, validate_interval
 from .utils import handle_api_exception
 from .streaming import publish, subscribe, unsubscribe
 
@@ -600,7 +600,7 @@ class JulesHealthViewSet(JulesAuthenticatedViewSet):
 class SettingsViewSet(JulesAuthenticatedViewSet):
     """ViewSet for managing Jules settings (API key configuration)."""
 
-
+    permission_classes = (IsAuthenticated, IsAdminUser)
 
     def list(self, request):  # noqa: ARG002
         """Get current settings (masked API key)."""

@@ -170,6 +170,12 @@ def test_activities_list_pagination_and_serializers(api_client, monkeypatch):
 
 
 def test_settings_list_and_update_api_key(api_client):
+    # Promote user to admin for settings access
+    user = get_user_model().objects.get(username="tester")
+    user.is_staff = True
+    user.save()
+    api_client.force_authenticate(user=user)
+
     settings_obj = JulesSettings.get_settings()
     settings_obj.set_api_key("secret-api-key-1234")
     settings_obj.save()
@@ -194,6 +200,12 @@ def test_settings_list_and_update_api_key(api_client):
 
 
 def test_settings_test_connection_success(api_client, monkeypatch):
+    # Promote user to admin for settings access
+    user = get_user_model().objects.get(username="tester")
+    user.is_staff = True
+    user.save()
+    api_client.force_authenticate(user=user)
+
     settings_obj = JulesSettings.get_settings()
     settings_obj.set_api_key("connection-key-9999")
     settings_obj.save()

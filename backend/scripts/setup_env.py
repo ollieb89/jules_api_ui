@@ -1,6 +1,5 @@
 from pathlib import Path
 import secrets
-import shutil
 import sys
 
 def main():
@@ -45,7 +44,7 @@ def main():
     if updated_count > 0 or mode == "create":
         env_file.write_text("\n".join(new_lines) + "\n")
         if mode == "create":
-            print(f"Successfully created .env with generated secrets.")
+            print("Successfully created .env with generated secrets.")
         else:
             print(f"Successfully updated .env with {updated_count} generated secrets.")
     else:
