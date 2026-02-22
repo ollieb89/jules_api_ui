@@ -1,9 +1,9 @@
-import { Component, input, signal, ChangeDetectionStrategy, inject, computed } from '@angular/core';
+import { Component, input, signal, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { Activity, PlanGeneratedActivity, ProgressUpdatedActivity } from '../../models/jules.model';
+import { Activity } from '../../models/jules.model';
 import { ClipboardService } from '../../services/clipboard.service';
 
 interface DiffLine {
@@ -209,13 +209,6 @@ export class ActivityCardComponent {
     return 'agent';
   }
 
-  getOriginatorBadgeClass(): string {
-    if (this.getOriginator() === 'agent') {
-      return 'bg-[var(--color-surface-info)] text-[var(--color-text-info-strong)]';
-    }
-    return 'bg-[var(--color-surface-success)] text-[var(--color-text-success-strong)]';
-  }
-
   getFormattedTime(): string {
     return new Date(this.activity().create_time).toLocaleString();
   }
@@ -271,10 +264,6 @@ export class ActivityCardComponent {
       'FAILED': 'Failed'
     };
     return labels[state] || state;
-  }
-
-  getStepStateClass(state: string): string {
-    return 'mat-chip mat-standard-chip mat-mdc-chip';
   }
 
   getStepStateColor(state: string): string {
