@@ -37,6 +37,14 @@ export class UserListComponent implements OnInit {
     }));
   });
 
+  deleteMessage = computed(() => {
+    const id = this.userToDelete();
+    const user = this.users().find((u) => u.id === id);
+    return user
+      ? `Are you sure you want to delete ${user.name}? This action cannot be undone.`
+      : 'Are you sure you want to delete this user? This action cannot be undone.';
+  });
+
   ngOnInit(): void {
     // Mock data for verification
     this.users.set([

@@ -1,5 +1,4 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
-import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { PLATFORM_ID } from '@angular/core';
 import { of } from 'rxjs';
@@ -85,5 +84,20 @@ describe('UserListComponent', () => {
 
     // Verify NO reload happened
     expect(userService.getUsers).not.toHaveBeenCalled();
+  });
+
+  it('computes the correct delete message', () => {
+    // Initial message
+    expect(component.deleteMessage()).toBe(
+      'Are you sure you want to delete this user? This action cannot be undone.'
+    );
+
+    // Set user to delete (ID 1 is Alice Smith)
+    component.userToDelete.set(1);
+
+    // Check dynamic message
+    expect(component.deleteMessage()).toBe(
+      'Are you sure you want to delete Alice Smith? This action cannot be undone.'
+    );
   });
 });
