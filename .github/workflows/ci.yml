@@ -34,8 +34,23 @@ jobs:
     defaults:
       run:
         working-directory: backend
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: jules
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: jules_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     env:
       DJANGO_SECRET_KEY: ci-secret-key
+      DATABASE_URL: postgres://jules:password@localhost:5432/jules_db
       DEBUG: "False"
       TESTING: "True"
       ALLOWED_HOSTS: "localhost,127.0.0.1"
