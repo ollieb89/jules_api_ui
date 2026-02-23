@@ -628,8 +628,6 @@ class JulesHealthViewSet(JulesAuthenticatedViewSet):
 class SettingsViewSet(JulesAuthenticatedViewSet):
     """ViewSet for managing Jules settings (API key configuration)."""
 
-    permission_classes = (IsAuthenticated, IsAdminUser)
-
     def list(self, request):  # noqa: ARG002
         """Get current settings (masked API key)."""
         settings = JulesSettings.get_settings()

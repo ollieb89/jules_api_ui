@@ -18,7 +18,6 @@ def test_user_cannot_edit_other_user():
 
     # 2. Create two app users (User A and User B)
     # Note: Linking relies on email
-    app_user_a = AppUser.objects.create(name="User A", email="a@example.com")
     app_user_b = AppUser.objects.create(name="User B", email="b@example.com")
 
     # 3. Authenticate as User A
