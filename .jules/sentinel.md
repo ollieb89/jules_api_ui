@@ -3,7 +3,7 @@
 **Learning:** Defining empty `permission_classes` in a DRF ViewSet completely removes all permission checks, even if `authentication_classes` are set. Authentication classes only identify the user (or set AnonymousUser); they do not deny access. Permission classes are responsible for access control.
 **Prevention:** Never leave `permission_classes` empty in a base ViewSet intended to be secure. Always explicitly set `permission_classes = (IsAuthenticated,)` or ensure it inherits the desired defaults by not defining it at all (if defaults are secure). Add unit tests that specifically check for 401/403 responses on protected endpoints using `AnonymousUser`.
 
-## 2026-02-18 - [CRITICAL] Authorization Bypass in SettingsViewSet
-**Vulnerability:** The `SettingsViewSet` allowed any authenticated user to list and update the system-wide API key because it inherited the default `IsAuthenticated` permission without enforcing stricter checks.
-**Learning:** Sensitive configuration endpoints must explicitly override default permission classes with `IsAdminUser` or custom permissions. Relying on project-wide defaults (often just `IsAuthenticated`) is insufficient for administrative functionality.
-**Prevention:** Always audit ViewSets that expose sensitive data or actions. Use `permission_classes = (IsAdminUser,)` for admin-only views. Add negative test cases that specifically assert `403 Forbidden` for regular users on these endpoints.
+## 2025-02-12 - [CRITICAL] Privilege Escalation in Settings ViewSet
+**Vulnerability:** `SettingsViewSet` inherited `IsAuthenticated` from `JulesAuthenticatedViewSet` but did not enforce `IsAdminUser`. This allowed any authenticated user to view and update global API keys.
+**Learning:** Inheriting from a base authenticated ViewSet is not enough for sensitive administrative actions. Granular permissions must be applied.
+**Prevention:** Explicitly add `IsAdminUser` (or custom permission) to `permission_classes` for any ViewSet that modifies global configuration or sensitive system data. Test with both regular and admin users.

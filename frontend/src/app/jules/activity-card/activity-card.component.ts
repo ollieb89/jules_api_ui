@@ -1,9 +1,9 @@
-import { Component, input, signal, ChangeDetectionStrategy, inject, computed } from '@angular/core';
+import { Component, input, signal, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { Activity, PlanGeneratedActivity, ProgressUpdatedActivity } from '../../models/jules.model';
+import { Activity } from '../../models/jules.model';
 import { ClipboardService } from '../../services/clipboard.service';
 
 interface DiffLine {
@@ -17,19 +17,25 @@ interface DiffLine {
   imports: [CommonModule, MatChipsModule, MatButtonModule, MatIconModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="bg-[var(--color-surface-primary)] border border-[var(--color-border-default)] rounded-lg p-4 shadow-sm">
+    <div
+      class="bg-[var(--color-surface-primary)] border border-[var(--color-border-default)] rounded-lg p-4 shadow-sm"
+    >
       <div class="flex justify-between items-start mb-3">
         <div class="flex items-center gap-2">
-          <h3 class="text-lg font-semibold m-0 text-[var(--color-text-primary)]">{{ getActivityTitle() }}</h3>
+          <h3 class="text-lg font-semibold m-0 text-[var(--color-text-primary)]">
+            {{ getActivityTitle() }}
+          </h3>
           <mat-chip color="accent">
             {{ getOriginator() === 'agent' ? 'Agent' : 'User' }}
           </mat-chip>
         </div>
         <span class="text-xs text-[var(--color-text-tertiary)]">{{ getFormattedTime() }}</span>
       </div>
-      
-      <p class="text-sm text-[var(--color-text-secondary)] mb-3 leading-relaxed">{{ getDescription() }}</p>
-      
+
+      <p class="text-sm text-[var(--color-text-secondary)] mb-3 leading-relaxed">
+        {{ getDescription() }}
+      </p>
+
       <!-- Plan Generated -->
       @if (activity().plan_generated) {
         <div class="mt-4">
@@ -45,12 +51,16 @@ interface DiffLine {
             }
             Plan Steps ({{ activity()!.plan_generated!.plan.steps.length }})
           </button>
-          
+
           @if (planExpanded()) {
-            <ol class="list-decimal list-inside space-y-2 mt-3 pl-4 border-l-2 border-[var(--color-border-default)]">
+            <ol
+              class="list-decimal list-inside space-y-2 mt-3 pl-4 border-l-2 border-[var(--color-border-default)]"
+            >
               @for (step of activity()!.plan_generated!.plan.steps; track $index) {
                 <li class="text-base text-[var(--color-text-primary)] leading-relaxed">
-                  <span class="inline-block mr-2">{{ step.title || step.description || 'Step ' + ($index + 1) }}</span>
+                  <span class="inline-block mr-2">{{
+                    step.title || step.description || 'Step ' + ($index + 1)
+                  }}</span>
                   <mat-chip [color]="getStepStateColor(step.state)" class="!ml-2">
                     {{ getStepStateLabel(step.state) }}
                   </mat-chip>
@@ -60,11 +70,14 @@ interface DiffLine {
           }
         </div>
       }
-      
+
       <!-- Progress Updated -->
       @if (activity().progress_updated) {
         <div class="mt-4">
-          @if (activity()!.progress_updated!.artifacts && activity()!.progress_updated!.artifacts!.length > 0) {
+          @if (
+            activity()!.progress_updated!.artifacts &&
+            activity()!.progress_updated!.artifacts!.length > 0
+          ) {
             @for (artifact of activity()!.progress_updated!.artifacts; track $index) {
               @if (artifact.bash_output) {
                 <div class="mt-3">
@@ -80,10 +93,13 @@ interface DiffLine {
                     }
                     Bash Output
                   </button>
-                  
+
                   @if (isBashOutputExpanded($index)) {
                     <div class="mt-2 relative">
-                      <pre class="bg-[var(--color-background-tertiary)] text-[var(--color-text-primary)] p-4 rounded-lg overflow-x-auto text-xs font-mono max-h-96 overflow-y-auto">{{ artifact.bash_output }}</pre>
+                      <pre
+                        class="bg-[var(--color-background-tertiary)] text-[var(--color-text-primary)] p-4 rounded-lg overflow-x-auto text-xs font-mono max-h-96 overflow-y-auto"
+                        >{{ artifact.bash_output }}</pre
+                      >
                       <button
                         (click)="copyToClipboard(artifact.bash_output || '')"
                         type="button"
@@ -96,7 +112,7 @@ interface DiffLine {
                   }
                 </div>
               }
-              
+
               @if (artifact.git_patch) {
                 <div class="mt-3">
                   <button
@@ -111,14 +127,12 @@ interface DiffLine {
                     }
                     Changeset
                   </button>
-                  
+
                   @if (isDiffExpanded($index)) {
                     <div class="mt-2 relative">
                       <div class="diff-container">
                         @for (line of parseDiff(artifact.git_patch); track $index) {
-                          <div 
-                            [class]="'diff-line ' + getDiffLineClass(line.type)"
-                          >
+                          <div [class]="'diff-line ' + getDiffLineClass(line.type)">
                             {{ line.content }}
                           </div>
                         }
@@ -139,7 +153,7 @@ interface DiffLine {
           }
         </div>
       }
-      
+
       <!-- Message (if we add message activity type in future) -->
       @if (activity().plan_approved || activity().session_completed) {
         <div class="mt-3 p-3 bg-[var(--color-surface-secondary)] rounded-lg">
@@ -153,22 +167,22 @@ interface DiffLine {
         </div>
       }
     </div>
-  `
+  `,
 })
 export class ActivityCardComponent {
   activity = input.required<Activity>();
-  
+
   private clipboardService = inject(ClipboardService);
-  
+
   planExpanded = signal<boolean>(false);
   private bashOutputExpandedState = signal<Record<number, boolean>>({});
   private diffExpandedState = signal<Record<number, boolean>>({});
   copySuccess = signal<Record<string, boolean>>({});
-  
+
   isBashOutputExpanded = (index: number): boolean => {
     return this.bashOutputExpandedState()[index] || false;
   };
-  
+
   isDiffExpanded = (index: number): boolean => {
     return this.diffExpandedState()[index] || false;
   };
@@ -193,9 +207,9 @@ export class ActivityCardComponent {
       return `Plan with ${act.plan_generated.plan.steps.length} steps`;
     } else if (act.plan_approved) {
       return 'Plan has been approved';
-      } else if (act.progress_updated) {
-        const step = act.progress_updated;
-        return step.title || step.description || 'Progress updated';
+    } else if (act.progress_updated) {
+      const step = act.progress_updated;
+      return step.title || step.description || 'Progress updated';
     } else if (act.session_completed) {
       return 'Session has been completed';
     }
@@ -207,13 +221,6 @@ export class ActivityCardComponent {
       return 'user';
     }
     return 'agent';
-  }
-
-  getOriginatorBadgeClass(): string {
-    if (this.getOriginator() === 'agent') {
-      return 'bg-[var(--color-surface-info)] text-[var(--color-text-info-strong)]';
-    }
-    return 'bg-[var(--color-surface-success)] text-[var(--color-text-success-strong)]';
   }
 
   getFormattedTime(): string {
@@ -236,7 +243,7 @@ export class ActivityCardComponent {
 
   parseDiff(patch: string): DiffLine[] {
     const lines = patch.split('\n');
-    return lines.map(line => {
+    return lines.map((line) => {
       if (line.startsWith('@@')) {
         return { type: 'header', content: line };
       } else if (line.startsWith('+') && !line.startsWith('+++')) {
@@ -264,26 +271,22 @@ export class ActivityCardComponent {
 
   getStepStateLabel(state: string): string {
     const labels: Record<string, string> = {
-      'STATE_UNSPECIFIED': 'Pending',
-      'PENDING': 'Pending',
-      'IN_PROGRESS': 'In Progress',
-      'COMPLETED': 'Completed',
-      'FAILED': 'Failed'
+      STATE_UNSPECIFIED: 'Pending',
+      PENDING: 'Pending',
+      IN_PROGRESS: 'In Progress',
+      COMPLETED: 'Completed',
+      FAILED: 'Failed',
     };
     return labels[state] || state;
   }
 
-  getStepStateClass(state: string): string {
-    return 'mat-chip mat-standard-chip mat-mdc-chip';
-  }
-
   getStepStateColor(state: string): string {
     const colors: Record<string, string> = {
-      'STATE_UNSPECIFIED': '',
-      'PENDING': 'accent',
-      'IN_PROGRESS': 'primary',
-      'COMPLETED': 'primary',
-      'FAILED': 'warn'
+      STATE_UNSPECIFIED: '',
+      PENDING: 'accent',
+      IN_PROGRESS: 'primary',
+      COMPLETED: 'primary',
+      FAILED: 'warn',
     };
     return colors[state] || '';
   }

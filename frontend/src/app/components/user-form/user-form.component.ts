@@ -1,6 +1,6 @@
 import { Component, OnInit, signal, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 
 import { UserService } from '../../services/user.service';
@@ -12,7 +12,7 @@ import { LoadingSpinnerComponent } from '../loading-spinner/loading-spinner.comp
   selector: 'app-user-form',
   imports: [CommonModule, ReactiveFormsModule, LoadingSpinnerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './user-form.component.html'
+  templateUrl: './user-form.component.html',
 })
 export class UserFormComponent implements OnInit {
   private fb = inject(FormBuilder);
@@ -30,7 +30,7 @@ export class UserFormComponent implements OnInit {
   constructor() {
     this.userForm = this.fb.group({
       name: ['', [Validators.required]],
-      email: ['', [Validators.required, Validators.email]]
+      email: ['', [Validators.required, Validators.email]],
     });
   }
 
@@ -51,14 +51,14 @@ export class UserFormComponent implements OnInit {
       next: (user) => {
         this.userForm.patchValue({
           name: user.name,
-          email: user.email
+          email: user.email,
         });
         this.loading.set(false);
       },
       error: (err: unknown) => {
         this.error.set(getApiErrorMessage(err, 'Failed to load user'));
         this.loading.set(false);
-      }
+      },
     });
   }
 
@@ -86,7 +86,7 @@ export class UserFormComponent implements OnInit {
       error: (err: unknown) => {
         this.loading.set(false);
         this.error.set(getApiErrorMessage(err, 'Failed to save user'));
-        
+
         // Handle field-specific errors if available
         if (hasFieldErrors(err)) {
           this.fieldErrors.set(err.fieldErrors ?? null);
@@ -101,14 +101,16 @@ export class UserFormComponent implements OnInit {
           // Focus first field with error
           this.focusFirstInvalidField();
         }
-      }
+      },
     });
   }
 
   private focusFirstInvalidField(): void {
     const firstInvalidKey = this.getFirstInvalidControlKey();
     if (firstInvalidKey) {
-      const element = document.querySelector(`[formControlName="${firstInvalidKey}"]`) as HTMLElement;
+      const element = document.querySelector(
+        `[formControlName="${firstInvalidKey}"]`,
+      ) as HTMLElement;
       if (element) {
         element.focus();
       }

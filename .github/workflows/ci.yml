@@ -23,7 +23,7 @@ jobs:
       - name: Lint
         run: bun run lint
       - name: Unit tests
-        run: bun run test -- --watch=false --browsers=ChromeHeadless
+        run: bun run test:ci
       - name: Install Playwright browsers
         run: bunx playwright install --with-deps chromium
       - name: Accessibility tests
@@ -34,8 +34,23 @@ jobs:
     defaults:
       run:
         working-directory: backend
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: jules_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     env:
       DJANGO_SECRET_KEY: ci-secret-key
+      DATABASE_URL: postgres://user:password@localhost:5432/jules_db
       DEBUG: "False"
       TESTING: "True"
       ALLOWED_HOSTS: "localhost,127.0.0.1"
